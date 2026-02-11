@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, Trash2, Calendar, Filter, History, Lock } from "lucide-react";
+import { Loader2, Search, Trash2, Calendar, Filter, History, Lock, Maximize2 } from "lucide-react";
 import { format } from "date-fns";
 import {
     Dialog,
@@ -29,6 +29,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { GitBranchView } from "@/components/GitBranchView";
 
 type Capsule = CapsuleMetadata;
 
@@ -64,6 +65,8 @@ export default function CapsulesPage() {
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [versions, setVersions] = useState<CapsuleVersion[]>([]);
     const [loadingVersions, setLoadingVersions] = useState(false);
+    const [rollingBack, setRollingBack] = useState<string | null>(null);
+    const [showBranchView, setShowBranchView] = useState(false);
     const [filterType, setFilterType] = useState<string>("all");
     const [userTeams, setUserTeams] = useState<string[]>([]);
     const [teamIdToName, setTeamIdToName] = useState<Record<string, string>>({});
@@ -160,6 +163,36 @@ export default function CapsulesPage() {
         }
     };
 
+    const handleRollback = async (version: CapsuleVersion) => {
+        if (!selectedCapsule) return;
+        if (!confirm(`Are you sure you want to rollback to this version?`)) return;
+
+        setRollingBack(version.version_id);
+        try {
+            const result = await client.rollbackCapsule(selectedCapsule.capsule_id, version.version_id);
+            toast.success(result.message);
+
+            // Refresh capsules list to update the card's version info
+            fetchCapsules();
+
+            // Refresh versions list
+            loadVersions(selectedCapsule);
+
+            // Update selected capsule if it's still open
+            setSelectedCapsule(prev => prev ? {
+                ...prev,
+                latest_version_id: result.version_id,
+                current_version_number: result.version_number,
+                summary: result.summary || prev.summary
+            } : null);
+        } catch (error) {
+            console.error("Rollback failed:", error);
+            toast.error("Failed to rollback capsule");
+        } finally {
+            setRollingBack(null);
+        }
+    };
+
     const openDetails = (capsule: Capsule) => {
         setSelectedCapsule(capsule);
         setDetailsOpen(true);
@@ -198,6 +231,14 @@ export default function CapsulesPage() {
                             />
                         </div>
                         <Button type="submit" size="default">Search</Button>
+                        <Button
+                            variant="outline"
+                            className="gap-2 border-primary/20 hover:bg-primary/5"
+                            onClick={() => window.location.href = '/network'}
+                        >
+                            <Maximize2 className="h-4 w-4 text-primary" />
+                            Network View
+                        </Button>
                     </form>
                 </div>
 
@@ -277,7 +318,7 @@ export default function CapsulesPage() {
                                     <span className="text-xs font-medium text-muted-foreground">Versions</span>
                                     <div className="flex items-center gap-1.5">
                                         <Badge variant="secondary" className="text-xs font-medium">
-                                            {capsule.version_count || 1}
+                                            v{capsule.current_version_number || capsule.version_count || 1}
                                         </Badge>
                                         {(capsule.version_count || 1) > 1 && (
                                             <History className="h-3.5 w-3.5 text-muted-foreground" />
@@ -336,7 +377,7 @@ export default function CapsulesPage() {
 
             {/* Version History Dialog */}
             <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-                <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-0 overflow-hidden">
+                <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-0 overflow-visible">
                     <DialogHeader className="px-6 py-5 border-b bg-muted/30">
                         <div className="flex items-start justify-between">
                             <div className="space-y-2">
@@ -360,40 +401,66 @@ export default function CapsulesPage() {
                                     Created on {selectedCapsule && format(new Date(selectedCapsule.created_at), "PPP")} by {selectedCapsule?.created_by}
                                 </DialogDescription>
                             </div>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-2"
+                                onClick={() => setShowBranchView(!showBranchView)}
+                            >
+                                <History className="h-4 w-4" />
+                                {showBranchView ? "List View" : "Branch View"}
+                            </Button>
                         </div>
                     </DialogHeader>
 
                     <div className="flex-1 overflow-y-auto px-6 py-4">
                         {(selectedCapsule?.version_count || 1) >= 1 ? (
                             <div className="space-y-4">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <History className="h-5 w-5 text-primary" />
-                                    <h3 className="text-lg font-semibold">Version History</h3>
-                                    <Badge variant="outline">{selectedCapsule?.version_count || 1} versions</Badge>
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <History className="h-5 w-5 text-primary" />
+                                        <h3 className="text-lg font-semibold">Version History</h3>
+                                        <Badge variant="outline">{selectedCapsule?.version_count || 1} versions</Badge>
+                                    </div>
+                                    {selectedCapsule?.current_version_number && (
+                                        <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-500/30">
+                                            Currently at v{selectedCapsule.current_version_number}
+                                        </Badge>
+                                    )}
                                 </div>
 
                                 {loadingVersions && (selectedCapsule?.version_count || 1) > 1 ? (
                                     <div className="flex justify-center py-12">
                                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
                                     </div>
+                                ) : showBranchView ? (
+                                    <div className="p-8 bg-muted/20 rounded-xl border border-dashed min-h-[400px] flex items-center justify-center">
+                                        <GitBranchView
+                                            versions={versions}
+                                            currentVersionId={selectedCapsule?.latest_version_id}
+                                            onRollback={handleRollback}
+                                            rollingBackId={rollingBack}
+                                        />
+                                    </div>
                                 ) : (
                                     <div className="space-y-3">
                                         {(versions.length > 0 ? versions : (selectedCapsule ? [{
                                             version_id: selectedCapsule.latest_version_id,
+                                            version_number: selectedCapsule.current_version_number || 1,
                                             capsule_id: selectedCapsule.capsule_id,
                                             created_at: selectedCapsule.created_at,
                                             created_by: selectedCapsule.created_by,
                                             extracted_from: selectedCapsule.extracted_from
                                         } as any] : [])).map((version, index) => (
-                                            <Card key={version.version_id} className="p-4 hover:shadow-md transition-shadow border">
+                                            <Card key={version.version_id} className={`p-4 hover:shadow-md transition-shadow border ${selectedCapsule?.latest_version_id === version.version_id ? 'border-primary/50 bg-primary/5' : ''}`}>
                                                 <div className="flex items-start justify-between gap-4">
                                                     <div className="space-y-3 flex-1">
                                                         <div className="flex items-center gap-2">
                                                             <Badge variant="default" className="bg-primary/10 text-primary">
-                                                                Version {versions.length > 0 ? (versions.length - index) : 1}
+                                                                Version {version.version_number || (versions.length - index)}
                                                             </Badge>
-                                                            {index === 0 && (
-                                                                <Badge variant="secondary" className="text-xs">Latest</Badge>
+                                                            {version.version_id === selectedCapsule?.latest_version_id && (
+                                                                <Badge variant="secondary" className="text-xs bg-green-500/10 text-green-600 border-green-500/30">Active</Badge>
                                                             )}
                                                         </div>
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -434,6 +501,23 @@ export default function CapsulesPage() {
                                                             </div>
                                                         )}
                                                     </div>
+
+                                                    {version.version_id !== selectedCapsule?.latest_version_id && (
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="shrink-0"
+                                                            onClick={() => handleRollback(version)}
+                                                            disabled={rollingBack === version.version_id}
+                                                        >
+                                                            {rollingBack === version.version_id ? (
+                                                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                                            ) : (
+                                                                <History className="h-4 w-4 mr-2" />
+                                                            )}
+                                                            Rollback
+                                                        </Button>
+                                                    )}
                                                 </div>
                                             </Card>
                                         ))}

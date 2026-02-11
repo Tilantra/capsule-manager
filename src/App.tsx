@@ -2,6 +2,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import CapsulesPage from "./pages/Capsules";
+import CapsuleNetwork from "./pages/CapsuleNetwork";
 import TeamsPage from "./pages/Teams";
 import AppLayout from "./components/layout/AppLayout";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -24,6 +25,7 @@ function App() {
 
                     <Route element={<PrivateRoute><AppLayout /></PrivateRoute>}>
                         <Route path="/" element={<CapsulesPage />} />
+                        <Route path="/network" element={<CapsuleNetwork />} />
                         <Route path="/teams" element={<TeamsPage />} />
                     </Route>
 

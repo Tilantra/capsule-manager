@@ -9,10 +9,12 @@ import type {
     CapsuleMetadata,
     CapsuleVersion,
     VersionListResponse,
+    CapsuleRollbackRequest,
+    CapsuleRollbackResponse,
 } from './capsule-types';
 
 
-const BASE_URL = 'https://backend.tilantra.com';
+const BASE_URL = 'http://localhost:8000';
 
 export class BrowserGuideraClient {
     private apiBaseUrl: string;
@@ -637,6 +639,36 @@ export class BrowserGuideraClient {
         const response = await axios.delete(url, { headers });
         if (response.status === 204 || response.status === 200) {
             return;
+        } else if (response.status === 401) {
+            this.clearJwt();
+            throw new Error('Session expired or invalid. Please log in again.');
+        } else {
+            throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+        }
+    }
+
+    /**
+     * Rollback a capsule to a specific version
+     * @param capsuleId - ID of the capsule
+     * @param versionId - Target version ID to rollback to
+     * @returns Rollback response
+     */
+    async rollbackCapsule(
+        capsuleId: string,
+        versionId: string
+    ): Promise<CapsuleRollbackResponse> {
+        if (!this.tokenValid()) {
+            throw new Error('Not authenticated');
+        }
+        const url = `${this.apiBaseUrl}/capsules/${capsuleId}/rollback`;
+        const headers = {
+            Authorization: `Bearer ${this.authToken}`,
+            'Content-Type': 'application/json',
+        };
+        const request: CapsuleRollbackRequest = { version_id: versionId };
+        const response = await axios.post(url, request, { headers });
+        if (response.status === 200) {
+            return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
             throw new Error('Session expired or invalid. Please log in again.');
