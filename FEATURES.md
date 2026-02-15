@@ -1,7 +1,7 @@
-# Capsule Manager - Feature Implementation Summary
+# Capsule Hub - Feature Implementation Summary
 
 ## Overview
-I've completely redesigned the Capsule Manager UI to be professional, clean, and feature-rich with enhanced team management capabilities.
+I've completely redesigned the Capsule Hub UI to be professional, clean, and feature-rich with enhanced team management capabilities.
 
 ## ✨ Key Features Implemented
 

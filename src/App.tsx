@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import CapsulesPage from "./pages/Capsules";
 import TeamsPage from "./pages/Teams";
+import SettingsPage from "./pages/Settings";
 import AppLayout from "./components/layout/AppLayout";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -25,6 +26,7 @@ function App() {
                     <Route element={<PrivateRoute><AppLayout /></PrivateRoute>}>
                         <Route path="/" element={<CapsulesPage />} />
                         <Route path="/teams" element={<TeamsPage />} />
+                        <Route path="/settings" element={<SettingsPage />} />
                     </Route>
 
                     <Route path="*" element={<Navigate to="/" replace />} />
