@@ -76,11 +76,11 @@ function LoginContent() {
                 <div className="space-y-8 hidden lg:block">
                     <div className="space-y-4">
                         <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-gray-900 dark:text-white leading-[1.1]">
-                            Integrated <br />
-                            <span className="text-primary">AI Platform</span>
+                            CapsuleHub <br />
+                            <span className="text-primary">By Tilantra</span>
                         </h1>
                         <p className="text-xl text-muted-foreground max-w-xl leading-relaxed">
-                            The intelligent control layer for modern AI systems. Optimize spend, ensure compliance, and accelerate deployment with one unified platform.
+                            Never start from zero again.
                         </p>
                     </div>
 

@@ -1,54 +1,71 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { BrowserGuideraClient } from "@/lib/guidera-browser-client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Loader2, User, Key, Mail, Shield, Plus } from "lucide-react";
+import { Loader2, User, Key, Mail, Shield, Plus, RefreshCw, Copy, Check, AlertCircle, Terminal } from "lucide-react";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 
 export default function SettingsPage() {
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [mcpApiKey, setMcpApiKey] = useState("");
-    const [isSaving, setIsSaving] = useState(false);
+    const [oneTimeKey, setOneTimeKey] = useState("");
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [hasCopied, setHasCopied] = useState(false);
+    const [configCopied, setConfigCopied] = useState(false);
 
     const client = useMemo(() => new BrowserGuideraClient(), []);
 
-    useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const userData = await client.getSingleUser();
-                setUser(userData);
-                // In a real app, we might fetch the MCP key from the user's profile or a specific endpoint
-                // For now, we'll use a placeholder or check localStorage
-                const savedKey = localStorage.getItem("mcp_api_key") || "";
-                setMcpApiKey(savedKey);
-            } catch (error) {
-                console.error("Failed to fetch user:", error);
-                toast.error("Failed to load profile");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchUser();
+    const fetchUser = useCallback(async () => {
+        try {
+            const userData = await client.getSingleUser();
+            setUser(userData);
+        } catch (error) {
+            console.error("Failed to fetch user:", error);
+            toast.error("Failed to load profile");
+        } finally {
+            setLoading(false);
+        }
     }, [client]);
 
-    const handleSaveApiKey = async () => {
-        setIsSaving(true);
+    useEffect(() => {
+        fetchUser();
+    }, [fetchUser]);
+
+    const handleCreateApiKey = async () => {
+        setIsGenerating(true);
+        setOneTimeKey(""); // Clear previous one-time key
         try {
-            // Simulate API call
-            localStorage.setItem("mcp_api_key", mcpApiKey);
-            await new Promise(resolve => setTimeout(resolve, 800));
-            toast.success("MCP API Key saved successfully");
-        } catch (error) {
-            toast.error("Failed to save API key");
+            const result = await client.createApiKey();
+            if (result.api_key) {
+                setOneTimeKey(result.api_key);
+                toast.success("API Key generated successfully. Please copy it now!");
+                // Refresh local user state to update has_api_key
+                const userData = await client.getSingleUser();
+                setUser(userData);
+            }
+        } catch (error: any) {
+            console.error("Failed to generate API key:", error);
+            const errorMsg = error.response?.data?.detail || error.message || "Failed to generate API key";
+            toast.error(errorMsg);
         } finally {
-            setIsSaving(false);
+            setIsGenerating(false);
         }
+    };
+
+    const copyToClipboard = (text: string, isConfig = false) => {
+        if (!text) return;
+        navigator.clipboard.writeText(text);
+        if (isConfig) {
+            setConfigCopied(true);
+            setTimeout(() => setConfigCopied(false), 2000);
+        } else {
+            setHasCopied(true);
+            setTimeout(() => setHasCopied(false), 2000);
+        }
+        toast.success(isConfig ? "Configuration copied" : "API Key copied to clipboard");
     };
 
     if (loading) {
@@ -58,6 +75,21 @@ export default function SettingsPage() {
             </div>
         );
     }
+
+    const hasApiKey = user?.has_api_key;
+
+    const mcpConfig = JSON.stringify({
+        "mcpServers": {
+            "capsule-service": {
+                "command": "npx",
+                "args": ["-y", "@modelcontextprotocol/server-sse-client"],
+                "env": {
+                    "MCP_SSE_URL": "https://backend.tilantra.com/mcp/sse",
+                    "X_API_KEY": hasApiKey ? "cht-your-api-key-here" : "GENERATE_KEY_FIRST"
+                }
+            }
+        }
+    }, null, 2);
 
     return (
         <div className="max-w-4xl mx-auto space-y-8">
@@ -120,53 +152,113 @@ export default function SettingsPage() {
                             <Key className="h-5 w-5 text-primary" />
                             <CardTitle>API Integrations</CardTitle>
                         </div>
-                        <CardDescription>Setup your MCP API key to enable advanced features.</CardDescription>
+                        <CardDescription>
+                            Configure your MCP client to connect using Server-Sent Events (SSE).
+                        </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-6 space-y-6">
                         <div className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="mcp-api-key" className="text-sm font-medium">Create MCP API Key</Label>
-                                <div className="flex gap-2">
-                                    <div className="relative flex-1">
-                                        <Key className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <Input
-                                            id="mcp-api-key"
-                                            type="password"
-                                            placeholder="Create your MCP API Key"
-                                            className="pl-10 bg-background/50"
-                                            value={mcpApiKey}
-                                            onChange={(e) => setMcpApiKey(e.target.value)}
-                                        />
+                            <div className="flex flex-col gap-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <Label className="text-sm font-semibold">
+                                            {hasApiKey ? "Manage API Key" : "Create API Key"}
+                                        </Label>
+                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                            {hasApiKey ? "Regenerate your existing key if needed." : "Generate a new key to start using integrations."}
+                                        </p>
                                     </div>
                                     <Button
-                                        onClick={handleSaveApiKey}
-                                        disabled={isSaving}
-                                        className="gap-2 min-w-[100px]"
+                                        onClick={handleCreateApiKey}
+                                        disabled={isGenerating}
+                                        variant={hasApiKey ? "outline" : "default"}
+                                        className="gap-2 min-w-[140px]"
                                     >
-                                        {isSaving ? (
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                        ) : (
-                                            <>
-                                                <Plus className="h-4 w-4" />
-                                                Create
-                                            </>
-                                        )}
+                                        {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : (hasApiKey ? <RefreshCw className="h-4 w-4" /> : <Plus className="h-4 w-4" />)}
+                                        {hasApiKey ? "Regenerate" : "Create API Key"}
                                     </Button>
                                 </div>
-                                <p className="text-xs text-muted-foreground">
-                                    Your MCP API key is used to authenticate requests to the Machine Control Protocol.
-                                </p>
+
+                                {oneTimeKey ? (
+                                    <div className="space-y-4 p-5 rounded-xl bg-primary/5 border border-primary/20 shadow-sm animate-in zoom-in-95 duration-300">
+                                        <div className="flex items-center gap-2 text-primary">
+                                            <AlertCircle className="h-4 w-4" />
+                                            <span className="text-xs font-bold uppercase tracking-wider">One-time View - Copy and Save!</span>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground">
+                                            For security reasons, we only show this key once. You won't be able to see it again after closing this session.
+                                        </p>
+                                        <div className="relative group">
+                                            <div className="font-mono text-sm p-4 rounded-lg bg-background border border-primary/30 break-all select-all leading-relaxed pr-12">
+                                                {oneTimeKey}
+                                            </div>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 text-primary"
+                                                onClick={() => copyToClipboard(oneTimeKey)}
+                                            >
+                                                {hasCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ) : hasApiKey && (
+                                    <div className="space-y-3 p-4 rounded-xl bg-muted/30 border border-border shadow-sm">
+                                        <div className="flex items-center gap-2">
+                                            <Shield className="h-4 w-4 text-green-600 opacity-60" />
+                                            <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Active Integration Token</span>
+                                        </div>
+                                        <div className="font-mono text-sm p-3 rounded-lg bg-background/50 border border-border/50 text-muted-foreground/60 select-none">
+                                            cht-xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                        </div>
+                                        <p className="text-[10px] text-muted-foreground italic px-1">
+                                            Your key is active and secure. You can regenerate it at any time.
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
                         <Separator className="bg-border/50" />
 
-                        <div className="bg-blue-500/5 border border-blue-500/20 rounded-lg p-4">
-                            <h4 className="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-1">About MCP</h4>
-                            <p className="text-xs text-muted-foreground leading-relaxed">
-                                The Machine Control Protocol (MCP) allows your capsules to interact with external tools and systems securely.
-                                Make sure to keep your API key private and secure.
-                            </p>
+                        <div className="space-y-4">
+                            <h4 className="text-sm font-semibold flex items-center gap-2">
+                                <Terminal className="h-4 w-4 text-primary" />
+                                How to use MCP
+                            </h4>
+
+                            <div className="bg-muted/30 rounded-lg p-4 space-y-4 text-sm border border-border/50">
+                                <p className="text-muted-foreground">
+                                    Configure your MCP client to connect using Server-Sent Events (SSE).
+                                </p>
+
+                                <div className="space-y-2">
+                                    <p className="font-semibold text-xs uppercase tracking-wide text-primary">Headers</p>
+                                    <p className="text-muted-foreground text-xs">
+                                        You <span className="font-bold text-foreground">MUST</span> provide your API key in the <code className="bg-muted px-1 py-0.5 rounded border border-border/50">X-API-Key</code> header.
+                                    </p>
+                                </div>
+
+                                <div className="relative group">
+                                    <div className="absolute -inset-2 bg-gradient-to-r from-primary/10 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <pre className="relative mt-2 p-4 rounded-lg bg-background/80 border border-border shadow-sm overflow-x-auto text-xs font-mono leading-relaxed">
+                                        <code>{mcpConfig}</code>
+                                    </pre>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="absolute right-2 top-4 h-6 w-6 text-muted-foreground hover:text-primary"
+                                        onClick={() => copyToClipboard(mcpConfig, true)}
+                                        title="Copy configuration"
+                                    >
+                                        {configCopied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                                    </Button>
+                                </div>
+
+                                <p className="text-[10px] text-muted-foreground italic border-t border-border/30 pt-3 mt-2">
+                                    Note: The exact configuration format depends on your MCP client. For direct HTTP/SSE clients, ensure <code className="bg-muted px-1 py-0.5 rounded">X-API-Key</code> is sent with every request.
+                                </p>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>

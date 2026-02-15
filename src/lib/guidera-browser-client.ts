@@ -313,7 +313,7 @@ export class BrowserGuideraClient {
         }
     }
 
-    async getSingleUser(email?: string, username?: string): Promise<{ username: string; email: string; full_name: string; company: string; teams?: string[] }> {
+    async getSingleUser(email?: string, username?: string): Promise<{ username: string; email: string; full_name: string; company: string; teams?: string[]; has_api_key?: boolean }> {
         if (!this.tokenValid()) {
             throw new Error('Not authenticated');
         }
@@ -883,6 +883,30 @@ export class BrowserGuideraClient {
         const response = await axios.delete(url, { headers });
         if (response.status === 200 || response.status === 204) {
             return;
+        } else if (response.status === 401) {
+            this.clearJwt();
+            throw new Error('Session expired or invalid. Please log in again.');
+        } else {
+            throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+        }
+    }
+
+    /**
+     * Generate or regenerate an API key for the current user
+     * @returns The generated API key and a message
+     */
+    async createApiKey(): Promise<{ api_key: string; message: string }> {
+        if (!this.tokenValid()) {
+            throw new Error('Not authenticated');
+        }
+        const url = `${this.apiBaseUrl}/users/api-key`;
+        const headers = {
+            Authorization: `Bearer ${this.authToken}`,
+            'Content-Type': 'application/json',
+        };
+        const response = await axios.post(url, {}, { headers });
+        if (response.status === 200 || response.status === 201) {
+            return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
             throw new Error('Session expired or invalid. Please log in again.');
