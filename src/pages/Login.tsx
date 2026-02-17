@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Zap } from "lucide-react";
+import { Share2, Brain } from "lucide-react";
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 import { FcGoogle } from "react-icons/fc";
 import { AuthBackground } from "@/components/AuthBackground";
@@ -27,11 +27,20 @@ function LoginContent() {
             setError("");
             try {
                 // Determine user info for "registration" if needed
-                // Note: tokenResponse.access_token is the Google access token
+                const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                    headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+                });
+                const userInfo = await userInfoResponse.json();
 
+                // Call backend google-auth endpoint
+                // We pass registration defaults just in case the backend creates a NEW user
                 await client.googleAuth(tokenResponse.access_token, {
-                    // We can pass defaults, but backend likely fetches user info from Google using the token
+                    email: userInfo.email,
+                    username: userInfo.email?.split('@')[0],
+                    full_name: userInfo.name,
                     company: "Default",
+                    teams: [],
+                    models: ["gpt4", "llama3", "gemini2.5-flash"],
                     tier: "basic"
                 });
 
@@ -87,20 +96,20 @@ function LoginContent() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
                         <div className="flex items-start gap-3">
                             <div className="mt-1 p-2 rounded-lg bg-card shadow-sm border border-border">
-                                <Shield className="h-5 w-5 text-primary" />
+                                <Share2 className="h-5 w-5 text-primary" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-foreground">Security First</h3>
-                                <p className="text-sm text-muted-foreground">Enterprise-grade security and compliance built-in.</p>
+                                <h3 className="font-bold text-foreground">Context Transfer</h3>
+                                <p className="text-sm text-muted-foreground">Share specialized knowledge capsules across teams instantly.</p>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
                             <div className="mt-1 p-2 rounded-lg bg-card shadow-sm border border-border">
-                                <Zap className="h-5 w-5 text-primary" />
+                                <Brain className="h-5 w-5 text-primary" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-foreground">Fast Deployment</h3>
-                                <p className="text-sm text-muted-foreground">Go from development to production in minutes.</p>
+                                <h3 className="font-bold text-foreground">Smart Context</h3>
+                                <p className="text-sm text-muted-foreground">Maintain continuity across sessions and different AI models.</p>
                             </div>
                         </div>
                     </div>

@@ -81,11 +81,10 @@ export default function SettingsPage() {
     const mcpConfig = JSON.stringify({
         "mcpServers": {
             "capsule-service": {
-                "command": "npx",
-                "args": ["-y", "@modelcontextprotocol/server-sse-client"],
-                "env": {
-                    "MCP_SSE_URL": "https://backend.tilantra.com/mcp/sse",
-                    "X_API_KEY": hasApiKey ? "cht-your-api-key-here" : "GENERATE_KEY_FIRST"
+                "serverUrl": "https://backend.tilantra.com/mcp/",
+                "headers": {
+                    "X-API-Key": "cht-xxxxxxxxxxxxxxxxxxxxxxxxxx",
+                    "Content-Type": "application/json"
                 }
             }
         }
