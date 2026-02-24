@@ -228,7 +228,7 @@ export default function SettingsPage() {
 
                             <div className="bg-muted/30 rounded-lg p-4 space-y-4 text-sm border border-border/50">
                                 <p className="text-muted-foreground">
-                                    Configure your MCP client to connect using Server-Sent Events (SSE).
+                                    Configure your MCP client to connect using Server-Sent Events (SSE). For more info visit <a href="https://tilantra.com/docs/capsule-hub-mcp" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Capsule Hub MCP</a>.
                                 </p>
 
                                 <div className="space-y-2">
