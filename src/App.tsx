@@ -13,7 +13,25 @@ import { Toaster } from "@/components/ui/sonner";
 
 function PrivateRoute({ children }: { children: JSX.Element }) {
     const token = localStorage.getItem("guidera_jwt");
-    return token ? children : <Navigate to="/login" replace />;
+    const expStr = localStorage.getItem("guidera_jwt_exp");
+
+    let isValid = false;
+    if (token && expStr) {
+        const exp = parseInt(expStr, 10);
+        const now = Math.floor(Date.now() / 1000);
+        isValid = now < exp;
+    }
+
+    if (!isValid) {
+        // Clear all auth-related storage to ensure a clean state
+        localStorage.removeItem("guidera_jwt");
+        localStorage.removeItem("guidera_jwt_exp");
+        localStorage.removeItem("guidera_session_id");
+        localStorage.removeItem("guidera_session_exp");
+        return <Navigate to="/login" replace />;
+    }
+
+    return children;
 }
 
 function App() {

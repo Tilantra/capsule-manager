@@ -1,15 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { BrowserGuideraClient } from "@/lib/guidera-browser-client";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Users, LogOut, Menu, Settings } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { toast } from "sonner";
 import TilantraLogo from "@/components/assets/Tilantra_blueLOGO.png";
 
 export default function AppLayout() {
     const navigate = useNavigate();
     const client = new BrowserGuideraClient();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    useEffect(() => {
+        let lastToastTime = 0;
+        const handleUnauthorized = () => {
+            const now = Date.now();
+            if (now - lastToastTime > 5000) {
+                toast.error("Session expired. Please log in again.");
+                lastToastTime = now;
+            }
+            navigate("/login");
+        };
+
+        window.addEventListener('guidera_unauthorized', handleUnauthorized);
+        return () => window.removeEventListener('guidera_unauthorized', handleUnauthorized);
+    }, [navigate]);
 
     const handleLogout = () => {
         client.logout();

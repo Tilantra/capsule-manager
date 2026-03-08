@@ -36,8 +36,21 @@ export class BrowserGuideraClient {
     }
 
     private tokenValid(): boolean {
-        // Only check if token exists; let backend handle 401s for expiration
-        return !!this.authToken;
+        const token = localStorage.getItem('guidera_jwt');
+        const expStr = localStorage.getItem('guidera_jwt_exp');
+
+        if (!token || !expStr) return false;
+
+        const exp = parseInt(expStr, 10);
+        const now = Math.floor(Date.now() / 1000);
+
+        if (now >= exp) {
+            this.logout();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
+            return false;
+        }
+
+        return true;
     }
 
     private saveSessionId(sessionId: string) {
@@ -178,6 +191,7 @@ export class BrowserGuideraClient {
             return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -202,6 +216,7 @@ export class BrowserGuideraClient {
             return suggestions;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -225,6 +240,7 @@ export class BrowserGuideraClient {
             return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -247,6 +263,7 @@ export class BrowserGuideraClient {
             return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -307,6 +324,7 @@ export class BrowserGuideraClient {
             return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -352,6 +370,7 @@ export class BrowserGuideraClient {
             return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -384,6 +403,7 @@ export class BrowserGuideraClient {
                 };
             } else if (response.status === 401) {
                 this.clearJwt();
+                window.dispatchEvent(new Event('guidera_unauthorized'));
                 throw new Error('Session expired or invalid. Please log in again.');
             } else {
                 throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -410,6 +430,7 @@ export class BrowserGuideraClient {
             return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -430,6 +451,7 @@ export class BrowserGuideraClient {
             return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -459,6 +481,7 @@ export class BrowserGuideraClient {
             return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -488,6 +511,7 @@ export class BrowserGuideraClient {
             return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -513,6 +537,7 @@ export class BrowserGuideraClient {
             return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -539,6 +564,7 @@ export class BrowserGuideraClient {
             return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -564,6 +590,7 @@ export class BrowserGuideraClient {
             return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -589,6 +616,7 @@ export class BrowserGuideraClient {
             return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -615,6 +643,7 @@ export class BrowserGuideraClient {
             return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -639,6 +668,7 @@ export class BrowserGuideraClient {
             return;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -665,6 +695,7 @@ export class BrowserGuideraClient {
             return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -696,6 +727,7 @@ export class BrowserGuideraClient {
             return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -724,6 +756,7 @@ export class BrowserGuideraClient {
             return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -749,6 +782,7 @@ export class BrowserGuideraClient {
             return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -781,6 +815,7 @@ export class BrowserGuideraClient {
             return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -807,6 +842,7 @@ export class BrowserGuideraClient {
             return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -834,6 +870,7 @@ export class BrowserGuideraClient {
             return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -860,6 +897,7 @@ export class BrowserGuideraClient {
             return response.data || { success: true };
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -885,6 +923,7 @@ export class BrowserGuideraClient {
             return;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -909,6 +948,7 @@ export class BrowserGuideraClient {
             return response.data;
         } else if (response.status === 401) {
             this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -917,6 +957,7 @@ export class BrowserGuideraClient {
 
     logout() {
         this.clearJwt();
+        this.clearSessionId();
     }
 }
 
