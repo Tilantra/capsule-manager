@@ -291,6 +291,7 @@ export default function CreateCapsule() {
                 },
                 tag: name.trim(),
                 team: team === "private" ? undefined : team,
+                extracted_from: "tilantra",
                 attachment_ids
             };
             

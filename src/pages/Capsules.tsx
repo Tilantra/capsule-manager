@@ -45,6 +45,7 @@ const modelLogos: Record<string, string> = {
     mail: GmailLogo,
     gmail: GmailLogo,
     guidera: GuideraLogo,
+    tilantra: GuideraLogo,
 };
 
 const getModelLogo = (modelName: string): string | null => {
@@ -335,11 +336,16 @@ export default function CapsulesPage() {
                                 </div>
 
                                 {/* Models */}
-                                {capsule.extracted_from && (
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-xs font-medium text-muted-foreground">Models</span>
-                                        <div className="flex items-center gap-1.5">
-                                            {(Array.isArray(capsule.extracted_from) ? capsule.extracted_from : [capsule.extracted_from]).slice(0, 3).map((source, i) => {
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs font-medium text-muted-foreground">Source</span>
+                                    <div className="flex items-center gap-1.5">
+                                        {(() => {
+                                            const rawSources = capsule.extracted_from;
+                                            const sources = rawSources && rawSources.length > 0 
+                                                ? (Array.isArray(rawSources) ? rawSources : [rawSources])
+                                                : ["tilantra"];
+
+                                            return sources.slice(0, 3).map((source, i) => {
                                                 const logo = getModelLogo(source);
                                                 return logo ? (
                                                     <div key={i} className="relative group/logo">
@@ -355,10 +361,10 @@ export default function CapsulesPage() {
                                                         {source.substring(0, 3)}
                                                     </Badge>
                                                 );
-                                            })}
-                                        </div>
+                                            });
+                                        })()}
                                     </div>
-                                )}
+                                </div>
 
                                 {/* Team/Private */}
                                 <div className="flex items-center justify-between">
@@ -481,12 +487,17 @@ export default function CapsulesPage() {
                                                                 <span className="font-medium text-foreground">{version.created_by}</span>
                                                             </div>
                                                         </div>
-                                                        {version.extracted_from && (
-                                                            <div className="pt-2 border-t border-border/50">
-                                                                <div className="flex items-center gap-3">
-                                                                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Models</span>
-                                                                    <div className="flex flex-wrap gap-2">
-                                                                        {(Array.isArray(version.extracted_from) ? version.extracted_from : [version.extracted_from]).map((source: string, i: number) => {
+                                                        <div className="pt-2 border-t border-border/50">
+                                                            <div className="flex items-center gap-3">
+                                                                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Source</span>
+                                                                <div className="flex flex-wrap gap-2">
+                                                                    {(() => {
+                                                                        const rawSources = version.extracted_from;
+                                                                        const sources = rawSources && rawSources.length > 0 
+                                                                            ? (Array.isArray(rawSources) ? rawSources : [rawSources])
+                                                                            : ["tilantra"];
+
+                                                                        return sources.map((source: string, i: number) => {
                                                                             const logo = getModelLogo(source);
                                                                             return logo ? (
                                                                                 <div key={i} className="flex items-center gap-2 bg-muted/50 px-2 py-1 rounded-md border border-border/50">
@@ -503,11 +514,11 @@ export default function CapsulesPage() {
                                                                                     {source}
                                                                                 </Badge>
                                                                             );
-                                                                        })}
-                                                                    </div>
+                                                                        });
+                                                                    })()}
                                                                 </div>
                                                             </div>
-                                                        )}
+                                                        </div>
                                                     </div>
 
                                                     {version.version_id !== selectedCapsule?.latest_version_id && (

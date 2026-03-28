@@ -37,6 +37,7 @@ const modelLogos: Record<string, string> = {
     mail: GmailLogo,
     gmail: GmailLogo,
     guidera: GuideraLogo,
+    tilantra: GuideraLogo,
 };
 
 const getModelLogo = (modelName: string): string | null => {
