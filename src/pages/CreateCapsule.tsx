@@ -254,14 +254,53 @@ export default function CreateCapsule() {
 
         setIsSubmitting(true);
         try {
-            // Mocking the API delay
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            const attachment_ids: string[] = [];
+            
+            // 1. Upload Attachments
+            for (const f of globalFiles) {
+                const base64Data = await new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const result = reader.result as string;
+                        const base64 = result.split(',')[1];
+                        resolve(base64 || "");
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(f.file);
+                });
+                
+                if (base64Data) {
+                    const meta = await client.uploadCapsuleAttachment(base64Data, f.file.name, f.type);
+                    if (meta && meta.asset_id) {
+                        attachment_ids.push(meta.asset_id);
+                    }
+                }
+            }
+
+            // 2. Format Messages
+            const messages = chunks.map(chunk => ({
+                role: "user",
+                content: chunk.text
+            }));
+            
+            // 3. Create Capsule Request
+            const request = {
+                content: { 
+                    messages,
+                    metadata: { summary: summary.trim() }
+                },
+                tag: name.trim(),
+                team: team === "private" ? undefined : team,
+                attachment_ids
+            };
+            
+            await client.createCapsule(request);
             
             toast.success("Capsule created successfully!");
             navigate("/");
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to create capsule:", error);
-            toast.error("Failed to create capsule");
+            toast.error(error.message || "Failed to create capsule");
         } finally {
             setIsSubmitting(false);
         }

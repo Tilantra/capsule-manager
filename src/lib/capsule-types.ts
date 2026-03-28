@@ -1,7 +1,15 @@
-export interface CreateCapsuleRequest {
+export interface CapsuleContentPayload {
     messages: any[];
+    attachments?: any[];
+    metadata?: any;
+}
+
+export interface CreateCapsuleRequest {
+    content: CapsuleContentPayload;
     tag?: string;
     team?: string;
+    extracted_from?: string;
+    attachment_ids?: string[];
 }
 
 export interface CreateCapsuleResponse {
@@ -14,7 +22,10 @@ export interface CreateCapsuleResponse {
 }
 
 export interface CreateVersionRequest {
-    messages: any[];
+    content: CapsuleContentPayload;
+    parent_version_id?: string;
+    extracted_from?: string;
+    attachment_ids?: string[];
 }
 
 export interface CreateVersionResponse {

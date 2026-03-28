@@ -464,6 +464,42 @@ export class BrowserGuideraClient {
     // CAPSULE METHODS
     // ============================================
 
+    // ============================================
+    // ATTACHMENT UPLOAD
+    // ============================================
+
+    /**
+     * Upload an attachment to be associated with a new capsule.
+     * Hits POST /capsules/attachments
+     */
+    async uploadCapsuleAttachment(base64Data: string, filename: string, contentType: string): Promise<any> {
+        if (!this.tokenValid()) {
+            throw new Error('Not authenticated');
+        }
+        
+        const url = `${this.apiBaseUrl}/capsules/attachments`;
+        const headers = {
+            Authorization: `Bearer ${this.authToken}`,
+            'Content-Type': 'application/json',
+        };
+        const payload = {
+            base64_data: base64Data,
+            filename: filename,
+            content_type: contentType
+        };
+        
+        const response = await axios.post(url, payload, { headers });
+        if (response.status === 200 || response.status === 201) {
+            return response.data; // MediaAssetMetadata
+        } else if (response.status === 401) {
+            this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
+            throw new Error('Session expired or invalid. Please log in again.');
+        } else {
+            throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+        }
+    }
+
     /**
      * Create a new capsule with initial content
      * @param request - Capsule creation request containing messages, tag, team
