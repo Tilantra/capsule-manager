@@ -1,15 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { BrowserGuideraClient } from "@/lib/guidera-browser-client";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, LogOut, Menu, Maximize2 } from "lucide-react";
+import { LayoutDashboard, Users, LogOut, Menu, Settings, Maximize2 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { toast } from "sonner";
 import TilantraLogo from "@/components/assets/Tilantra_blueLOGO.png";
 
 export default function AppLayout() {
     const navigate = useNavigate();
     const client = new BrowserGuideraClient();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    useEffect(() => {
+        let lastToastTime = 0;
+        const handleUnauthorized = () => {
+            const now = Date.now();
+            if (now - lastToastTime > 5000) {
+                toast.error("Session expired. Please log in again.");
+                lastToastTime = now;
+            }
+            navigate("/login");
+        };
+
+        window.addEventListener('guidera_unauthorized', handleUnauthorized);
+        return () => window.removeEventListener('guidera_unauthorized', handleUnauthorized);
+    }, [navigate]);
 
     const handleLogout = () => {
         client.logout();
@@ -61,6 +77,19 @@ export default function AppLayout() {
                     >
                         <Users className="h-4 w-4" />
                         Teams
+                    </NavLink>
+                    <NavLink
+                        to="/settings"
+                        className={({ isActive }) =>
+                            `flex items-center gap-3 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${isActive
+                                ? "bg-blue-50 text-blue-600 dark:bg-slate-800 dark:text-blue-400"
+                                : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                            }`
+                        }
+                        onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                        <Settings className="h-4 w-4" />
+                        Settings
                     </NavLink>
                 </div>
             </div>

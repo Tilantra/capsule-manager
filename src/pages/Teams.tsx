@@ -213,24 +213,21 @@ export default function TeamsPage() {
                     <p className="text-muted-foreground mt-1 text-sm">Create your first team to start collaborating.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {teams.map((team) => {
                         const userRole = getUserRole(team);
                         const capsuleCount = teamCapsuleCounts[team.team_id] || 0;
+                        const teamColor = team.color_tag || '#3b82f6';
 
                         return (
                             <Card
                                 key={team.team_id}
-                                className="group hover:shadow-lg transition-all duration-200 border bg-gradient-to-br from-card to-card/50 hover:border-primary/40"
-                                style={{
-                                    borderLeftWidth: '4px',
-                                    borderLeftColor: team.color_tag || '#3b82f6'
-                                }}
+                                className="group relative flex flex-col h-[240px] overflow-hidden hover:shadow-xl transition-all duration-300 border bg-gradient-to-br from-card to-card/50 hover:border-primary/40 cursor-default"
                             >
                                 <CardHeader className="pb-3">
                                     <div className="flex items-start justify-between">
                                         <div className="flex-1 min-w-0">
-                                            <CardTitle className="text-base truncate">{team.name || 'Unnamed Team'}</CardTitle>
+                                            <CardTitle className="text-base truncate group-hover:text-primary transition-colors">{team.name || 'Unnamed Team'}</CardTitle>
                                             <Badge variant="secondary" className={`text-xs gap-1 mt-1 ${getRoleBadgeColor(userRole)}`}>
                                                 {getRoleIcon(userRole)}
                                                 {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
@@ -239,34 +236,48 @@ export default function TeamsPage() {
                                     </div>
                                 </CardHeader>
 
-                                <CardContent className="space-y-3">
-                                    {team.description && (
-                                        <p className="text-sm text-muted-foreground line-clamp-2">{team.description}</p>
-                                    )}
+                                <CardContent className="flex-1 flex flex-col gap-3">
+                                    <div className="min-h-[2.5rem]">
+                                        {team.description ? (
+                                            <p className="text-sm text-muted-foreground line-clamp-2">{team.description}</p>
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground opacity-30 italic">No description provided</p>
+                                        )}
+                                    </div>
 
-                                    <Separator />
-
-                                    <div className="flex items-center justify-between text-sm">
-                                        <div className="flex items-center gap-1.5 text-muted-foreground">
-                                            <Users className="h-4 w-4" />
-                                            <span>{team.members?.length || 0} members</span>
-                                        </div>
-                                        <div className="flex items-center gap-1.5 text-muted-foreground">
-                                            <Layers className="h-4 w-4" />
-                                            <span>{capsuleCount} capsules</span>
+                                    <div className="mt-auto space-y-3">
+                                        <Separator className="opacity-50" />
+                                        <div className="flex items-center justify-between text-sm">
+                                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                                                <Users className="h-4 w-4" />
+                                                <span>{team.members?.length || 0} members</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                                                <Layers className="h-4 w-4" />
+                                                <span>{capsuleCount}</span>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="w-full gap-2"
-                                        onClick={() => openManageMembers(team)}
-                                    >
-                                        <Users className="h-4 w-4" />
-                                        {userRole === 'admin' ? 'Manage Team' : 'View Members'}
-                                    </Button>
+                                    <div className="flex justify-end mt-2">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="gap-2 text-primary hover:text-primary hover:bg-primary/10 transition-colors"
+                                            onClick={() => openManageMembers(team)}
+                                        >
+                                            {userRole === 'admin' ? 'Manage' : 'View'}
+                                        </Button>
+                                    </div>
                                 </CardContent>
+
+                                {/* Hover Indicator */}
+                                <div
+                                    className="absolute bottom-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                    style={{
+                                        background: `linear-gradient(to right, transparent, ${teamColor}, transparent)`
+                                    }}
+                                />
                             </Card>
                         );
                     })}
