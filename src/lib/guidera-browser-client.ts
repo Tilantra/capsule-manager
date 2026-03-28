@@ -333,7 +333,7 @@ export class BrowserGuideraClient {
         }
     }
 
-    async getSingleUser(email?: string, username?: string): Promise<{ username: string; email: string; full_name: string; company: string; teams?: string[]; has_api_key?: boolean }> {
+    async getSingleUser(email?: string, username?: string): Promise<{ username: string; email: string; full_name: string; company: string; teams?: string[]; has_api_key?: boolean; tier?: string }> {
         if (!this.tokenValid()) {
             throw new Error('Not authenticated');
         }

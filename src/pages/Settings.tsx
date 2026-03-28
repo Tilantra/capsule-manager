@@ -386,23 +386,23 @@ export default function SettingsPage() {
                                     className={`relative flex flex-col p-6 rounded-2xl bg-card border ${tier.isPopular ? 'border-primary/50 ring-1 ring-primary/30 shadow-lg scale-[1.02]' : 'border-border/60 shadow-sm'} transition-all`}
                                 >
                                     {tier.isPopular && (
-                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-[10px] font-bold uppercase tracking-wider py-1 px-3 rounded-full flex items-center gap-1 shadow-sm">
+                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-[10px] font-bold uppercase tracking-wider py-1 px-3 rounded-full flex items-center gap-1 shadow-sm whitespace-nowrap">
                                             <Sparkles className="h-3 w-3" />
                                             Most Popular
                                         </div>
                                     )}
                                     
-                                    <div className="mb-5">
-                                        <h3 className="text-lg font-bold">{tier.name}</h3>
+                                    <div className="mb-5 text-center">
+                                        <h3 className="text-2xl font-bold tracking-tight">{tier.name}</h3>
                                         <p className="text-sm text-muted-foreground mt-1 h-10">{tier.description}</p>
                                     </div>
                                     
-                                    <div className="mb-5">
-                                        <span className="text-3xl font-extrabold">
+                                    <div className="pt-6 pb-2 mb-4 text-center">
+                                        <span className="text-4xl font-extrabold tracking-tight">
                                             {typeof tier.price === 'number' ? `$${billingCycle === "monthly" ? tier.price : Math.floor(tier.price * 0.8 * 12)}` : tier.price}
                                         </span>
                                         {typeof tier.price === 'number' && (
-                                            <span className="text-muted-foreground text-sm font-medium">
+                                            <span className="text-muted-foreground text-sm font-medium ml-1">
                                                 /{billingCycle === "monthly" ? 'mo' : 'yr'}
                                             </span>
                                         )}
