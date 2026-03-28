@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, Trash2, Calendar, Filter, History, Lock, Maximize2 } from "lucide-react";
+import { Loader2, Search, Trash2, Calendar, Filter, History, Lock, Maximize2, Plus } from "lucide-react";
 import { format } from "date-fns";
 import {
     Dialog,
@@ -238,6 +238,14 @@ export default function CapsulesPage() {
                         >
                             <Maximize2 className="h-4 w-4 text-primary" />
                             Network View
+                        </Button>
+                        <Button
+                            type="button"
+                            onClick={() => window.location.href = '/create-capsule'}
+                            className="gap-2"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Create Capsule
                         </Button>
                     </form>
                 </div>

@@ -5,6 +5,7 @@ import CapsulesPage from "./pages/Capsules";
 import CapsuleNetwork from "./pages/CapsuleNetwork";
 import TeamsPage from "./pages/Teams";
 import SettingsPage from "./pages/Settings";
+import CreateCapsule from "./pages/CreateCapsule";
 import AppLayout from "./components/layout/AppLayout";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -44,6 +45,7 @@ function App() {
 
                     <Route element={<PrivateRoute><AppLayout /></PrivateRoute>}>
                         <Route path="/" element={<CapsulesPage />} />
+                        <Route path="/create-capsule" element={<CreateCapsule />} />
                         <Route path="/network" element={<CapsuleNetwork />} />
                         <Route path="/teams" element={<TeamsPage />} />
                         <Route path="/settings" element={<SettingsPage />} />
