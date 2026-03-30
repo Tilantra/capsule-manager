@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { BrowserGuideraClient } from "@/lib/guidera-browser-client";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, LogOut, Menu, Settings, Maximize2 } from "lucide-react";
+import { LayoutDashboard, Users, LogOut, Menu, Settings, CreditCard } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import TilantraLogo from "@/components/assets/Tilantra_blueLOGO.png";
@@ -53,19 +53,6 @@ export default function AppLayout() {
                         Capsules
                     </NavLink>
                     <NavLink
-                        to="/network"
-                        className={({ isActive }) =>
-                            `flex items-center gap-3 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${isActive
-                                ? "bg-blue-50 text-blue-600 dark:bg-slate-800 dark:text-blue-400"
-                                : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-                            }`
-                        }
-                        onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                        <Maximize2 className="h-4 w-4" />
-                        Network Explorer
-                    </NavLink>
-                    <NavLink
                         to="/teams"
                         className={({ isActive }) =>
                             `flex items-center gap-3 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${isActive
@@ -77,6 +64,19 @@ export default function AppLayout() {
                     >
                         <Users className="h-4 w-4" />
                         Teams
+                    </NavLink>
+                    <NavLink
+                        to="/billing"
+                        className={({ isActive }) =>
+                            `flex items-center gap-3 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${isActive
+                                ? "bg-blue-50 text-blue-600 dark:bg-slate-800 dark:text-blue-400"
+                                : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                            }`
+                        }
+                        onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                        <CreditCard className="h-4 w-4" />
+                        Billing
                     </NavLink>
                     <NavLink
                         to="/settings"

@@ -31,6 +31,22 @@ export class BrowserGuideraClient {
         this.authToken = token;
     }
 
+    /** Decode a JWT and return its `exp` claim as an absolute UNIX timestamp (seconds). */
+    private extractExpFromToken(token: string): number | null {
+        try {
+            const parts = token.split('.');
+            if (parts.length === 3) {
+                const payload = JSON.parse(atob(parts[1]));
+                if (payload.exp && typeof payload.exp === 'number') {
+                    return payload.exp;
+                }
+            }
+        } catch {
+            // Ignore decode errors
+        }
+        return null;
+    }
+
     private clearJwt() {
         localStorage.removeItem('guidera_jwt');
         localStorage.removeItem('guidera_jwt_exp');
@@ -80,9 +96,16 @@ export class BrowserGuideraClient {
         const response = await axios.post(loginUrl, loginData);
         if (response.status === 200) {
             const result = response.data;
-            const token = result.token;
-            const exp = result.exp || Math.floor(Date.now() / 1000) + 2 * 3600;
+            // Accept both 'token' and 'access_token' keys from backend
+            const token = result.token || result.access_token;
             if (token) {
+                // Always decode the JWT to get the real absolute exp timestamp.
+                // Backend may return exp as a relative offset (e.g. 3600s) which
+                // would break PrivateRoute's `now < exp` check.
+                const exp = this.extractExpFromToken(token)
+                    ?? (result.exp && result.exp > Math.floor(Date.now() / 1000)
+                        ? result.exp
+                        : Math.floor(Date.now() / 1000) + 2 * 3600);
                 this.saveJwt(token, exp);
                 return token;
             } else {
@@ -113,9 +136,12 @@ export class BrowserGuideraClient {
             const result = response.data;
             // Check for 'token' OR 'access_token' to be robust
             const authToken = result.token || result.access_token;
-            const exp = result.exp || Math.floor(Date.now() / 1000) + 2 * 3600;
 
             if (authToken) {
+                const exp = this.extractExpFromToken(authToken)
+                    ?? (result.exp && result.exp > Math.floor(Date.now() / 1000)
+                        ? result.exp
+                        : Math.floor(Date.now() / 1000) + 2 * 3600);
                 this.saveJwt(authToken, exp);
                 return authToken;
             } else {
@@ -1020,6 +1046,26 @@ export class BrowserGuideraClient {
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+        }
+    }
+
+    /**
+     * Simple mock upgrade: sets the user's tier immediately.
+     * No order creation or verification steps required.
+     */
+    async upgradeTier(tier: 'pro' | 'elite' | 'enterprise'): Promise<{ status: string; new_tier: string }> {
+        if (!this.tokenValid()) throw new Error('Not authenticated');
+        const url = `${this.apiBaseUrl}/payments/upgrade`;
+        const headers = { 
+            Authorization: `Bearer ${this.authToken}`,
+            'Content-Type': 'application/json'
+        };
+        
+        const response = await axios.post(url, { tier }, { headers });
+        if (response.status === 200 || response.status === 201) {
+            return response.data;
+        } else {
+            throw new Error(`Upgrade failed with status ${response.status}: ${response.statusText}`);
         }
     }
 

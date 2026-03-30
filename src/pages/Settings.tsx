@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Loader2, User, Key, Mail, Shield, Plus, RefreshCw, Copy, Check, AlertCircle, Terminal, CreditCard, CheckCircle2, MinusCircle, Sparkles } from "lucide-react";
+import { Loader2, User, Key, Mail, Shield, Plus, RefreshCw, Copy, Check, AlertCircle, Terminal, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 
@@ -15,8 +15,6 @@ export default function SettingsPage() {
     const [isGenerating, setIsGenerating] = useState(false);
     const [hasCopied, setHasCopied] = useState(false);
     const [configCopied, setConfigCopied] = useState(false);
-    const [isUpgrading, setIsUpgrading] = useState<string | null>(null);
-    const [billingCycle, setBillingCycle] = useState<"monthly" | "annually">("monthly");
 
     const client = useMemo(() => new BrowserGuideraClient(), []);
 
@@ -81,90 +79,6 @@ export default function SettingsPage() {
     const hasApiKey = user?.has_api_key;
     const currentTier = user?.tier || "Basic";
 
-    const pricingTiers = [
-        {
-            name: "Basic",
-            price: 0,
-            description: "Essential capsule management for casual users.",
-            features: [
-                { name: "5 Total Capsules", included: true },
-                { name: "Teams", included: false },
-                { name: "Versioning", included: false },
-                { name: "MCP Access", included: true },
-            ],
-            buttonText: "Current Plan",
-        },
-        {
-            name: "Pro",
-            price: 5,
-            description: "Advanced features for solo power users.",
-            features: [
-                { name: "15 Total Capsules", included: true },
-                { name: "Join Existing Teams", included: true },
-                { name: "Core Versioning", included: true },
-                { name: "MCP + Attachments", included: true },
-            ],
-            buttonText: "Upgrade to Pro",
-        },
-        {
-            name: "Elite",
-            price: 15,
-            description: "Maximum collaboration and context limits.",
-            isPopular: true,
-            features: [
-                { name: "Unlimited Capsules", included: true },
-                { name: "Create & Join Teams", included: true },
-                { name: "Universal Versioning", included: true },
-                { name: "MCP + Attachments + Dynamic Context", included: true },
-            ],
-            buttonText: "Upgrade to Elite",
-        },
-        {
-            name: "Enterprise",
-            price: "Custom",
-            description: "Custom limits and dedicated support.",
-            features: [
-                { name: "Custom Limits", included: true },
-                { name: "Dedicated Support", included: true },
-                { name: "Custom Integrations", included: true },
-                { name: "White-labeling", included: true },
-            ],
-            buttonText: "Contact Sales",
-        }
-    ];
-
-    const handleUpgrade = (tierName: string) => {
-        setIsUpgrading(tierName);
-        setTimeout(() => {
-            toast.success(`Redirecting to secure checkout for ${tierName} plan...`);
-            setIsUpgrading(null);
-        }, 1500);
-    };
-
-    const getButtonVariant = (tierName: string) => {
-        if (tierName === "Enterprise") return "outline";
-        if (tierName === currentTier) return "outline";
-        
-        const tierVals: Record<string, number> = { "Basic": 0, "Pro": 1, "Elite": 2 };
-        const currVal = tierVals[currentTier] ?? 0;
-        const targetVal = tierVals[tierName] ?? 0;
-
-        if (targetVal < currVal) return "secondary"; // Downgrade
-        return "default"; // Upgrade
-    };
-
-    const getButtonLabel = (tierName: string, defaultLabel: string) => {
-        if (tierName === "Enterprise") return "Contact Sales";
-        if (tierName === currentTier) return "Current Plan";
-
-        const tierVals: Record<string, number> = { "Basic": 0, "Pro": 1, "Elite": 2 };
-        const currVal = tierVals[currentTier] ?? 0;
-        const targetVal = tierVals[tierName] ?? 0;
-
-        if (targetVal < currVal) return "Downgrade";
-        return defaultLabel;
-    };
-
     const mcpConfig = JSON.stringify({
         "mcpServers": {
             "capsule-service": {
@@ -222,9 +136,19 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-2 px-3 py-1.5 w-fit rounded-full bg-green-500/10 text-green-600 border border-green-500/20 text-xs font-medium">
-                                    <Shield className="h-3.5 w-3.5" />
-                                    Active Account
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <div className="flex items-center gap-2 px-3 py-1.5 w-fit rounded-full bg-green-500/10 text-green-600 border border-green-500/20 text-xs font-medium">
+                                        <Shield className="h-3.5 w-3.5" />
+                                        Active Account
+                                    </div>
+                                    <div className={`flex items-center gap-2 px-3 py-1.5 w-fit rounded-full border text-xs font-bold uppercase tracking-wider ${
+                                        currentTier.toLowerCase() === 'elite' ? 'bg-purple-500/10 text-purple-600 border-purple-500/20' :
+                                        currentTier.toLowerCase() === 'pro' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
+                                        'bg-slate-500/10 text-slate-600 border-slate-500/20'
+                                    }`}>
+                                        <Sparkles className="h-3.5 w-3.5" />
+                                        {currentTier} Tier
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -345,93 +269,6 @@ export default function SettingsPage() {
                                     Note: The exact configuration format depends on your MCP client. For direct HTTP/SSE clients, ensure <code className="bg-muted px-1 py-0.5 rounded">X-API-Key</code> is sent with every request.
                                 </p>
                             </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* Subscription & Billing */}
-                <Card className="overflow-hidden border-none bg-gradient-to-br from-card to-card/50 shadow-md">
-                    <CardHeader className="pb-4 border-b border-border/40 bg-muted/20">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <CreditCard className="h-5 w-5 text-primary" />
-                                <CardTitle>Subscription & Billing</CardTitle>
-                            </div>
-                            <div className="flex items-center gap-2 p-1 bg-muted/50 rounded-lg border border-border/50">
-                                <Button 
-                                    variant={billingCycle === "monthly" ? "default" : "ghost"} 
-                                    size="sm" 
-                                    className="h-7 text-xs px-3"
-                                    onClick={() => setBillingCycle("monthly")}
-                                >
-                                    Monthly
-                                </Button>
-                                <Button 
-                                    variant={billingCycle === "annually" ? "default" : "ghost"} 
-                                    size="sm" 
-                                    className="h-7 text-xs px-3"
-                                    onClick={() => setBillingCycle("annually")}
-                                >
-                                    Annually <span className="ml-1.5 text-[10px] text-green-300 bg-green-900/40 px-1 rounded border border-green-500/30">-20%</span>
-                                </Button>
-                            </div>
-                        </div>
-                        <CardDescription>Choose the perfect plan for you and your team.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-8 pb-8">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {pricingTiers.map((tier) => (
-                                <div 
-                                    key={tier.name}
-                                    className={`relative flex flex-col p-6 rounded-2xl bg-card border ${tier.isPopular ? 'border-primary/50 ring-1 ring-primary/30 shadow-lg scale-[1.02]' : 'border-border/60 shadow-sm'} transition-all`}
-                                >
-                                    {tier.isPopular && (
-                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-[10px] font-bold uppercase tracking-wider py-1 px-3 rounded-full flex items-center gap-1 shadow-sm whitespace-nowrap">
-                                            <Sparkles className="h-3 w-3" />
-                                            Most Popular
-                                        </div>
-                                    )}
-                                    
-                                    <div className="mb-5 text-center">
-                                        <h3 className="text-2xl font-bold tracking-tight">{tier.name}</h3>
-                                        <p className="text-sm text-muted-foreground mt-1 h-10">{tier.description}</p>
-                                    </div>
-                                    
-                                    <div className="pt-6 pb-2 mb-4 text-center">
-                                        <span className="text-4xl font-extrabold tracking-tight">
-                                            {typeof tier.price === 'number' ? `$${billingCycle === "monthly" ? tier.price : Math.floor(tier.price * 0.8 * 12)}` : tier.price}
-                                        </span>
-                                        {typeof tier.price === 'number' && (
-                                            <span className="text-muted-foreground text-sm font-medium ml-1">
-                                                /{billingCycle === "monthly" ? 'mo' : 'yr'}
-                                            </span>
-                                        )}
-                                    </div>
-                                    
-                                    <Button 
-                                        variant={getButtonVariant(tier.name)} 
-                                        className={`w-full mb-6 ${tier.isPopular && tier.name !== currentTier ? 'bg-primary hover:bg-primary/90' : ''}`}
-                                        onClick={() => handleUpgrade(tier.name)}
-                                        disabled={tier.name === currentTier || isUpgrading !== null}
-                                    >
-                                        {isUpgrading === tier.name ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                                        {getButtonLabel(tier.name, tier.buttonText)}
-                                    </Button>
-                                    
-                                    <div className="space-y-3 flex-1">
-                                        {tier.features.map((feature, i) => (
-                                            <div key={i} className={`flex items-start gap-2 text-sm ${feature.included ? 'text-foreground' : 'text-muted-foreground opacity-50'}`}>
-                                                {feature.included ? (
-                                                    <CheckCircle2 className="h-4 w-4 mt-0.5 text-green-500 shrink-0" />
-                                                ) : (
-                                                    <MinusCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                                                )}
-                                                <span className="leading-snug">{feature.name}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
                         </div>
                     </CardContent>
                 </Card>
