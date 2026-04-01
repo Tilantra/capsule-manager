@@ -288,7 +288,7 @@ export default function LandingPage() {
                             transition={{ delay: 0.5 }}
                             className="mx-auto max-w-2xl text-base sm:text-lg leading-relaxed text-slate-600 dark:text-slate-300"
                         >
-                            Drop files, add context, and ship knowledge your team and models can reuse—without starting from zero every time.
+                            Sync context, Version artifacts, and Align agents — Never start from Zero again.
                         </motion.p>
 
                         {/* Features Grid */}

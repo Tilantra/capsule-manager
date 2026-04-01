@@ -461,7 +461,7 @@ export default function CapsulesPage() {
                                 <HelpCircle className="h-6 w-6 text-primary" />
                             </motion.button>
                         </div>
-                        <p className="text-muted-foreground mt-2 text-sm">View and manage your knowledge repositories</p>
+                        <p className="text-muted-foreground mt-2 text-sm">View and Manage your Context Capsules</p>
                     </div>
                     <form onSubmit={handleSearch} className="flex w-full md:w-auto items-center gap-2 flex-wrap">
                         <motion.div 
