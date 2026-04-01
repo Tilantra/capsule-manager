@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, Trash2, Calendar, Filter, History, Lock, Plus, Grid3x3, List, Table2, HelpCircle } from "lucide-react";
+import { Loader2, Search, Trash2, Calendar, Filter, History, Lock, Grid3x3, Table2, HelpCircle } from "lucide-react";
 import { format } from "date-fns";
 import {
     Dialog,
@@ -59,6 +59,15 @@ const getModelLogo = (modelName: string): string | null => {
     return null;
 };
 
+const getYouTubeEmbedUrl = (url: string): string => {
+    const trimmed = url.trim();
+    const match = trimmed.match(
+        /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/
+    );
+    if (!match?.[1]) return trimmed;
+    return `https://www.youtube.com/embed/${match[1]}`;
+};
+
 export default function CapsulesPage() {
     const [capsules, setCapsules] = useState<Capsule[]>([]);
     const [loading, setLoading] = useState(true);
@@ -72,8 +81,9 @@ export default function CapsulesPage() {
     const [filterType, setFilterType] = useState<string>("all");
     const [userTeams, setUserTeams] = useState<string[]>([]);
     const [teamIdToName, setTeamIdToName] = useState<Record<string, string>>({});
-    const [viewMode, setViewMode] = useState<'grid' | 'list' | 'table'>('grid');
+    const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
     const [showVideoModal, setShowVideoModal] = useState(false);
+    const featureVideoUrl = "https://www.youtube.com/watch?v=3NH3ArEe0dE";
 
     const client = useMemo(() => new BrowserGuideraClient(), []);
 
@@ -348,65 +358,6 @@ export default function CapsulesPage() {
                     {filteredCapsules.map((capsule, index) => renderCapsuleCard(capsule, index))}
                 </motion.div>
             );
-        } else if (viewMode === 'list') {
-            return (
-                <motion.div 
-                    key="list"
-                    className="space-y-4"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                >
-                    {filteredCapsules.map((capsule, index) => (
-                        <motion.div
-                            key={capsule.capsule_id}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.03 }}
-                        >
-                            <Card 
-                                className="group p-4 hover:shadow-lg transition-all cursor-pointer border-l-4 border-l-primary/50 hover:border-l-primary"
-                                onClick={() => openDetails(capsule)}
-                            >
-                                <div className="flex items-center justify-between gap-4">
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="font-bold text-base truncate group-hover:text-primary transition-colors">
-                                            {capsule.tag || "Untitled"}
-                                        </h3>
-                                        <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                                            <span className="flex items-center gap-1">
-                                                <Calendar className="h-3 w-3" />
-                                                {format(new Date(capsule.created_at), "MMM d, yyyy")}
-                                            </span>
-                                            <Badge variant="secondary" className="text-xs">
-                                                v{capsule.current_version_number || 1}
-                                            </Badge>
-                                            {!capsule.team || capsule.team === "" ? (
-                                                <Badge variant="secondary" className="text-xs gap-1">
-                                                    <Lock className="h-3 w-3" />
-                                                    Private
-                                                </Badge>
-                                            ) : (
-                                                <Badge variant="secondary" className="text-xs">
-                                                    {teamIdToName[capsule.team] || capsule.team}
-                                                </Badge>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                        onClick={(e) => handleDelete(capsule.capsule_id, e)}
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </Card>
-                        </motion.div>
-                    ))}
-                </motion.div>
-            );
         } else {
             // Table view
             return (
@@ -510,7 +461,7 @@ export default function CapsulesPage() {
                                 <HelpCircle className="h-6 w-6 text-primary" />
                             </motion.button>
                         </div>
-                        <p className="text-muted-foreground mt-2 text-base">View and manage your knowledge repositories</p>
+                        <p className="text-muted-foreground mt-2 text-sm">View and manage your knowledge repositories</p>
                     </div>
                     <form onSubmit={handleSearch} className="flex w-full md:w-auto items-center gap-2 flex-wrap">
                         <motion.div 
@@ -530,16 +481,6 @@ export default function CapsulesPage() {
                         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                             <Button type="submit" size="default" className="h-11 px-6 shadow-md hover:shadow-lg transition-all">
                                 Search
-                            </Button>
-                        </motion.div>
-                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                            <Button
-                                type="button"
-                                onClick={() => window.location.href = '/create-capsule'}
-                                className="gap-2 h-11 px-5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all"
-                            >
-                                <Plus className="h-4 w-4" />
-                                Create Capsule
                             </Button>
                         </motion.div>
                     </form>
@@ -591,15 +532,6 @@ export default function CapsulesPage() {
                             <Grid3x3 className={`h-4 w-4 ${viewMode === 'grid' ? 'text-primary' : 'text-muted-foreground'}`} />
                         </motion.button>
                         <motion.button
-                            onClick={() => setViewMode('list')}
-                            className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-background shadow-sm' : 'hover:bg-background/50'}`}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            title="List View"
-                        >
-                            <List className={`h-4 w-4 ${viewMode === 'list' ? 'text-primary' : 'text-muted-foreground'}`} />
-                        </motion.button>
-                        <motion.button
                             onClick={() => setViewMode('table')}
                             className={`p-2 rounded-md transition-all ${viewMode === 'table' ? 'bg-background shadow-sm' : 'hover:bg-background/50'}`}
                             whileHover={{ scale: 1.05 }}
@@ -646,7 +578,7 @@ export default function CapsulesPage() {
                             <img src={CapsuleImage} alt="Capsule" className="h-12 w-12 opacity-70" />
                         </motion.div>
                         <h3 className="text-xl font-semibold relative z-10">No capsules found</h3>
-                        <p className="text-muted-foreground mt-2 text-sm relative z-10">Create capsules using the chat interface or extension.</p>
+                        <p className="text-muted-foreground mt-2 text-xs relative z-10">Create capsules using the chat interface or extension.</p>
                     </motion.div>
                 ) : (
                     renderCapsulesView()
@@ -660,7 +592,7 @@ export default function CapsulesPage() {
                         <iframe
                             width="100%"
                             height="100%"
-                            src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                            src={getYouTubeEmbedUrl(featureVideoUrl)}
                             title="Feature Tutorial"
                             frameBorder="0"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

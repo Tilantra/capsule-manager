@@ -1,157 +1,193 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import CapsuleImage from "@/components/assets/capsule.png";
+import { X } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface CapsuleGraphProps {
-    items: Array<{ id: string; type: 'file' | 'chunk' }>;
+    items: Array<{
+        id: string;
+        type: "file" | "chunk";
+        label: string;
+        subtitle?: string;
+    }>;
+    onRemoveItem?: (id: string) => void;
+    isAbsorbing?: boolean;
+    /** Override outer canvas height (default h-[28rem]) */
+    className?: string;
 }
 
-export const CapsuleGraph = ({ items }: CapsuleGraphProps) => {
+export const CapsuleGraph = ({ items, onRemoveItem, isAbsorbing = false, className }: CapsuleGraphProps) => {
     const [positions, setPositions] = useState<Array<{ x: number; y: number; angle: number }>>([]);
+    const [activeGlowIndex, setActiveGlowIndex] = useState(0);
 
     useEffect(() => {
-        // Calculate positions in a circle around the center
-        const radius = 120;
+        const itemsPerRing = 8;
+        const baseRadius = 130;
+        const ringGap = 72;
+
         const newPositions = items.map((_, index) => {
-            const angle = (index * (360 / items.length) * Math.PI) / 180;
+            const ringIndex = Math.floor(index / itemsPerRing);
+            const posInRing = index % itemsPerRing;
+            const nodesInRing = Math.min(itemsPerRing, items.length - ringIndex * itemsPerRing);
+            const ringRadius = baseRadius + ringIndex * ringGap;
+            const baseStep = 360 / nodesInRing;
+            // Offset alternating rings so the second ring lands between first-ring nodes.
+            const ringOffset = ringIndex % 2 === 0 ? 0 : baseStep / 2;
+            // Start nodes from top so small item counts look visually centered.
+            const angleDeg = posInRing * baseStep + ringOffset - 90;
+            const angle = (angleDeg * Math.PI) / 180;
+
             return {
-                x: Math.cos(angle) * radius,
-                y: Math.sin(angle) * radius,
-                angle: (index * 360) / items.length,
+                x: Math.cos(angle) * ringRadius,
+                y: Math.sin(angle) * ringRadius,
+                angle: angleDeg,
             };
         });
         setPositions(newPositions);
     }, [items.length]);
 
+    useEffect(() => {
+        if (items.length === 0) return;
+
+        const interval = window.setInterval(() => {
+            setActiveGlowIndex((prev) => {
+                if (items.length <= 1) return 0;
+                let next = Math.floor(Math.random() * items.length);
+                if (next === prev) {
+                    next = (next + 1) % items.length;
+                }
+                return next;
+            });
+        }, 1400);
+
+        return () => window.clearInterval(interval);
+    }, [items.length]);
+
     if (items.length === 0) return null;
 
     return (
-        <div className="relative w-full h-64 flex items-center justify-center my-8">
-            {/* Background glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-purple-500/5 to-blue-500/5 rounded-2xl" />
-            
-            <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 1 }}>
-                {/* Draw connections */}
-                {items.map((item, index) => {
-                    if (!positions[index]) return null;
-                    
-                    return (
-                        <motion.line
-                            key={`line-${item.id}`}
-                            x1="50%"
-                            y1="50%"
-                            x2={`calc(50% + ${positions[index].x}px)`}
-                            y2={`calc(50% + ${positions[index].y}px)`}
-                            stroke="url(#gradient)"
-                            strokeWidth="2"
-                            strokeDasharray="5,5"
-                            initial={{ pathLength: 0, opacity: 0 }}
-                            animate={{ pathLength: 1, opacity: 0.4 }}
-                            transition={{ 
-                                duration: 1, 
-                                delay: index * 0.1,
-                                ease: "easeOut"
-                            }}
-                        />
-                    );
-                })}
-                
-                {/* Gradient definition */}
-                <defs>
-                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.8" />
-                        <stop offset="50%" stopColor="#a855f7" stopOpacity="0.6" />
-                        <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.8" />
-                    </linearGradient>
-                </defs>
-            </svg>
-
+        <TooltipProvider delayDuration={120}>
+            <div className={cn("relative w-full h-[28rem] flex items-center justify-center", className)}>
             {/* Center Capsule */}
             <motion.div
-                className="absolute"
-                style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)', zIndex: 10 }}
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
                 initial={{ scale: 0, rotate: -180 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ 
                     type: "spring", 
-                    stiffness: 260, 
+                    stiffness: 220, 
                     damping: 20,
-                    delay: 0.2 
+                    delay: 0.12
                 }}
             >
-                <motion.div
-                    className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 via-purple-500 to-blue-600 shadow-2xl flex items-center justify-center relative overflow-hidden"
+                <motion.img
+                    src={CapsuleImage}
+                    alt="Capsule"
+                    className="w-16 h-16 object-contain"
                     animate={{
-                        boxShadow: [
-                            "0 20px 60px rgba(59, 130, 246, 0.3)",
-                            "0 20px 60px rgba(168, 85, 247, 0.3)",
-                            "0 20px 60px rgba(59, 130, 246, 0.3)",
+                        scale: isAbsorbing ? [1.02, 1.16, 1.02] : [1, 1.08, 1],
+                        opacity: [0.9, 1, 0.9],
+                        filter: [
+                            "drop-shadow(0 0 0px rgba(168,85,247,0.0))",
+                            "drop-shadow(0 0 10px rgba(168,85,247,0.35))",
+                            "drop-shadow(0 0 0px rgba(168,85,247,0.0))",
                         ],
                     }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                >
-                    {/* Animated background */}
-                    <motion.div
-                        className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                    />
-                    <span className="text-4xl relative z-10">💊</span>
-                </motion.div>
+                    transition={{ duration: isAbsorbing ? 1.1 : 6.8, repeat: Infinity, ease: "easeInOut" }}
+                />
             </motion.div>
 
             {/* Items around the circle */}
             {items.map((item, index) => {
                 if (!positions[index]) return null;
+                const ringIndex = Math.floor(index / 8);
+                const nodeSizeClass = ringIndex === 0 ? "w-14 h-14" : "w-12 h-12";
+                const emojiSizeClass = ringIndex === 0 ? "text-2xl" : "text-xl";
+                const isActive = index === activeGlowIndex;
                 
                 return (
-                    <motion.div
+                    <Tooltip key={item.id}>
+                        <TooltipTrigger asChild>
+                            <motion.div
                         key={item.id}
-                        className="absolute"
+                        className="absolute -translate-x-1/2 -translate-y-1/2 group/node"
                         style={{
                             left: `calc(50% + ${positions[index].x}px)`,
                             top: `calc(50% + ${positions[index].y}px)`,
-                            transform: 'translate(-50%, -50%)',
                             zIndex: 5,
                         }}
                         initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
+                        animate={isAbsorbing ? { x: -positions[index].x, y: -positions[index].y, scale: 0.25, opacity: 0 } : { x: 0, y: 0, scale: 1, opacity: 1 }}
                         transition={{
-                            type: "spring",
-                            stiffness: 260,
-                            damping: 20,
-                            delay: index * 0.1 + 0.3,
+                            type: isAbsorbing ? "tween" : "spring",
+                            stiffness: isAbsorbing ? undefined : 230,
+                            damping: isAbsorbing ? undefined : 20,
+                            duration: isAbsorbing ? 0.65 : undefined,
+                            delay: isAbsorbing ? index * 0.04 : index * 0.05 + 0.2,
+                            ease: isAbsorbing ? "easeInOut" : undefined,
                         }}
-                        whileHover={{ scale: 1.2, zIndex: 20 }}
+                        whileHover={isAbsorbing ? undefined : { scale: 1.06, zIndex: 20 }}
+                        whileTap={isAbsorbing ? undefined : { scale: 1.02 }}
                     >
                         <motion.div
-                            className="w-14 h-14 rounded-xl bg-gradient-to-br from-card to-card/50 border-2 border-primary/30 shadow-lg flex items-center justify-center backdrop-blur-sm"
-                            animate={{ y: [0, -5, 0] }}
+                            className={`relative ${nodeSizeClass} rounded-xl bg-gradient-to-br from-card to-card/80 border border-primary/20 shadow-md flex items-center justify-center`}
+                            animate={isAbsorbing
+                                ? {
+                                    y: 0,
+                                    scale: 1,
+                                    boxShadow: "0 0 0 1px rgba(126,34,206,0.45), 0 0 24px rgba(88,28,135,0.65)",
+                                }
+                                : {
+                                    y: [0, -2, 0],
+                                    scale: [1, 1.04, 1],
+                                    boxShadow: isActive
+                                        ? [
+                                            "0 0 0 1px rgba(126,34,206,0.45), 0 0 10px rgba(88,28,135,0.45), 0 0 18px rgba(88,28,135,0.35)",
+                                            "0 0 0 1px rgba(126,34,206,0.8), 0 0 24px rgba(88,28,135,0.75), 0 0 36px rgba(88,28,135,0.55)",
+                                            "0 0 0 1px rgba(126,34,206,0.45), 0 0 10px rgba(88,28,135,0.45), 0 0 18px rgba(88,28,135,0.35)",
+                                        ]
+                                        : [
+                                            "0 0 0 1px rgba(126,34,206,0.35), 0 0 10px rgba(88,28,135,0.22)",
+                                            "0 0 0 1px rgba(126,34,206,0.35), 0 0 10px rgba(88,28,135,0.22)",
+                                            "0 0 0 1px rgba(126,34,206,0.35), 0 0 10px rgba(88,28,135,0.22)",
+                                        ],
+                                }}
                             transition={{
-                                duration: 2,
-                                repeat: Infinity,
-                                delay: index * 0.2,
+                                duration: isAbsorbing ? 0.5 : 7.2,
+                                repeat: isAbsorbing ? 0 : Infinity,
+                                delay: isAbsorbing ? index * 0.04 : index * 0.35,
                                 ease: "easeInOut",
                             }}
                         >
-                            <span className="text-2xl">
+                            <span className={emojiSizeClass}>
                                 {item.type === 'file' ? '📄' : '📝'}
                             </span>
+                            {onRemoveItem && !isAbsorbing && (
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        onRemoveItem(item.id);
+                                    }}
+                                    className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-background border border-border shadow-sm flex items-center justify-center opacity-0 group-hover/node:opacity-100 transition-opacity hover:text-destructive z-30"
+                                    aria-label={`Remove ${item.label}`}
+                                >
+                                    <X className="h-3 w-3" />
+                                </button>
+                            )}
                         </motion.div>
-                        
-                        {/* Pulsing ring effect */}
-                        <motion.div
-                            className="absolute inset-0 rounded-xl border-2 border-primary/50"
-                            initial={{ scale: 1, opacity: 0.5 }}
-                            animate={{ scale: 1.5, opacity: 0 }}
-                            transition={{
-                                duration: 2,
-                                repeat: Infinity,
-                                delay: index * 0.2,
-                            }}
-                        />
-                    </motion.div>
+                            </motion.div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-[260px]">
+                            <p className="text-xs font-semibold truncate">{item.label}</p>
+                            {item.subtitle && <p className="text-[11px] text-muted-foreground mt-0.5">{item.subtitle}</p>}
+                        </TooltipContent>
+                    </Tooltip>
                 );
             })}
-        </div>
+            </div>
+        </TooltipProvider>
     );
 };

@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { BrowserGuideraClient } from "@/lib/guidera-browser-client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +19,8 @@ function LoginContent() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const nextPath = searchParams.get("next") || "/capsules";
 
     const client = new BrowserGuideraClient();
 
@@ -45,7 +47,7 @@ function LoginContent() {
                     tier: "basic"
                 });
 
-                navigate("/");
+                navigate(nextPath);
             } catch (err: any) {
                 console.error("Google login error:", err);
                 setError(err.message || "Google Sign In failed");
@@ -64,7 +66,7 @@ function LoginContent() {
         setError("");
         try {
             await client.login(email, password);
-            navigate("/");
+            navigate(nextPath);
         } catch (err: any) {
             setError(err.message || "Login failed");
         } finally {
@@ -73,7 +75,8 @@ function LoginContent() {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center p-6 lg:p-12 relative overflow-hidden bg-gradient-to-br from-gray-50 via-blue-50/50 to-purple-50/30 dark:from-black dark:via-slate-950 dark:to-slate-900 text-foreground">
+        <div className="flex min-h-screen items-center justify-center p-6 lg:p-12 relative overflow-hidden bg-gradient-to-br from-gray-50 via-blue-50/50 to-purple-50/30 dark:from-[#040816] dark:via-[#060a1a] dark:to-[#040816] text-foreground">
+            <div className="absolute inset-0 opacity-[0.10] dark:opacity-[0.18] [background-image:linear-gradient(rgba(15,23,42,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.10)_1px,transparent_1px)] dark:[background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:44px_44px]" />
             <AuthBackground />
 
             {/* Tilantra Logo - Top Left */}

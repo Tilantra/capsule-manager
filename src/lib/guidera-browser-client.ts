@@ -14,7 +14,7 @@ import type {
 } from './capsule-types';
 
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://backend.tilantra.com';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 export class BrowserGuideraClient {
     private apiBaseUrl: string;

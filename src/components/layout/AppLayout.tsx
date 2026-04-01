@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { BrowserGuideraClient } from "@/lib/guidera-browser-client";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, LogOut, Menu, Settings, CreditCard } from "lucide-react";
+import { LayoutDashboard, Users, LogOut, Menu, Settings, CreditCard, Plus } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import TilantraLogo from "@/components/assets/Tilantra_blueLOGO.png";
@@ -47,7 +47,7 @@ export default function AppLayout() {
                 </h2>
                 <div className="space-y-1">
                     <NavLink
-                        to="/"
+                        to="/capsules"
                         className={({ isActive }) =>
                             `flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 ${isActive
                                 ? "bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-600 dark:from-blue-500/20 dark:to-purple-500/20 dark:text-blue-400 shadow-md border border-blue-200 dark:border-blue-800"
@@ -104,13 +104,14 @@ export default function AppLayout() {
     );
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 dark:from-black dark:via-slate-950 dark:to-slate-900 flex">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/40 to-purple-50/30 dark:from-[#040816] dark:via-[#060a1a] dark:to-[#040816] flex relative overflow-hidden">
+            <div className="absolute inset-0 opacity-[0.10] dark:opacity-[0.16] [background-image:linear-gradient(rgba(15,23,42,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.10)_1px,transparent_1px)] dark:[background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:44px_44px]" />
             {/* Desktop Sidebar */}
             <motion.aside 
                 initial={{ x: -100, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.5, ease: "easeOut" }}
-                className="hidden md:flex w-64 flex-col fixed inset-y-0 z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-r border-gray-200 dark:border-slate-800 shadow-xl"
+                className="hidden md:flex w-64 flex-col fixed inset-y-0 z-50 bg-white/80 dark:bg-slate-950/70 backdrop-blur-xl border-r border-gray-200 dark:border-slate-800 shadow-xl"
             >
                 <motion.div 
                     className="h-16 flex items-center px-6 border-b border-gray-200 dark:border-slate-800"
@@ -121,6 +122,15 @@ export default function AppLayout() {
                     <img src={TilantraLogo} alt="Tilantra" className="h-8 w-auto hover:scale-105 transition-transform duration-200" />
                 </motion.div>
                 <div className="flex-1 overflow-y-auto">
+                    <div className="px-4 pt-4">
+                        <Button
+                            onClick={() => navigate("/create-capsule")}
+                            className="w-full justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Create Capsule
+                        </Button>
+                    </div>
                     <NavItems />
                 </div>
                 <motion.div 
@@ -145,16 +155,23 @@ export default function AppLayout() {
                 initial={{ y: -50, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.5 }}
-                className="md:hidden fixed top-0 left-0 right-0 z-50 h-16 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-gray-200 dark:border-slate-800 flex items-center justify-between px-4 shadow-lg"
+                className="md:hidden fixed top-0 left-0 right-0 z-50 h-16 bg-white/80 dark:bg-slate-950/70 backdrop-blur-xl border-b border-gray-200 dark:border-slate-800 flex items-center justify-between px-4 shadow-lg"
             >
                 <img src={TilantraLogo} alt="Tilantra" className="h-8 w-auto" />
+                <Button
+                    onClick={() => navigate("/create-capsule")}
+                    className="h-9 px-3 mr-2 gap-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                >
+                    <Plus className="h-4 w-4" />
+                    Create
+                </Button>
                 <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                     <SheetTrigger asChild>
                         <Button variant="ghost" size="icon" className="hover:bg-primary/10 transition-colors">
                             <Menu className="h-6 w-6" />
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="left" className="w-64 p-0 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl">
+                    <SheetContent side="left" className="w-64 p-0 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-r border-gray-200 dark:border-slate-800">
                         <div className="h-16 flex items-center px-6 border-b border-gray-200 dark:border-slate-800">
                             <img src={TilantraLogo} alt="Tilantra" className="h-8 w-auto" />
                         </div>
@@ -174,7 +191,7 @@ export default function AppLayout() {
             </motion.div>
 
             {/* Main Content */}
-            <main className="flex-1 md:pl-64 pt-16 md:pt-0 min-h-screen transition-all duration-300 ease-in-out">
+            <main className="flex-1 md:pl-64 pt-16 md:pt-0 min-h-screen transition-all duration-300 ease-in-out relative z-10">
                 <motion.div 
                     key={location.pathname}
                     initial={{ opacity: 0, y: 20 }}

@@ -6,12 +6,14 @@ import TeamsPage from "./pages/Teams";
 import SettingsPage from "./pages/Settings";
 import BillingPage from "./pages/Billing";
 import CreateCapsule from "./pages/CreateCapsule";
+import LandingPage from "./pages/Landing";
 import AppLayout from "./components/layout/AppLayout";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
 // Simple auth check wrapper component
 function PrivateRoute({ children }: { children: JSX.Element }) {
+    const currentPath = window.location.pathname + window.location.search;
     const token = localStorage.getItem("guidera_jwt");
     const expStr = localStorage.getItem("guidera_jwt_exp");
 
@@ -28,7 +30,7 @@ function PrivateRoute({ children }: { children: JSX.Element }) {
         localStorage.removeItem("guidera_jwt_exp");
         localStorage.removeItem("guidera_session_id");
         localStorage.removeItem("guidera_session_exp");
-        return <Navigate to="/login" replace />;
+        return <Navigate to={`/login?next=${encodeURIComponent(currentPath)}`} replace />;
     }
 
     return children;
@@ -39,17 +41,18 @@ function App() {
         <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
             <BrowserRouter>
                 <Routes>
+                    <Route path="/" element={<LandingPage />} />
                     <Route path="/login" element={<Login />} />
 
                     <Route element={<PrivateRoute><AppLayout /></PrivateRoute>}>
-                        <Route path="/" element={<CapsulesPage />} />
+                        <Route path="/capsules" element={<CapsulesPage />} />
                         <Route path="/create-capsule" element={<CreateCapsule />} />
                         <Route path="/teams" element={<TeamsPage />} />
                         <Route path="/billing" element={<BillingPage />} />
                         <Route path="/settings" element={<SettingsPage />} />
                     </Route>
 
-                    <Route path="*" element={<Navigate to="/" replace />} />
+                    <Route path="*" element={<Navigate to="/capsules" replace />} />
                 </Routes>
             </BrowserRouter>
             <Toaster />
