@@ -14,7 +14,7 @@ import type {
 } from './capsule-types';
 
 
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 export class BrowserGuideraClient {
     private apiBaseUrl: string;
@@ -502,7 +502,7 @@ export class BrowserGuideraClient {
         if (!this.tokenValid()) {
             throw new Error('Not authenticated');
         }
-        
+
         const url = `${this.apiBaseUrl}/capsules/attachments`;
         const headers = {
             Authorization: `Bearer ${this.authToken}`,
@@ -513,7 +513,7 @@ export class BrowserGuideraClient {
             filename: filename,
             content_type: contentType
         };
-        
+
         const response = await axios.post(url, payload, { headers });
         if (response.status === 200 || response.status === 201) {
             return response.data; // MediaAssetMetadata
@@ -1053,14 +1053,14 @@ export class BrowserGuideraClient {
      * Simple mock upgrade: sets the user's tier immediately.
      * No order creation or verification steps required.
      */
-    async upgradeTier(tier: 'pro' | 'elite' | 'enterprise'): Promise<{ status: string; new_tier: string }> {
+    async upgradeTier(tier: 'pro' | 'elite' | 'enterprise'): Promise<{ status: string; new_tier: string; payment_url?: string }> {
         if (!this.tokenValid()) throw new Error('Not authenticated');
         const url = `${this.apiBaseUrl}/payments/upgrade`;
-        const headers = { 
+        const headers = {
             Authorization: `Bearer ${this.authToken}`,
             'Content-Type': 'application/json'
         };
-        
+
         const response = await axios.post(url, { tier }, { headers });
         if (response.status === 200 || response.status === 201) {
             return response.data;

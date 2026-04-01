@@ -9,7 +9,7 @@ export default function BillingPage() {
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [isUpgrading, setIsUpgrading] = useState<string | null>(null);
-    const [billingCycle, setBillingCycle] = useState<"monthly" | "annually">("monthly");
+
 
     const client = useMemo(() => new BrowserGuideraClient(), []);
 
@@ -27,6 +27,17 @@ export default function BillingPage() {
 
     useEffect(() => {
         fetchUser();
+
+        // Check for payment success redirect
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("status") === "success") {
+            toast.success("Payment Received! We are updating your tier. This may take a minute.", {
+                duration: 5000,
+            });
+            // Try to refresh every 3 seconds for a bit
+            const interval = setInterval(fetchUser, 3000);
+            setTimeout(() => clearInterval(interval), 15000); // Stop polling after 15s
+        }
     }, [fetchUser]);
 
     const currentTier = user?.tier || "basic";
@@ -57,6 +68,7 @@ export default function BillingPage() {
             price: 5,
             description: "Advanced features for solo power users.",
             icon: <CreditCard className="h-5 w-5" />,
+            paymentLink: "https://rzp.io/rzp/paypro",
             features: [
                 { name: "15 Total Capsules", included: true },
                 { name: "MCP + Attachments", included: true },
@@ -76,6 +88,7 @@ export default function BillingPage() {
             description: "Maximum collaboration and context limits.",
             isPopular: true,
             icon: <Sparkles className="h-5 w-5" />,
+            paymentLink: "https://rzp.io/rzp/payelite",
             features: [
                 { name: "Unlimited Capsules", included: true },
                 { name: "MCP + Attachments + Dynamic Context", included: true },
@@ -118,16 +131,20 @@ export default function BillingPage() {
         setIsUpgrading(tierId);
         try {
             const targetTier = tierId as 'pro' | 'elite' | 'enterprise';
-
             toast.info(`Upgrading to ${tierName}...`, { duration: 1000 });
 
-            // Single API call to upgrade
+            // Call backend to get the upgrade response or payment link
             const result = await client.upgradeTier(targetTier);
 
-            toast.success(`🎉 Upgrade Successful! You are now an ${result.new_tier?.toUpperCase() || tierName} member.`);
+            // If the backend returned a payment URL (Razorpay link), redirect to it
+            if (result.payment_url) {
+                toast.info("Redirecting to secure payment...");
+                window.location.href = result.payment_url;
+                return;
+            }
 
-            // Refresh user details to update the UI
-            await fetchUser();
+            // If no payment URL is provided, something might be wrong with the tier configuration or user eligibility
+            toast.error("Could not initiate upgrade. Please reach out to tilantra.technologies@gmail.com");
         } catch (err: any) {
             console.error("Upgrade failed", err);
             const errorMsg = err.response?.data?.detail || err.message || "Upgrade failed. Please try again.";
@@ -176,28 +193,7 @@ export default function BillingPage() {
                 </p>
             </div>
 
-            {/* Billing toggle */}
-            <div className="flex items-center gap-2 p-1 bg-muted/50 rounded-lg border border-border/50 w-fit">
-                <Button
-                    variant={billingCycle === "monthly" ? "default" : "ghost"}
-                    size="sm"
-                    className="h-8 text-xs px-4"
-                    onClick={() => setBillingCycle("monthly")}
-                >
-                    Monthly
-                </Button>
-                <Button
-                    variant={billingCycle === "annually" ? "default" : "ghost"}
-                    size="sm"
-                    className="h-8 text-xs px-4"
-                    onClick={() => setBillingCycle("annually")}
-                >
-                    Annually{" "}
-                    <span className="ml-1.5 text-[10px] text-green-300 bg-green-900/40 px-1 rounded border border-green-500/30">
-                        -20%
-                    </span>
-                </Button>
-            </div>
+
 
             {/* Pricing Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -209,8 +205,8 @@ export default function BillingPage() {
                         <div
                             key={tier.id}
                             className={`relative flex flex-col rounded-2xl border ${tier.borderColor} ${tier.isPopular
-                                    ? "ring-2 ring-purple-400/40 shadow-xl scale-[1.02]"
-                                    : "shadow-sm"
+                                ? "ring-2 ring-purple-400/40 shadow-xl scale-[1.02]"
+                                : "shadow-sm"
                                 } bg-gradient-to-b ${tier.color} backdrop-blur-sm overflow-hidden transition-all hover:shadow-md`}
                         >
                             {tier.isPopular && (
@@ -251,12 +247,12 @@ export default function BillingPage() {
                                 <div className="mb-6 text-center py-3 rounded-xl bg-background/40">
                                     <span className="text-4xl font-extrabold tracking-tight">
                                         {typeof tier.price === "number"
-                                            ? `$${billingCycle === "monthly" ? tier.price : Math.floor(tier.price * 0.8 * 12)}`
+                                            ? `$${tier.price}`
                                             : tier.price}
                                     </span>
                                     {typeof tier.price === "number" && (
                                         <span className="text-muted-foreground text-sm font-medium ml-1">
-                                            /{billingCycle === "monthly" ? "mo" : "yr"}
+                                            /mo
                                         </span>
                                     )}
                                 </div>
