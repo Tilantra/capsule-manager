@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, Trash2, Calendar, Filter, History, Lock, Maximize2, Plus } from "lucide-react";
+import { Loader2, Search, Trash2, Calendar, Filter, History, Lock, Plus, Grid3x3, List, Table2, HelpCircle } from "lucide-react";
 import { format } from "date-fns";
 import {
     Dialog,
@@ -30,6 +30,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { GitBranchView } from "@/components/GitBranchView";
+import { motion, AnimatePresence } from "framer-motion";
 
 type Capsule = CapsuleMetadata;
 
@@ -71,6 +72,8 @@ export default function CapsulesPage() {
     const [filterType, setFilterType] = useState<string>("all");
     const [userTeams, setUserTeams] = useState<string[]>([]);
     const [teamIdToName, setTeamIdToName] = useState<Record<string, string>>({});
+    const [viewMode, setViewMode] = useState<'grid' | 'list' | 'table'>('grid');
+    const [showVideoModal, setShowVideoModal] = useState(false);
 
     const client = useMemo(() => new BrowserGuideraClient(), []);
 
@@ -210,184 +213,463 @@ export default function CapsulesPage() {
         return capsules.filter(c => c.team === filterType);
     }, [capsules, filterType]);
 
-    return (
-        <div className="space-y-6">
-            <div className="flex flex-col gap-4">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                            My Capsules
-                        </h1>
-                        <p className="text-muted-foreground mt-1">Manage and view your AI context capsules.</p>
+    // Render capsule card content
+    const renderCapsuleCard = (capsule: Capsule, index: number) => (
+        <motion.div
+            key={capsule.capsule_id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05, duration: 0.3 }}
+            whileHover={{ y: -8, transition: { duration: 0.2 } }}
+        >
+            <Card
+                className="group relative overflow-hidden cursor-pointer border border-border/50 bg-gradient-to-br from-card via-card to-card/50 hover:border-primary/40 p-6 h-full transition-all duration-300 hover:shadow-2xl"
+                onClick={() => openDetails(capsule)}
+            >
+                {/* Animated gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/0 to-purple-500/0 group-hover:from-primary/5 group-hover:via-purple-500/5 group-hover:to-blue-500/5 transition-all duration-500" />
+                
+                {/* Delete Button */}
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileHover={{ opacity: 1, scale: 1 }}
+                    className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-all"
+                >
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shadow-lg backdrop-blur-sm"
+                        onClick={(e) => handleDelete(capsule.capsule_id, e)}
+                    >
+                        <Trash2 className="h-4 w-4" />
+                    </Button>
+                </motion.div>
+
+                <div className="space-y-3 mb-4 relative z-10">
+                    <div className="flex items-start gap-3">
+                        <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-lg truncate group-hover:text-primary transition-colors">
+                                {capsule.tag || "Untitled"}
+                            </h3>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1.5">
+                                <Calendar className="h-3.5 w-3.5" />
+                                <span className="font-medium">{format(new Date(capsule.created_at), "MMM d, yyyy")}</span>
+                            </div>
+                        </div>
                     </div>
-                    <form onSubmit={handleSearch} className="flex w-full md:w-auto items-center gap-2">
-                        <div className="relative w-full md:w-80">
-                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                </div>
+
+                <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mb-4 relative z-10" />
+
+                <div className="space-y-3.5 relative z-10">
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-muted-foreground">Versions</span>
+                        <div className="flex items-center gap-2">
+                            <Badge variant="secondary" className="text-xs font-bold px-2.5 py-1 bg-primary/10 text-primary border border-primary/20">
+                                v{capsule.current_version_number || capsule.version_count || 1}
+                            </Badge>
+                            {(capsule.version_count || 1) > 1 && (
+                                <History className="h-4 w-4 text-primary" />
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-muted-foreground">Source</span>
+                        <div className="flex items-center gap-2">
+                            {(() => {
+                                const rawSources = capsule.extracted_from;
+                                const sources = rawSources && rawSources.length > 0 
+                                    ? (Array.isArray(rawSources) ? rawSources : [rawSources])
+                                    : ["tilantra"];
+
+                                return sources.slice(0, 3).map((source, i) => {
+                                    const logo = getModelLogo(source);
+                                    return logo ? (
+                                        <motion.div 
+                                            key={i}
+                                            className="relative group/logo"
+                                            whileHover={{ scale: 1.2, rotate: 5 }}
+                                            transition={{ type: "spring", stiffness: 300 }}
+                                        >
+                                            <img
+                                                src={logo}
+                                                alt={source}
+                                                className="h-7 w-7 object-contain rounded-lg p-1 bg-background shadow-sm border border-border/50"
+                                                title={source}
+                                            />
+                                        </motion.div>
+                                    ) : (
+                                        <Badge key={i} variant="outline" className="text-[10px] px-2 py-0.5 capitalize font-medium">
+                                            {source.substring(0, 3)}
+                                        </Badge>
+                                    );
+                                });
+                            })()}
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-muted-foreground">Visibility</span>
+                        {!capsule.team || capsule.team === "" ? (
+                            <Badge variant="secondary" className="text-xs gap-1.5 bg-muted/50 font-medium px-3 py-1">
+                                <Lock className="h-3.5 w-3.5" />
+                                Private
+                            </Badge>
+                        ) : (
+                            <Badge variant="secondary" className="text-xs bg-blue-500/10 text-blue-600 border-blue-500/30 font-medium px-3 py-1">
+                                {teamIdToName[capsule.team] || capsule.team}
+                            </Badge>
+                        )}
+                    </div>
+                </div>
+
+                <motion.div 
+                    className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500"
+                    initial={{ scaleX: 0 }}
+                    whileHover={{ scaleX: 1 }}
+                    transition={{ duration: 0.3 }}
+                />
+            </Card>
+        </motion.div>
+    );
+
+    // Render different view modes
+    const renderCapsulesView = () => {
+        if (viewMode === 'grid') {
+            return (
+                <motion.div 
+                    key="grid"
+                    className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                >
+                    {filteredCapsules.map((capsule, index) => renderCapsuleCard(capsule, index))}
+                </motion.div>
+            );
+        } else if (viewMode === 'list') {
+            return (
+                <motion.div 
+                    key="list"
+                    className="space-y-4"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                >
+                    {filteredCapsules.map((capsule, index) => (
+                        <motion.div
+                            key={capsule.capsule_id}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.03 }}
+                        >
+                            <Card 
+                                className="group p-4 hover:shadow-lg transition-all cursor-pointer border-l-4 border-l-primary/50 hover:border-l-primary"
+                                onClick={() => openDetails(capsule)}
+                            >
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="font-bold text-base truncate group-hover:text-primary transition-colors">
+                                            {capsule.tag || "Untitled"}
+                                        </h3>
+                                        <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                                            <span className="flex items-center gap-1">
+                                                <Calendar className="h-3 w-3" />
+                                                {format(new Date(capsule.created_at), "MMM d, yyyy")}
+                                            </span>
+                                            <Badge variant="secondary" className="text-xs">
+                                                v{capsule.current_version_number || 1}
+                                            </Badge>
+                                            {!capsule.team || capsule.team === "" ? (
+                                                <Badge variant="secondary" className="text-xs gap-1">
+                                                    <Lock className="h-3 w-3" />
+                                                    Private
+                                                </Badge>
+                                            ) : (
+                                                <Badge variant="secondary" className="text-xs">
+                                                    {teamIdToName[capsule.team] || capsule.team}
+                                                </Badge>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                        onClick={(e) => handleDelete(capsule.capsule_id, e)}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </Card>
+                        </motion.div>
+                    ))}
+                </motion.div>
+            );
+        } else {
+            // Table view
+            return (
+                <motion.div 
+                    key="table"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                >
+                    <Card className="overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead className="bg-muted/30 border-b">
+                                    <tr>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold">Name</th>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold">Created</th>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold">Version</th>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold">Visibility</th>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredCapsules.map((capsule, index) => (
+                                        <motion.tr
+                                            key={capsule.capsule_id}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: index * 0.02 }}
+                                            className="border-b hover:bg-muted/20 cursor-pointer transition-colors"
+                                            onClick={() => openDetails(capsule)}
+                                        >
+                                            <td className="px-6 py-4">
+                                                <div className="font-medium">{capsule.tag || "Untitled"}</div>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-muted-foreground">
+                                                {format(new Date(capsule.created_at), "MMM d, yyyy")}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <Badge variant="secondary">v{capsule.current_version_number || 1}</Badge>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                {!capsule.team || capsule.team === "" ? (
+                                                    <Badge variant="secondary" className="gap-1">
+                                                        <Lock className="h-3 w-3" />
+                                                        Private
+                                                    </Badge>
+                                                ) : (
+                                                    <Badge variant="secondary">
+                                                        {teamIdToName[capsule.team] || capsule.team}
+                                                    </Badge>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                                    onClick={(e) => handleDelete(capsule.capsule_id, e)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </td>
+                                        </motion.tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </Card>
+                </motion.div>
+            );
+        }
+    };
+
+    return (
+        <motion.div 
+            className="space-y-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+        >
+            <div className="flex flex-col gap-4">
+                <motion.div 
+                    className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+                    initial={{ y: -20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.1 }}
+                >
+                    <div>
+                        <div className="flex items-center gap-3">
+                            <h1 className="text-4xl font-bold tracking-tight">
+                                <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+                                    Capsules
+                                </span>
+                            </h1>
+                            <motion.button
+                                onClick={() => setShowVideoModal(true)}
+                                className="p-2 rounded-full hover:bg-primary/10 transition-colors"
+                                whileHover={{ scale: 1.1, rotate: 15 }}
+                                whileTap={{ scale: 0.9 }}
+                            >
+                                <HelpCircle className="h-6 w-6 text-primary" />
+                            </motion.button>
+                        </div>
+                        <p className="text-muted-foreground mt-2 text-base">View and manage your knowledge repositories</p>
+                    </div>
+                    <form onSubmit={handleSearch} className="flex w-full md:w-auto items-center gap-2 flex-wrap">
+                        <motion.div 
+                            className="relative w-full md:w-80"
+                            whileHover={{ scale: 1.02 }}
+                            transition={{ type: "spring", stiffness: 300 }}
+                        >
+                            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                             <Input
                                 type="search"
                                 placeholder="Search capsules..."
-                                className="pl-9 bg-background/50 border-muted-foreground/20"
+                                className="pl-9 h-11 bg-background/50 border-muted-foreground/20 focus:border-primary/50 transition-all"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
-                        </div>
-                        <Button type="submit" size="default">Search</Button>
-                        <Button
-                            variant="outline"
-                            className="gap-2 border-primary/20 hover:bg-primary/5"
-                            onClick={() => window.location.href = '/network'}
-                        >
-                            <Maximize2 className="h-4 w-4 text-primary" />
-                            Network View
-                        </Button>
-                        <Button
-                            type="button"
-                            onClick={() => window.location.href = '/create-capsule'}
-                            className="gap-2"
-                        >
-                            <Plus className="h-4 w-4" />
-                            Create Capsule
-                        </Button>
+                        </motion.div>
+                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                            <Button type="submit" size="default" className="h-11 px-6 shadow-md hover:shadow-lg transition-all">
+                                Search
+                            </Button>
+                        </motion.div>
+                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                            <Button
+                                type="button"
+                                onClick={() => window.location.href = '/create-capsule'}
+                                className="gap-2 h-11 px-5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all"
+                            >
+                                <Plus className="h-4 w-4" />
+                                Create Capsule
+                            </Button>
+                        </motion.div>
                     </form>
-                </div>
+                </motion.div>
 
                 {/* Filter Section */}
-                <div className="flex items-center gap-2">
-                    <Filter className="h-4 w-4 text-muted-foreground" />
-                    <Select value={filterType} onValueChange={setFilterType}>
-                        <SelectTrigger className="w-[200px] bg-background/50 border-muted-foreground/20">
-                            <SelectValue placeholder="Filter by team" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Capsules</SelectItem>
-                            <SelectItem value="private">Private</SelectItem>
-                            {userTeams.map(teamId => (
-                                <SelectItem key={teamId} value={teamId}>{teamIdToName[teamId] || teamId}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    <span className="text-sm text-muted-foreground">
-                        {filteredCapsules.length} capsule{filteredCapsules.length !== 1 ? 's' : ''}
-                    </span>
-                </div>
+                <motion.div 
+                    className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/30 border border-border/50">
+                            <Filter className="h-4 w-4 text-primary" />
+                            <Select value={filterType} onValueChange={setFilterType}>
+                                <SelectTrigger className="w-[200px] border-0 bg-transparent focus:ring-0">
+                                    <SelectValue placeholder="Filter by team" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Capsules</SelectItem>
+                                    <SelectItem value="private">Private</SelectItem>
+                                    {userTeams.map(teamId => (
+                                        <SelectItem key={teamId} value={teamId}>{teamIdToName[teamId] || teamId}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <motion.span 
+                            className="text-sm text-muted-foreground font-medium"
+                            key={filteredCapsules.length}
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ type: "spring", stiffness: 300 }}
+                        >
+                            {filteredCapsules.length} capsule{filteredCapsules.length !== 1 ? 's' : ''}
+                        </motion.span>
+                    </div>
+
+                    {/* View Toggle */}
+                    <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/30 border border-border/50">
+                        <motion.button
+                            onClick={() => setViewMode('grid')}
+                            className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-background shadow-sm' : 'hover:bg-background/50'}`}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            title="Grid View"
+                        >
+                            <Grid3x3 className={`h-4 w-4 ${viewMode === 'grid' ? 'text-primary' : 'text-muted-foreground'}`} />
+                        </motion.button>
+                        <motion.button
+                            onClick={() => setViewMode('list')}
+                            className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-background shadow-sm' : 'hover:bg-background/50'}`}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            title="List View"
+                        >
+                            <List className={`h-4 w-4 ${viewMode === 'list' ? 'text-primary' : 'text-muted-foreground'}`} />
+                        </motion.button>
+                        <motion.button
+                            onClick={() => setViewMode('table')}
+                            className={`p-2 rounded-md transition-all ${viewMode === 'table' ? 'bg-background shadow-sm' : 'hover:bg-background/50'}`}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            title="Table View"
+                        >
+                            <Table2 className={`h-4 w-4 ${viewMode === 'table' ? 'text-primary' : 'text-muted-foreground'}`} />
+                        </motion.button>
+                    </div>
+                </motion.div>
             </div>
 
-            {loading ? (
-                <div className="flex justify-center items-center h-64">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-            ) : filteredCapsules.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-64 bg-gradient-to-br from-muted/30 to-muted/10 rounded-xl border border-dashed border-muted-foreground/30">
-                    <div className="bg-primary/10 p-4 rounded-full mb-4">
-                        <img src={CapsuleImage} alt="Capsule" className="h-10 w-10 opacity-50" />
-                    </div>
-                    <h3 className="text-lg font-semibold">No capsules found</h3>
-                    <p className="text-muted-foreground mt-1 text-sm">Create capsules using the chat interface or extension.</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {filteredCapsules.map((capsule) => (
-                        <Card
-                            key={capsule.capsule_id}
-                            className="group relative overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer border bg-gradient-to-br from-card to-card/50 hover:border-primary/40 p-5"
-                            onClick={() => openDetails(capsule)}
+            <AnimatePresence mode="wait">
+                {loading ? (
+                    <motion.div 
+                        key="loading"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="flex flex-col justify-center items-center h-64"
+                    >
+                        <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                         >
-                            {/* Delete Button - Top Right */}
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="absolute top-3 right-3 h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all z-10"
-                                onClick={(e) => handleDelete(capsule.capsule_id, e)}
-                            >
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <Loader2 className="h-12 w-12 text-primary" />
+                        </motion.div>
+                        <p className="text-muted-foreground mt-4 font-medium">Loading capsules...</p>
+                    </motion.div>
+                ) : filteredCapsules.length === 0 ? (
+                    <motion.div 
+                        key="empty"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="flex flex-col items-center justify-center h-64 bg-gradient-to-br from-primary/5 via-purple-500/5 to-blue-500/5 rounded-2xl border border-dashed border-primary/30 relative overflow-hidden"
+                    >
+                        <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+                        <motion.div 
+                            className="bg-gradient-to-br from-primary/20 to-purple-500/20 p-5 rounded-2xl mb-4 relative z-10"
+                            animate={{ y: [0, -10, 0] }}
+                            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                        >
+                            <img src={CapsuleImage} alt="Capsule" className="h-12 w-12 opacity-70" />
+                        </motion.div>
+                        <h3 className="text-xl font-semibold relative z-10">No capsules found</h3>
+                        <p className="text-muted-foreground mt-2 text-sm relative z-10">Create capsules using the chat interface or extension.</p>
+                    </motion.div>
+                ) : (
+                    renderCapsulesView()
+                )}
+            </AnimatePresence>
 
-                            {/* Header Section */}
-                            <div className="space-y-3 mb-4">
-                                <div className="flex items-start gap-3">
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="font-semibold text-base truncate group-hover:text-primary transition-colors">
-                                            {capsule.tag || "Untitled"}
-                                        </h3>
-                                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
-                                            <Calendar className="h-3 w-3" />
-                                            <span>{format(new Date(capsule.created_at), "MMM d, yyyy")}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Divider */}
-                            <div className="h-px bg-border/50 mb-4" />
-
-                            {/* Content Section */}
-                            <div className="space-y-3">
-                                {/* Version Count */}
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs font-medium text-muted-foreground">Versions</span>
-                                    <div className="flex items-center gap-1.5">
-                                        <Badge variant="secondary" className="text-xs font-medium">
-                                            v{capsule.current_version_number || capsule.version_count || 1}
-                                        </Badge>
-                                        {(capsule.version_count || 1) > 1 && (
-                                            <History className="h-3.5 w-3.5 text-muted-foreground" />
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Models */}
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs font-medium text-muted-foreground">Source</span>
-                                    <div className="flex items-center gap-1.5">
-                                        {(() => {
-                                            const rawSources = capsule.extracted_from;
-                                            const sources = rawSources && rawSources.length > 0 
-                                                ? (Array.isArray(rawSources) ? rawSources : [rawSources])
-                                                : ["tilantra"];
-
-                                            return sources.slice(0, 3).map((source, i) => {
-                                                const logo = getModelLogo(source);
-                                                return logo ? (
-                                                    <div key={i} className="relative group/logo">
-                                                        <img
-                                                            src={logo}
-                                                            alt={source}
-                                                            className="h-6 w-6 object-contain transition-all hover:scale-110"
-                                                            title={source}
-                                                        />
-                                                    </div>
-                                                ) : (
-                                                    <Badge key={i} variant="outline" className="text-[10px] px-1.5 py-0 capitalize">
-                                                        {source.substring(0, 3)}
-                                                    </Badge>
-                                                );
-                                            });
-                                        })()}
-                                    </div>
-                                </div>
-
-                                {/* Team/Private */}
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs font-medium text-muted-foreground">Visibility</span>
-                                    {!capsule.team || capsule.team === "" ? (
-                                        <Badge variant="secondary" className="text-xs gap-1 bg-muted/50 font-normal">
-                                            <Lock className="h-3 w-3" />
-                                            Private
-                                        </Badge>
-                                    ) : (
-                                        <Badge variant="secondary" className="text-xs bg-blue-500/10 text-blue-600 border-blue-500/30 font-normal">
-                                            {teamIdToName[capsule.team] || capsule.team}
-                                        </Badge>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Hover Indicator */}
-                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/0 via-primary to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </Card>
-                    ))}
-                </div>
-            )}
+            {/* Feature Video Modal */}
+            <Dialog open={showVideoModal} onOpenChange={setShowVideoModal}>
+                <DialogContent className="max-w-4xl p-0 overflow-hidden">
+                    <div className="aspect-video">
+                        <iframe
+                            width="100%"
+                            height="100%"
+                            src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                            title="Feature Tutorial"
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            className="w-full h-full"
+                        />
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             {/* Version History Dialog */}
             <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
@@ -547,6 +829,6 @@ export default function CapsulesPage() {
                     </div>
                 </DialogContent>
             </Dialog>
-        </div>
+        </motion.div>
     );
 }

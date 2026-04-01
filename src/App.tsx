@@ -10,9 +10,7 @@ import AppLayout from "./components/layout/AppLayout";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
-// Simple auth check wrapper component could be added here
-// For now, we rely on the client handling redirects or errors if token is missing.
-
+// Simple auth check wrapper component
 function PrivateRoute({ children }: { children: JSX.Element }) {
     const token = localStorage.getItem("guidera_jwt");
     const expStr = localStorage.getItem("guidera_jwt_exp");

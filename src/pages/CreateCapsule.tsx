@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { Loader2, X, Plus, FileText, File, ArrowLeft, Settings, Send, UploadCloud, Paperclip } from "lucide-react";
 import { format } from "date-fns";
+import { CapsuleGraph } from "@/components/CapsuleGraph";
 
 interface AttachedFile {
     id: string;
@@ -372,6 +373,42 @@ export default function CreateCapsule() {
                 </div>
             </Card>
 
+            {/* Interactive Graph Visualization */}
+            {(chunks.length > 0 || globalFiles.length > 0) && (
+                <Card className="p-6 border bg-gradient-to-br from-card via-card/95 to-card/90 shadow-lg overflow-hidden relative">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/10 to-purple-500/10 rounded-full blur-3xl" />
+                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-blue-500/10 to-primary/10 rounded-full blur-3xl" />
+                    
+                    <div className="flex items-center gap-2 mb-4 relative z-10">
+                        <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center">
+                            <span className="text-2xl">💊</span>
+                        </div>
+                        <div>
+                            <h3 className="font-semibold text-lg">Capsule Structure</h3>
+                            <p className="text-xs text-muted-foreground">Visual representation of your knowledge graph</p>
+                        </div>
+                    </div>
+                    
+                    <CapsuleGraph 
+                        items={[
+                            ...globalFiles.map(f => ({ id: f.id, type: 'file' as const })),
+                            ...chunks.map(c => ({ id: c.id, type: 'chunk' as const }))
+                        ]} 
+                    />
+                    
+                    <div className="flex items-center justify-center gap-6 mt-4 text-xs text-muted-foreground relative z-10">
+                        <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-lg border-2 border-primary/30 bg-card flex items-center justify-center">📄</div>
+                            <span>{globalFiles.length} Files</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-lg border-2 border-purple-500/30 bg-card flex items-center justify-center">📝</div>
+                            <span>{chunks.length} Text Chunks</span>
+                        </div>
+                    </div>
+                </Card>
+            )}
+
             {/* Middle Section: Split Canvas */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[500px]">
                 
@@ -498,6 +535,22 @@ export default function CreateCapsule() {
                 </Card>
 
             </div>
+
+            {/* Capsule Graph Visualization */}
+            {(chunks.length > 0 || globalFiles.length > 0) && (
+                <Card className="p-6 border shadow-sm bg-gradient-to-br from-card to-card/50">
+                    <div className="text-center mb-4">
+                        <h3 className="text-lg font-semibold mb-2">Capsule Structure</h3>
+                        <p className="text-sm text-muted-foreground">Visual representation of your capsule contents</p>
+                    </div>
+                    <CapsuleGraph 
+                        items={[
+                            ...globalFiles.map(f => ({ id: f.id, type: 'file' as const })),
+                            ...chunks.map(c => ({ id: c.id, type: 'chunk' as const }))
+                        ]} 
+                    />
+                </Card>
+            )}
 
             {/* Bottom Finalization */}
             <div className="pt-4 flex justify-center">
