@@ -7,6 +7,7 @@ import SettingsPage from "./pages/Settings";
 import BillingPage from "./pages/Billing";
 import CreateCapsule from "./pages/CreateCapsule";
 import LandingPage from "./pages/Landing";
+import DocsPage from "./pages/Docs";
 import AppLayout from "./components/layout/AppLayout";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -43,6 +44,7 @@ function App() {
                 <Routes>
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/login" element={<Login />} />
+                    <Route path="/docs" element={<DocsPage />} />
 
                     <Route element={<PrivateRoute><AppLayout /></PrivateRoute>}>
                         <Route path="/capsules" element={<CapsulesPage />} />

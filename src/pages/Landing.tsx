@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowDown, ArrowRight, MessageSquarePlus, Paperclip, Sparkles, Upload, Zap, Shield, Layers, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import OutlookLogo from "@/components/assets/outlookLogo.png";
 import { saveCapsuleDraft } from "@/lib/capsule-draft";
 import { toast } from "sonner";
 import TrueFocusText from "@/components/TrueFocusText";
+import SplashCursor from "@/components/SplashCursor";
 
 interface LandingFile {
     id: string;
@@ -207,6 +208,12 @@ export default function LandingPage() {
                 aria-hidden
             />
 
+            <SplashCursor
+                className="opacity-[0.52] dark:opacity-[0.48]"
+                DENSITY_DISSIPATION={2.4}
+                COLOR_UPDATE_SPEED={14}
+            />
+
             <header className="fixed top-0 z-50 w-full border-b border-white/10 bg-white/60 backdrop-blur-2xl dark:bg-slate-950/60">
                 <motion.div 
                     initial={{ y: -20, opacity: 0 }}
@@ -233,6 +240,14 @@ export default function LandingPage() {
                         >
                             About
                         </motion.a>
+                        <motion.div whileHover={{ y: -1 }} className="hidden sm:block">
+                            <Link
+                                to="/docs"
+                                className="text-sm font-semibold text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
+                            >
+                                Docs
+                            </Link>
+                        </motion.div>
                     </div>
                     <motion.div
                         whileHover={{ scale: 1.05 }}
