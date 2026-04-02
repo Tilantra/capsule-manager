@@ -1,7 +1,15 @@
-export interface CreateCapsuleRequest {
+export interface CapsuleContentPayload {
     messages: any[];
+    attachments?: any[];
+    metadata?: any;
+}
+
+export interface CreateCapsuleRequest {
+    content: CapsuleContentPayload;
     tag?: string;
     team?: string;
+    extracted_from?: string;
+    attachment_ids?: string[];
 }
 
 export interface CreateCapsuleResponse {
@@ -14,7 +22,10 @@ export interface CreateCapsuleResponse {
 }
 
 export interface CreateVersionRequest {
-    messages: any[];
+    content: CapsuleContentPayload;
+    parent_version_id?: string;
+    extracted_from?: string;
+    attachment_ids?: string[];
 }
 
 export interface CreateVersionResponse {
@@ -38,6 +49,7 @@ export interface CapsuleMetadata {
     created_by: string;
     extracted_from?: string | string[];
     latest_version_id?: string;
+    current_version_number?: number;
     summary?: string;
     tag?: string;
     team?: string;
@@ -57,11 +69,15 @@ export interface CapsuleVersionContent {
 }
 
 export interface CapsuleVersion {
+    _id?: string;
     version_id: string;
+    version_number: number;
     capsule_id: string;
     parent_version_id?: string;
     content_hash?: string;
     content?: CapsuleVersionContent;
+    summary?: string;
+    change_summary?: string;
     created_at: string;
     created_by: string;
     extracted_from?: string;
@@ -70,4 +86,16 @@ export interface CapsuleVersion {
 export interface VersionListResponse {
     capsule_id: string;
     versions: CapsuleVersion[];
+}
+
+export interface CapsuleRollbackRequest {
+    version_id: string;
+}
+
+export interface CapsuleRollbackResponse {
+    message: string;
+    capsule_id: string;
+    version_id: string;
+    version_number: number;
+    summary?: string;
 }

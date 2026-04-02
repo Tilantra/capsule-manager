@@ -9,10 +9,12 @@ import type {
     CapsuleMetadata,
     CapsuleVersion,
     VersionListResponse,
+    CapsuleRollbackRequest,
+    CapsuleRollbackResponse,
 } from './capsule-types';
 
 
-const BASE_URL = 'https://backend.tilantra.com';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://backend.tilantra.com';
 
 export class BrowserGuideraClient {
     private apiBaseUrl: string;
@@ -27,6 +29,22 @@ export class BrowserGuideraClient {
         localStorage.setItem('guidera_jwt', token);
         localStorage.setItem('guidera_jwt_exp', exp.toString());
         this.authToken = token;
+    }
+
+    /** Decode a JWT and return its `exp` claim as an absolute UNIX timestamp (seconds). */
+    private extractExpFromToken(token: string): number | null {
+        try {
+            const parts = token.split('.');
+            if (parts.length === 3) {
+                const payload = JSON.parse(atob(parts[1]));
+                if (payload.exp && typeof payload.exp === 'number') {
+                    return payload.exp;
+                }
+            }
+        } catch {
+            // Ignore decode errors
+        }
+        return null;
     }
 
     private clearJwt() {
@@ -78,9 +96,16 @@ export class BrowserGuideraClient {
         const response = await axios.post(loginUrl, loginData);
         if (response.status === 200) {
             const result = response.data;
-            const token = result.token;
-            const exp = result.exp || Math.floor(Date.now() / 1000) + 2 * 3600;
+            // Accept both 'token' and 'access_token' keys from backend
+            const token = result.token || result.access_token;
             if (token) {
+                // Always decode the JWT to get the real absolute exp timestamp.
+                // Backend may return exp as a relative offset (e.g. 3600s) which
+                // would break PrivateRoute's `now < exp` check.
+                const exp = this.extractExpFromToken(token)
+                    ?? (result.exp && result.exp > Math.floor(Date.now() / 1000)
+                        ? result.exp
+                        : Math.floor(Date.now() / 1000) + 2 * 3600);
                 this.saveJwt(token, exp);
                 return token;
             } else {
@@ -111,9 +136,12 @@ export class BrowserGuideraClient {
             const result = response.data;
             // Check for 'token' OR 'access_token' to be robust
             const authToken = result.token || result.access_token;
-            const exp = result.exp || Math.floor(Date.now() / 1000) + 2 * 3600;
 
             if (authToken) {
+                const exp = this.extractExpFromToken(authToken)
+                    ?? (result.exp && result.exp > Math.floor(Date.now() / 1000)
+                        ? result.exp
+                        : Math.floor(Date.now() / 1000) + 2 * 3600);
                 this.saveJwt(authToken, exp);
                 return authToken;
             } else {
@@ -331,7 +359,7 @@ export class BrowserGuideraClient {
         }
     }
 
-    async getSingleUser(email?: string, username?: string): Promise<{ username: string; email: string; full_name: string; company: string; teams?: string[]; has_api_key?: boolean }> {
+    async getSingleUser(email?: string, username?: string): Promise<{ username: string; email: string; full_name: string; company: string; teams?: string[]; has_api_key?: boolean; tier?: string }> {
         if (!this.tokenValid()) {
             throw new Error('Not authenticated');
         }
@@ -461,6 +489,42 @@ export class BrowserGuideraClient {
     // ============================================
     // CAPSULE METHODS
     // ============================================
+
+    // ============================================
+    // ATTACHMENT UPLOAD
+    // ============================================
+
+    /**
+     * Upload an attachment to be associated with a new capsule.
+     * Hits POST /capsules/attachments
+     */
+    async uploadCapsuleAttachment(base64Data: string, filename: string, contentType: string): Promise<any> {
+        if (!this.tokenValid()) {
+            throw new Error('Not authenticated');
+        }
+
+        const url = `${this.apiBaseUrl}/capsules/attachments`;
+        const headers = {
+            Authorization: `Bearer ${this.authToken}`,
+            'Content-Type': 'application/json',
+        };
+        const payload = {
+            base64_data: base64Data,
+            filename: filename,
+            content_type: contentType
+        };
+
+        const response = await axios.post(url, payload, { headers });
+        if (response.status === 200 || response.status === 201) {
+            return response.data; // MediaAssetMetadata
+        } else if (response.status === 401) {
+            this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
+            throw new Error('Session expired or invalid. Please log in again.');
+        } else {
+            throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+        }
+    }
 
     /**
      * Create a new capsule with initial content
@@ -669,6 +733,36 @@ export class BrowserGuideraClient {
         } else if (response.status === 401) {
             this.clearJwt();
             window.dispatchEvent(new Event('guidera_unauthorized'));
+            throw new Error('Session expired or invalid. Please log in again.');
+        } else {
+            throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+        }
+    }
+
+    /**
+     * Rollback a capsule to a specific version
+     * @param capsuleId - ID of the capsule
+     * @param versionId - Target version ID to rollback to
+     * @returns Rollback response
+     */
+    async rollbackCapsule(
+        capsuleId: string,
+        versionId: string
+    ): Promise<CapsuleRollbackResponse> {
+        if (!this.tokenValid()) {
+            throw new Error('Not authenticated');
+        }
+        const url = `${this.apiBaseUrl}/capsules/${capsuleId}/rollback`;
+        const headers = {
+            Authorization: `Bearer ${this.authToken}`,
+            'Content-Type': 'application/json',
+        };
+        const request: CapsuleRollbackRequest = { version_id: versionId };
+        const response = await axios.post(url, request, { headers });
+        if (response.status === 200) {
+            return response.data;
+        } else if (response.status === 401) {
+            this.clearJwt();
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
@@ -952,6 +1046,26 @@ export class BrowserGuideraClient {
             throw new Error('Session expired or invalid. Please log in again.');
         } else {
             throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+        }
+    }
+
+    /**
+     * Simple mock upgrade: sets the user's tier immediately.
+     * No order creation or verification steps required.
+     */
+    async upgradeTier(tier: 'pro' | 'elite' | 'enterprise'): Promise<{ status: string; new_tier: string; payment_url?: string }> {
+        if (!this.tokenValid()) throw new Error('Not authenticated');
+        const url = `${this.apiBaseUrl}/payments/upgrade`;
+        const headers = {
+            Authorization: `Bearer ${this.authToken}`,
+            'Content-Type': 'application/json'
+        };
+
+        const response = await axios.post(url, { tier }, { headers });
+        if (response.status === 200 || response.status === 201) {
+            return response.data;
+        } else {
+            throw new Error(`Upgrade failed with status ${response.status}: ${response.statusText}`);
         }
     }
 

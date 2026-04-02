@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Loader2, User, Key, Mail, Shield, Plus, RefreshCw, Copy, Check, AlertCircle, Terminal } from "lucide-react";
+import { Loader2, User, Key, Mail, Shield, Plus, RefreshCw, Copy, Check, AlertCircle, Terminal, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 
@@ -77,6 +77,7 @@ export default function SettingsPage() {
     }
 
     const hasApiKey = user?.has_api_key;
+    const currentTier = user?.tier || "Basic";
 
     const mcpConfig = JSON.stringify({
         "mcpServers": {
@@ -135,9 +136,19 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-2 px-3 py-1.5 w-fit rounded-full bg-green-500/10 text-green-600 border border-green-500/20 text-xs font-medium">
-                                    <Shield className="h-3.5 w-3.5" />
-                                    Active Account
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <div className="flex items-center gap-2 px-3 py-1.5 w-fit rounded-full bg-green-500/10 text-green-600 border border-green-500/20 text-xs font-medium">
+                                        <Shield className="h-3.5 w-3.5" />
+                                        Active Account
+                                    </div>
+                                    <div className={`flex items-center gap-2 px-3 py-1.5 w-fit rounded-full border text-xs font-bold uppercase tracking-wider ${
+                                        currentTier.toLowerCase() === 'elite' ? 'bg-purple-500/10 text-purple-600 border-purple-500/20' :
+                                        currentTier.toLowerCase() === 'pro' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
+                                        'bg-slate-500/10 text-slate-600 border-slate-500/20'
+                                    }`}>
+                                        <Sparkles className="h-3.5 w-3.5" />
+                                        {currentTier} Tier
+                                    </div>
                                 </div>
                             </div>
                         </div>

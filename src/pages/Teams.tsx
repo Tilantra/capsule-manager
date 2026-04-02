@@ -192,11 +192,14 @@ export default function TeamsPage() {
                     </h1>
                     <p className="text-muted-foreground mt-1">Collaborate with your team members.</p>
                 </div>
-                <Button onClick={() => setCreateDialogOpen(true)} className="gap-2">
-                    <Plus className="h-4 w-4" />
-                    Create Team
-                </Button>
+                {currentUser?.tier && (currentUser.tier.toLowerCase() === "elite" || currentUser.tier.toLowerCase() === "enterprise") && (
+                    <Button onClick={() => setCreateDialogOpen(true)} className="gap-2">
+                        <Plus className="h-4 w-4" />
+                        Create Team
+                    </Button>
+                )}
             </div>
+
 
             {/* Teams List */}
             {loading ? (
