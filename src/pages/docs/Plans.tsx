@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Sparkles, Check, X } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Card, CardContent } from "@/components/ui/card";
 import DocsLayout from "./DocsLayout";
 
 function SectionTitle({ icon: Icon, children }: { icon: React.ElementType; children: React.ReactNode }) {
@@ -41,7 +42,7 @@ export default function Plans() {
                                 <TableHead className="w-[200px]">Feature</TableHead>
                                 <TableHead>Basic</TableHead>
                                 <TableHead>Pro</TableHead>
-                                <TableHead>Elite / Enterprise</TableHead>
+                                <TableHead>Elite</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -89,6 +90,29 @@ export default function Plans() {
                             </TableRow>
                         </TableBody>
                     </Table>
+                </div>
+                <div className="mt-6 space-y-4">
+                    <p className="text-sm italic text-slate-500 dark:text-slate-400">
+                        * Enterprises will have custom tool integrations and pricing based on usage. Please reach out to{" "}
+                        <a href="mailto:tilantra.technologies@gmail.com" className="text-indigo-600 hover:underline dark:text-indigo-400">
+                            tilantra.technologies@gmail.com
+                        </a>
+                    </p>
+                    <Card className="border-indigo-500/25 bg-indigo-500/[0.06] dark:bg-indigo-500/10">
+                        <CardContent className="flex items-center justify-center py-6">
+                            <p className="text-center text-[15px] text-slate-700 dark:text-slate-300">
+                                <a
+                                    href="https://capsulehub.tilantra.com"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="font-bold text-indigo-600 hover:underline dark:text-indigo-400"
+                                >
+                                    Sign in to capsulehub.tilantra.com
+                                </a>{" "}
+                                to upgrade your tier!
+                            </p>
+                        </CardContent>
+                    </Card>
                 </div>
             </motion.div>
         </DocsLayout>

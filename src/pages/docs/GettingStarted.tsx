@@ -41,7 +41,19 @@ export default function GettingStarted() {
                     {[
                         {
                             step: "Install the extension",
-                            detail: "Add Capsule Hub from the Chrome Web Store, or load the unpacked folder in Developer Mode for local builds.",
+                            detail: (
+                                <>
+                                    Add Capsule Hub from the{" "}
+                                    <a
+                                        href="https://chromewebstore.google.com/detail/capsule-hub-by-tilantra/ngeoeefidomejcdhiecidpaalfoekjbh"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="font-medium text-indigo-600 underline-offset-4 hover:underline dark:text-indigo-400"
+                                    >
+                                        Chrome Web Store
+                                    </a>
+                                </>
+                            ),
                         },
                         {
                             step: "Sign in",

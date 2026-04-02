@@ -1,5 +1,6 @@
-import { motion } from "framer-motion";
-import { MousePointerClick, FileStack, GitBranch, Users, Link2 } from "lucide-react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { MousePointerClick, FileStack, GitBranch, Users, Link2, Play, X } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import DocsLayout from "./DocsLayout";
 
@@ -23,6 +24,7 @@ function Prose({ children }: { children: React.ReactNode }) {
 }
 
 export default function Features() {
+    const [isExpanded, setIsExpanded] = useState(false);
     return (
         <DocsLayout>
             <motion.div
@@ -30,13 +32,77 @@ export default function Features() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45, ease: "easeOut" }}
             >
-                <SectionTitle icon={MousePointerClick}>Features</SectionTitle>
-                <Prose>
-                    <p>
-                        These capabilities work together: attachments enrich the capsule, versioning preserves history, drag-and-drop
-                        makes injection instant, teams add governance, and dynamic context (where available) keeps payloads relevant.
-                    </p>
-                </Prose>
+                <div className="mt-8 flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+                    <div className="flex-1">
+                        <SectionTitle icon={MousePointerClick}>Features</SectionTitle>
+                        <Prose>
+                            <p>
+                                These capabilities work together: attachments enrich the capsule, versioning preserves history, drag-and-drop
+                                makes injection instant, teams add governance, and dynamic context (where available) keeps payloads relevant.
+                            </p>
+                        </Prose>
+                    </div>
+
+                    <div className="w-full md:w-64 shrink-0">
+                        <div className="rounded-2xl border border-slate-200/60 bg-slate-50/50 p-4 dark:border-slate-800/60 dark:bg-slate-900/40">
+                            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                                Feature Video
+                            </p>
+                            <motion.div 
+                                layoutId="feature-video"
+                                className="group relative aspect-video w-full overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200 cursor-pointer transition-all hover:ring-indigo-500/50 dark:bg-slate-950 dark:ring-slate-800"
+                                onClick={() => setIsExpanded(true)}
+                            >
+                                <img 
+                                    src="https://img.youtube.com/vi/3NH3ArEe0dE/maxresdefault.jpg" 
+                                    alt="Video thumbnail"
+                                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                />
+                                <div className="absolute inset-0 flex items-center justify-center bg-slate-950/20 transition-colors group-hover:bg-slate-950/40">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-lg backdrop-blur-sm transition-transform duration-300 group-hover:scale-110 dark:bg-slate-900/90">
+                                        <Play className="h-4 w-4 ml-0.5 text-indigo-600 fill-indigo-600" />
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </div>
+                    </div>
+                </div>
+
+                <AnimatePresence>
+                    {isExpanded && (
+                        <div 
+                            className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 md:p-12"
+                            onClick={() => setIsExpanded(false)}
+                        >
+                            <motion.div 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="absolute inset-0 bg-slate-950/80 backdrop-blur-md"
+                            />
+                            
+                            <motion.div 
+                                layoutId="feature-video"
+                                className="relative aspect-video w-full max-w-5xl overflow-hidden rounded-2xl bg-black shadow-2xl"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <iframe
+                                    className="h-full w-full"
+                                    src="https://www.youtube.com/embed/3NH3ArEe0dE?autoplay=1"
+                                    title="feature video"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                />
+                                <button 
+                                    className="absolute top-4 right-4 z-10 rounded-full bg-black/50 p-2 text-white hover:bg-black/70 transition-colors backdrop-blur-sm"
+                                    onClick={() => setIsExpanded(false)}
+                                >
+                                    <X className="h-5 w-5" />
+                                </button>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
 
                 <div className="mt-8 space-y-6">
                     <Card className="border-slate-200/80 bg-white/80 dark:border-slate-800 dark:bg-slate-950/50">
