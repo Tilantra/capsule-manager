@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { BrowserGuideraClient } from "@/lib/guidera-browser-client";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, LogOut, Menu, Settings, CreditCard, Plus, BookOpen } from "lucide-react";
+import { LayoutDashboard, Users, LogOut, Menu, Settings, CreditCard, Plus } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import TilantraLogo from "@/components/assets/Tilantra_blueLOGO.png";
@@ -72,19 +72,7 @@ export default function AppLayout() {
                         <Users className="h-4 w-4" />
                         Teams
                     </NavLink>
-                    <NavLink
-                        to="/docs"
-                        className={({ isActive }) =>
-                            `flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 ${isActive
-                                ? "bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-600 dark:from-blue-500/20 dark:to-purple-500/20 dark:text-blue-400 shadow-md border border-blue-200 dark:border-blue-800"
-                                : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 hover:translate-x-1"
-                            }`
-                        }
-                        onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                        <BookOpen className="h-4 w-4" />
-                        Docs
-                    </NavLink>
+
                     <NavLink
                         to="/billing"
                         className={({ isActive }) =>

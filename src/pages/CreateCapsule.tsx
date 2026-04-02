@@ -47,6 +47,8 @@ export default function CreateCapsule() {
     const [summary, setSummary] = useState("");
     const [team, setTeam] = useState<string>("private");
     const [userTeams, setUserTeams] = useState<any[]>([]);
+    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [capsuleCount, setCapsuleCount] = useState<number>(0);
     
     // Canvas State
     const [chunks, setChunks] = useState<Chunk[]>([]);
@@ -71,17 +73,23 @@ export default function CreateCapsule() {
         return () => window.removeEventListener("keydown", onKeyDown);
     }, []);
 
-    // Fetch Teams
+    // Fetch Teams and User Info
     useEffect(() => {
-        const fetchTeams = async () => {
+        const fetchInitialData = async () => {
             try {
-                const teams = await client.getCurrentUserTeams();
+                const [teams, user, capsules] = await Promise.all([
+                    client.getCurrentUserTeams(),
+                    client.getSingleUser(),
+                    client.getUserCapsules(1, 0) // Just to get the total count
+                ]);
                 setUserTeams(teams || []);
+                setCurrentUser(user);
+                setCapsuleCount(capsules.total || 0);
             } catch (error) {
-                console.error("Failed to fetch teams:", error);
+                console.error("Failed to fetch initial data:", error);
             }
         };
-        fetchTeams();
+        fetchInitialData();
     }, [client]);
 
     useEffect(() => {
@@ -223,6 +231,22 @@ export default function CreateCapsule() {
         if (chunks.length === 0 && globalFiles.length === 0) {
             toast.error("Capsule must have at least one text chunk or file attached");
             return;
+        }
+
+        // Tier limit check
+        if (currentUser) {
+            const tier = currentUser.tier?.toLowerCase() || "basic";
+            let limit = Infinity;
+            if (tier === "basic") limit = 5;
+            else if (tier === "pro") limit = 15;
+
+            if (capsuleCount >= limit) {
+                toast.error(`Capsule limit reached!`, {
+                    description: `You have reached your limit of ${limit} capsules for the ${tier} tier. Please upgrade to continue.`,
+                    duration: 5000,
+                });
+                return;
+            }
         }
 
         setIsSubmitting(true);

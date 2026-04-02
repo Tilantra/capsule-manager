@@ -193,6 +193,23 @@ export default function BillingPage() {
                 </p>
             </div>
 
+            <Card className="border-blue-500/30 bg-blue-500/5 dark:bg-blue-500/10 group overflow-hidden relative border-dashed">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <CardHeader className="flex flex-row items-center gap-4 py-4">
+                    <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 ring-1 ring-blue-500/20">
+                        <Sparkles className="h-5 w-5 animate-pulse" />
+                    </div>
+                    <div>
+                        <CardTitle className="text-base font-bold text-slate-900 dark:text-slate-100">
+                            Early Adopter Perk
+                        </CardTitle>
+                        <CardDescription className="text-slate-600 dark:text-slate-400 text-sm">
+                            Billing is being setup. The first few lucky users have <span className="font-bold text-indigo-600 dark:text-indigo-400">ELITE</span> tier for 6 months.
+                        </CardDescription>
+                    </div>
+                </CardHeader>
+            </Card>
+
 
 
             {/* Pricing Grid */}
