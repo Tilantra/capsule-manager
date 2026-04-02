@@ -183,8 +183,7 @@ export default function DocsPage() {
                         <span className="text-slate-800 dark:text-slate-100">documentation</span>
                     </h1>
                     <p className="mx-auto mt-4 max-w-3xl text-lg text-slate-600 dark:text-slate-300 lg:mx-0">
-                        The bridge for your AI workflows: capture, version, and inject conversation context across ChatGPT, Claude, Gemini,
-                        DeepSeek, Gmail, and your IDE—without copy-paste fatigue.
+                        The bridge for your AI workflows: Never start from Zero again!
                     </p>
                 </motion.div>
 
