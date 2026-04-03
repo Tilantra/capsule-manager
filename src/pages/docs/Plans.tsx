@@ -49,8 +49,8 @@ export default function Plans() {
                             <TableRow>
                                 <TableCell className="font-medium">Price</TableCell>
                                 <TableCell>Free</TableCell>
-                                <TableCell>$12/mo</TableCell>
-                                <TableCell>Custom</TableCell>
+                                <TableCell>$5/month</TableCell>
+                                <TableCell>$15/month</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell className="font-medium">Capsule limit</TableCell>
