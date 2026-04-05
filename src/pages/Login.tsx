@@ -44,7 +44,7 @@ function LoginContent() {
                     company: "Default",
                     teams: [],
                     models: ["gpt4", "llama3", "gemini2.5-flash"],
-                    tier: "basic"
+                    tier: "trial"
                 });
 
                 navigate(nextPath);
@@ -80,7 +80,7 @@ function LoginContent() {
             <AuthBackground />
 
             {/* Tilantra Logo - Top Left */}
-            <motion.div 
+            <motion.div
                 className="absolute top-6 left-6 z-20"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -91,14 +91,14 @@ function LoginContent() {
 
             <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center relative z-10 text-left">
                 {/* Left Side: Info */}
-                <motion.div 
+                <motion.div
                     className="space-y-8 hidden lg:block"
                     initial={{ opacity: 0, x: -50 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.7, ease: "easeOut" }}
                 >
                     <div className="space-y-4">
-                        <motion.h1 
+                        <motion.h1
                             className="text-5xl lg:text-7xl font-extrabold tracking-tight text-gray-900 dark:text-white leading-[1.1]"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -109,7 +109,7 @@ function LoginContent() {
                                 By Tilantra
                             </span>
                         </motion.h1>
-                        <motion.p 
+                        <motion.p
                             className="text-xl text-muted-foreground max-w-xl leading-relaxed font-medium"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -119,13 +119,13 @@ function LoginContent() {
                         </motion.p>
                     </div>
 
-                    <motion.div 
+                    <motion.div
                         className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.4, duration: 0.5 }}
                     >
-                        <motion.div 
+                        <motion.div
                             className="flex items-start gap-3"
                             whileHover={{ scale: 1.05, x: 10 }}
                             transition={{ type: "spring", stiffness: 300 }}
@@ -138,7 +138,7 @@ function LoginContent() {
                                 <p className="text-sm text-muted-foreground mt-1">Share specialized knowledge capsules across teams instantly.</p>
                             </div>
                         </motion.div>
-                        <motion.div 
+                        <motion.div
                             className="flex items-start gap-3"
                             whileHover={{ scale: 1.05, x: 10 }}
                             transition={{ type: "spring", stiffness: 300 }}
@@ -155,7 +155,7 @@ function LoginContent() {
                 </motion.div>
 
                 {/* Right Side: Form */}
-                <motion.div 
+                <motion.div
                     className="flex justify-center lg:justify-end w-full"
                     initial={{ opacity: 0, x: 50 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -164,7 +164,7 @@ function LoginContent() {
                     <Card className="w-full max-w-md border border-border/50 shadow-2xl bg-card/95 backdrop-blur-xl relative overflow-hidden">
                         {/* Animated gradient overlay */}
                         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5 opacity-50" />
-                        
+
                         <CardHeader className="space-y-1 pt-8 relative z-10">
                             <motion.div
                                 initial={{ opacity: 0, y: -20 }}
@@ -180,7 +180,7 @@ function LoginContent() {
                         <CardContent className="pb-8 relative z-10">
                             <div className="space-y-5">
                                 <form onSubmit={handleSubmit} className="space-y-5">
-                                    <motion.div 
+                                    <motion.div
                                         className="space-y-2"
                                         initial={{ opacity: 0, x: -20 }}
                                         animate={{ opacity: 1, x: 0 }}
@@ -197,7 +197,7 @@ function LoginContent() {
                                             className="bg-muted/50 border-input focus:ring-2 focus:ring-primary py-6 transition-all"
                                         />
                                     </motion.div>
-                                    <motion.div 
+                                    <motion.div
                                         className="space-y-2"
                                         initial={{ opacity: 0, x: -20 }}
                                         animate={{ opacity: 1, x: 0 }}
@@ -218,7 +218,7 @@ function LoginContent() {
                                     </motion.div>
 
                                     {error && (
-                                        <motion.div 
+                                        <motion.div
                                             className="p-4 text-sm text-destructive bg-destructive/10 rounded-lg border border-destructive/20"
                                             initial={{ opacity: 0, scale: 0.9 }}
                                             animate={{ opacity: 1, scale: 1 }}
@@ -247,7 +247,7 @@ function LoginContent() {
                                         >
                                             {loading ? (
                                                 <div className="flex items-center gap-3">
-                                                    <motion.div 
+                                                    <motion.div
                                                         className="h-5 w-5 rounded-full border-2 border-white border-t-transparent"
                                                         animate={{ rotate: 360 }}
                                                         transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -261,7 +261,7 @@ function LoginContent() {
                                     </motion.div>
                                 </form>
 
-                                <motion.div 
+                                <motion.div
                                     className="relative"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
