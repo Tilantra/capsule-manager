@@ -44,7 +44,7 @@ function LoginContent() {
                     company: "Default",
                     teams: [],
                     models: ["gpt4", "llama3", "gemini2.5-flash"],
-                    tier: "trial"
+                    tier: "elite"
                 });
 
                 navigate(nextPath);
