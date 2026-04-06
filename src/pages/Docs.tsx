@@ -152,6 +152,13 @@ export default function DocsPage() {
                         </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
+                        <Button
+                            asChild
+                            variant="outline"
+                            className="hidden sm:inline-flex border-slate-200 dark:border-slate-700"
+                        >
+                            <Link to="/">Return to Home</Link>
+                        </Button>
                         {loggedIn ? (
                             <Button asChild variant="outline" className="border-slate-200 dark:border-slate-700">
                                 <Link to="/capsules">Open app</Link>

@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { BrowserGuideraClient } from "@/lib/guidera-browser-client";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -86,7 +86,28 @@ function LoginContent() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5 }}
             >
-                <img src={TilantraBlueLogo} alt="Tilantra" className="h-12 w-auto hover:scale-105 transition-transform duration-200" />
+                <Link to="/" className="inline-flex items-center">
+                    <img
+                        src={TilantraBlueLogo}
+                        alt="Tilantra"
+                        className="h-12 w-auto hover:scale-105 transition-transform duration-200"
+                    />
+                </Link>
+            </motion.div>
+
+            <motion.div
+                className="absolute top-6 right-6 z-20"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5 }}
+            >
+                <Button
+                    asChild
+                    variant="outline"
+                    className="hidden sm:inline-flex border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80"
+                >
+                    <Link to="/">Return to Home</Link>
+                </Button>
             </motion.div>
 
             <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center relative z-10 text-left">
