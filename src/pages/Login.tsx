@@ -10,7 +10,7 @@ import { Share2, Brain } from "lucide-react";
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 import { FcGoogle } from "react-icons/fc";
 import { AuthBackground } from "@/components/AuthBackground";
-import { TilantraLogo } from "@/components/Logo";
+
 
 import { motion } from "framer-motion";
 
@@ -80,19 +80,7 @@ function LoginContent() {
             <div className="absolute inset-0 opacity-[0.10] dark:opacity-[0.18] [background-image:linear-gradient(rgba(15,23,42,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.10)_1px,transparent_1px)] dark:[background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:44px_44px]" />
             <AuthBackground />
 
-            {/* Tilantra Logo - Top Left */}
-            <motion.div
-                className="absolute top-6 left-6 z-20"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5 }}
-            >
-                <Link to="/" className="inline-flex items-center">
-                    <TilantraLogo
-                        className="h-12 w-auto hover:scale-105 transition-transform duration-200"
-                    />
-                </Link>
-            </motion.div>
+
 
             <motion.div
                 className="absolute top-6 right-6 z-20"
