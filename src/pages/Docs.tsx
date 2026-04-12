@@ -33,7 +33,8 @@ import {
 } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import TilantraLogo from "@/components/assets/Tilantra_blueLOGO.png";
+import { TilantraLogo } from "@/components/Logo";
+
 
 const SECTIONS = [
     { id: "overview", label: "Capsule Hub" },
@@ -141,7 +142,7 @@ export default function DocsPage() {
                 <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5 sm:px-8">
                     <div className="flex min-w-0 items-center gap-4 sm:gap-6">
                         <Link to="/" className="shrink-0 rounded-lg outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-indigo-500/50">
-                            <img src={TilantraLogo} alt="Tilantra" className="h-8 w-auto" />
+                            <TilantraLogo className="h-8 w-auto" />
                         </Link>
                         <Separator orientation="vertical" className="hidden h-7 sm:block" />
                         <div className="hidden min-w-0 sm:block">

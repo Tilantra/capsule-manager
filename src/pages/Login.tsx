@@ -10,7 +10,8 @@ import { Share2, Brain } from "lucide-react";
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 import { FcGoogle } from "react-icons/fc";
 import { AuthBackground } from "@/components/AuthBackground";
-import TilantraBlueLogo from "@/components/assets/Tilantra_blueLOGO.png";
+import { TilantraLogo } from "@/components/Logo";
+
 import { motion } from "framer-motion";
 
 function LoginContent() {
@@ -87,9 +88,7 @@ function LoginContent() {
                 transition={{ duration: 0.5 }}
             >
                 <Link to="/" className="inline-flex items-center">
-                    <img
-                        src={TilantraBlueLogo}
-                        alt="Tilantra"
+                    <TilantraLogo
                         className="h-12 w-auto hover:scale-105 transition-transform duration-200"
                     />
                 </Link>

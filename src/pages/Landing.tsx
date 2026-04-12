@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CapsuleGraph } from "@/components/CapsuleGraph";
-import TilantraLogo from "@/components/assets/Tilantra_blueLOGO.png";
+import { TilantraLogo } from "@/components/Logo";
+
 import ChatgptLogo from "@/components/assets/ChatgptLogo.png";
 import ClaudeLogo from "@/components/assets/ClaudeLogo.png";
 import GeminiLogo from "@/components/assets/GeminiLogo.png";
@@ -223,11 +224,7 @@ export default function LandingPage() {
                 >
                     <div className="flex items-center gap-6 sm:gap-8">
                         <a href="/" className="shrink-0 rounded-lg outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-indigo-500/50">
-                            <motion.img 
-                                whileHover={{ scale: 1.08 }}
-                                transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                                src={TilantraLogo} 
-                                alt="Tilantra" 
+                            <TilantraLogo 
                                 className="h-8 w-auto" 
                             />
                         </a>

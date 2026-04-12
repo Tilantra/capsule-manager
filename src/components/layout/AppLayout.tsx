@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Users, LogOut, Menu, Settings, CreditCard, Plus } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
-import TilantraLogo from "@/components/assets/Tilantra_blueLOGO.png";
+import { TilantraLogo } from "@/components/Logo";
+
 import { motion } from "framer-motion";
 
 export default function AppLayout() {
@@ -120,7 +121,7 @@ export default function AppLayout() {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2 }}
                 >
-                    <img src={TilantraLogo} alt="Tilantra" className="h-8 w-auto hover:scale-105 transition-transform duration-200" />
+                    <TilantraLogo className="h-8 w-auto hover:scale-105 transition-transform duration-200" />
                 </motion.div>
                 <div className="flex-1 overflow-y-auto">
                     <div className="px-4 pt-4">
@@ -158,7 +159,7 @@ export default function AppLayout() {
                 transition={{ duration: 0.5 }}
                 className="md:hidden fixed top-0 left-0 right-0 z-50 h-16 bg-white/80 dark:bg-slate-950/70 backdrop-blur-xl border-b border-gray-200 dark:border-slate-800 flex items-center justify-between px-4 shadow-lg"
             >
-                <img src={TilantraLogo} alt="Tilantra" className="h-8 w-auto" />
+                <TilantraLogo className="h-8 w-auto" />
                 <Button
                     onClick={() => navigate("/create-capsule")}
                     className="h-9 px-3 mr-2 gap-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
@@ -174,7 +175,7 @@ export default function AppLayout() {
                     </SheetTrigger>
                     <SheetContent side="left" className="w-64 p-0 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-r border-gray-200 dark:border-slate-800">
                         <div className="h-16 flex items-center px-6 border-b border-gray-200 dark:border-slate-800">
-                            <img src={TilantraLogo} alt="Tilantra" className="h-8 w-auto" />
+                            <TilantraLogo className="h-8 w-auto" />
                         </div>
                         <NavItems />
                         <div className="p-4 border-t border-gray-200 dark:border-slate-800 absolute bottom-0 w-full bg-white dark:bg-slate-950">
