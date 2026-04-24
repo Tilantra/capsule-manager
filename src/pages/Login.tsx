@@ -83,6 +83,21 @@ function LoginContent() {
 
 
             <motion.div
+                className="absolute top-6 left-6 z-20"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5 }}
+            >
+                <Button
+                    asChild
+                    variant="outline"
+                    className="hidden sm:inline-flex border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80"
+                >
+                    <Link to="/register">Register with Capsule Hub</Link>
+                </Button>
+            </motion.div>
+
+            <motion.div
                 className="absolute top-6 right-6 z-20"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -302,6 +317,21 @@ function LoginContent() {
                                         <FcGoogle className="mr-2 h-5 w-5" />
                                         Continue with Google
                                     </Button>
+                                </motion.div>
+
+                                <motion.div
+                                    className="mt-6 text-center text-sm text-muted-foreground"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 1.1 }}
+                                >
+                                    Don't have an account?{" "}
+                                    <Link
+                                        to="/register"
+                                        className="font-bold text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                                    >
+                                        Register now
+                                    </Link>
                                 </motion.div>
                             </div>
                         </CardContent>

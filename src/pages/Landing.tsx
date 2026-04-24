@@ -180,7 +180,7 @@ export default function LandingPage() {
             <div className="pointer-events-none absolute inset-0 opacity-[0.10] dark:opacity-[0.18] [background-image:linear-gradient(rgba(15,23,42,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.10)_1px,transparent_1px)] dark:[background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:44px_44px]" />
             <motion.div
                 className="pointer-events-none absolute -top-24 left-[-80px] h-[340px] w-[340px] rounded-full bg-gradient-to-br from-purple-400/25 to-blue-400/25 blur-3xl dark:from-purple-500/30 dark:to-blue-500/30"
-                animate={{ 
+                animate={{
                     x: [0, 30, 0],
                     y: [0, -20, 0],
                     scale: [1, 1.1, 1]
@@ -190,7 +190,7 @@ export default function LandingPage() {
             />
             <motion.div
                 className="pointer-events-none absolute top-8 right-[-100px] h-[320px] w-[320px] rounded-full bg-gradient-to-br from-blue-400/20 to-indigo-400/20 blur-3xl dark:from-blue-500/25 dark:to-indigo-500/25"
-                animate={{ 
+                animate={{
                     x: [0, -20, 0],
                     y: [0, 25, 0],
                     scale: [1, 1.15, 1]
@@ -200,7 +200,7 @@ export default function LandingPage() {
             />
             <motion.div
                 className="pointer-events-none absolute bottom-0 left-1/2 h-[300px] w-[300px] -translate-x-1/2 rounded-full bg-gradient-to-br from-violet-400/15 to-pink-400/15 blur-3xl dark:from-violet-500/20 dark:to-pink-500/20"
-                animate={{ 
+                animate={{
                     x: [-150, -100, -150],
                     y: [0, -15, 0],
                     scale: [1, 1.2, 1]
@@ -216,7 +216,7 @@ export default function LandingPage() {
             />
 
             <header className="fixed top-0 z-50 w-full border-b border-white/10 bg-white/60 backdrop-blur-2xl dark:bg-slate-950/60">
-                <motion.div 
+                <motion.div
                     initial={{ y: -20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.5, ease: "easeOut" }}
@@ -224,8 +224,8 @@ export default function LandingPage() {
                 >
                     <div className="flex items-center gap-6 sm:gap-8">
                         <a href="/" className="shrink-0 rounded-lg outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-indigo-500/50">
-                            <TilantraLogo 
-                                className="h-8 w-auto" 
+                            <TilantraLogo
+                                className="h-8 w-auto"
                             />
                         </a>
                         <motion.a
@@ -243,6 +243,14 @@ export default function LandingPage() {
                                 className="text-sm font-semibold text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
                             >
                                 Docs
+                            </Link>
+                        </motion.div>
+                        <motion.div whileHover={{ y: -1 }} className="hidden sm:block">
+                            <Link
+                                to="/whats-next"
+                                className="text-sm font-semibold text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
+                            >
+                                What's Next
                             </Link>
                         </motion.div>
                     </div>
@@ -264,9 +272,9 @@ export default function LandingPage() {
             <div className="relative z-10 mx-auto max-w-7xl px-5 pb-14 pt-20 sm:px-8 sm:pt-24 lg:pt-28">
                 {/* Centered Hero Section */}
                 <section className="mx-auto max-w-5xl text-center mb-7">
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }} 
-                        animate={{ opacity: 1, y: 0 }} 
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                         className="space-y-5"
                     >
@@ -278,9 +286,9 @@ export default function LandingPage() {
                         </h1>
 
                         {/* Animated Tagline */}
-                        <motion.div 
-                            initial={{ opacity: 0, scale: 0.9 }} 
-                            animate={{ opacity: 1, scale: 1 }} 
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 0.3, duration: 0.5 }}
                             className="inline-block"
                         >
@@ -294,7 +302,7 @@ export default function LandingPage() {
                         </motion.div>
 
                         {/* Description */}
-                        <motion.p 
+                        <motion.p
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.5 }}
@@ -346,11 +354,11 @@ export default function LandingPage() {
                                 const distance = targetY - startY;
                                 const duration = 1200; // 1.2 seconds for gentler scroll
                                 let start: number | null = null;
-                                
+
                                 const easeInOutCubic = (t: number) => {
                                     return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
                                 };
-                                
+
                                 const step = (timestamp: number) => {
                                     if (!start) start = timestamp;
                                     const progress = Math.min((timestamp - start) / duration, 1);
@@ -360,7 +368,7 @@ export default function LandingPage() {
                                         window.requestAnimationFrame(step);
                                     }
                                 };
-                                
+
                                 window.requestAnimationFrame(step);
                             }}
                             initial={{ opacity: 0, y: 8 }}
@@ -495,7 +503,7 @@ export default function LandingPage() {
                                     </motion.div>
                                 )}
                                 {/* Canvas: grid only — no colored radial overlay so the graph reads clearly */}
-                                <motion.div 
+                                <motion.div
                                     className="relative rounded-xl overflow-hidden border border-slate-200/80 bg-slate-50 dark:bg-slate-900/50"
                                     whileHover={{ borderColor: "rgba(99, 102, 241, 0.3)" }}
                                     transition={{ duration: 0.3 }}
@@ -508,7 +516,7 @@ export default function LandingPage() {
                                         <div className="relative z-[1] h-[20rem] flex items-center justify-center text-center px-6">
                                             <div>
                                                 <motion.div
-                                                    animate={{ 
+                                                    animate={{
                                                         y: [0, -10, 0],
                                                         opacity: [0.6, 1, 0.6]
                                                     }}
@@ -516,7 +524,7 @@ export default function LandingPage() {
                                                 >
                                                     <Upload className="h-12 w-12 mx-auto mb-3 text-slate-400 dark:text-slate-500" />
                                                 </motion.div>
-                                                <motion.p 
+                                                <motion.p
                                                     animate={{ opacity: [0.6, 1, 0.6] }}
                                                     transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                                                     className="text-sm text-slate-600 dark:text-slate-300/90 max-w-sm font-medium"
@@ -540,7 +548,7 @@ export default function LandingPage() {
                         </motion.div>
 
                         <div className="w-full flex justify-center">
-                            <motion.div 
+                            <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.5, duration: 0.6 }}
@@ -551,9 +559,9 @@ export default function LandingPage() {
                                     whileTap={{ scale: 0.95 }}
                                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
                                 >
-                                    <Button 
-                                        size="lg" 
-                                        variant="outline" 
+                                    <Button
+                                        size="lg"
+                                        variant="outline"
                                         className="group gap-2 w-full sm:w-auto border-slate-300 dark:border-white/20 bg-white/90 dark:bg-white/5 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10 hover:border-indigo-400 dark:hover:border-indigo-500 transition-all shadow-sm hover:shadow-md"
                                         onClick={() => fileInputRef.current?.click()}
                                     >
@@ -571,8 +579,8 @@ export default function LandingPage() {
                                     whileTap={{ scale: 0.95 }}
                                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
                                 >
-                                    <Button 
-                                        size="lg" 
+                                    <Button
+                                        size="lg"
                                         className="group gap-2 w-full sm:w-auto bg-slate-900/10 hover:bg-slate-900/20 dark:bg-white/10 dark:hover:bg-white/20 text-slate-900 dark:text-white border border-slate-300 dark:border-white/20 hover:border-violet-400 dark:hover:border-violet-500 transition-all shadow-sm hover:shadow-md"
                                         onClick={() => setTextDialogOpen(true)}
                                     >
@@ -605,7 +613,7 @@ export default function LandingPage() {
                                         <span className="relative z-10">{isAbsorbing ? "Creating..." : "Create Capsule"}</span>
                                         <motion.div
                                             className="relative z-10"
-                                            animate={isAbsorbing ? { 
+                                            animate={isAbsorbing ? {
                                                 x: [0, 5, 0],
                                                 rotate: [0, 10, 0]
                                             } : {}}

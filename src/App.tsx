@@ -7,6 +7,8 @@ import SettingsPage from "./pages/Settings";
 import BillingPage from "./pages/Billing";
 import CreateCapsule from "./pages/CreateCapsule";
 import LandingPage from "./pages/Landing";
+import Register from "./pages/Register";
+import WhatsNext from "./pages/WhatsNext";
 import DocsOverview from "./pages/docs/Overview";
 import GettingStarted from "./pages/docs/GettingStarted";
 import UseCases from "./pages/docs/UseCases";
@@ -50,7 +52,9 @@ function App() {
             <BrowserRouter>
                 <Routes>
                     <Route path="/" element={<LandingPage />} />
+                    <Route path="/whats-next" element={<WhatsNext />} />
                     <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
                     
                     {/* Docs routes */}
                     <Route path="/docs" element={<DocsOverview />} />
