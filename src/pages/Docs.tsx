@@ -134,7 +134,7 @@ export default function DocsPage() {
     );
 
     return (
-        <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-gray-50 via-blue-50/50 to-purple-50/40 text-foreground dark:from-[#040816] dark:via-[#060a1a] dark:to-[#040816]">
+        <div className="relative min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/50 to-purple-50/40 text-foreground dark:from-[#040816] dark:via-[#060a1a] dark:to-[#040816]">
             <div className="pointer-events-none absolute inset-0 opacity-[0.10] dark:opacity-[0.16] [background-image:linear-gradient(rgba(15,23,42,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.10)_1px,transparent_1px)] dark:[background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:44px_44px]" />
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(800px_420px_at_0%_0%,rgba(99,102,241,0.12),transparent_55%),radial-gradient(700px_400px_at_100%_0%,rgba(139,92,246,0.10),transparent_55%)] dark:bg-[radial-gradient(900px_480px_at_0%_0%,rgba(99,102,241,0.22),transparent_55%),radial-gradient(800px_420px_at_100%_0%,rgba(139,92,246,0.18),transparent_55%)]" />
 

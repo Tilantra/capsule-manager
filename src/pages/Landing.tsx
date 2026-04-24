@@ -174,7 +174,7 @@ export default function LandingPage() {
     };
 
     return (
-        <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-gray-50 via-blue-50/55 to-purple-50/45 text-foreground dark:from-[#040816] dark:via-[#060a1a] dark:to-[#040816]">
+        <div className="relative min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/55 to-purple-50/45 text-foreground dark:from-[#040816] dark:via-[#060a1a] dark:to-[#040816]">
             {/* Restored soft background (no harsh navy / white spotlight) */}
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(900px_500px_at_0%_0%,rgba(124,58,237,0.14),transparent_60%),radial-gradient(900px_500px_at_100%_10%,rgba(37,99,235,0.14),transparent_60%)] dark:bg-[radial-gradient(1100px_600px_at_0%_0%,rgba(124,58,237,0.26),transparent_60%),radial-gradient(1100px_600px_at_100%_10%,rgba(37,99,235,0.24),transparent_60%)]" />
             <div className="pointer-events-none absolute inset-0 opacity-[0.10] dark:opacity-[0.18] [background-image:linear-gradient(rgba(15,23,42,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.10)_1px,transparent_1px)] dark:[background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:44px_44px]" />
