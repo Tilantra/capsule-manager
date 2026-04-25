@@ -1,8 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import {
-    Building2, Zap, Database, GitBranch, Users, Sparkles
-} from "lucide-react";
+import { Building2, Zap, Database, GitBranch, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TilantraLogo } from "@/components/Logo";
 import CapsuleUSB from "@/components/assets/CapsuleUSB.png";

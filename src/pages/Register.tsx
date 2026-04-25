@@ -6,9 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Zap, Sparkles, CheckCircle } from "lucide-react";
+import { Shield, Zap, CheckCircle } from "lucide-react";
 import { AuthBackground } from "../components/AuthBackground";
-import CapsuleUSB from "@/components/assets/CapsuleUSB.png";
 
 export default function Register() {
     const [formData, setFormData] = useState({
