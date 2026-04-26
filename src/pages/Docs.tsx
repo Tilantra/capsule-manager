@@ -694,9 +694,19 @@ export default function DocsPage() {
                             <SectionTitle icon={Shield}>Privacy & cleaning</SectionTitle>
                             <Prose>
                                 <p>
-                                    Capsule Hub is built for professional use: injection is designed to avoid noisy footprints, and sensitive metadata
-                                    handling is part of the product story. Enterprise customers with custom integrations (for example Slack) or
-                                    API-first access should contact Tilantra for tailored deployment options.
+                                    Capsule Hub is built for professional use. We utilize industry-standard <strong>Encryption at Rest (AES-256)</strong> to protect your conversational data, media attachments, and vector chunks. 
+                                </p>
+                                <p>
+                                    We act as a trusted custodian of your data, enabling advanced features like RAG and multi-modal parsing while ensuring your information is protected from unauthorized access or database breaches.
+                                </p>
+                                <p>
+                                    For detailed information on our data handling practices, please review our{" "}
+                                    <Link
+                                        to="/docs/privacy"
+                                        className="font-medium text-indigo-600 underline-offset-4 hover:underline dark:text-indigo-400"
+                                    >
+                                        Full Privacy Policy
+                                    </Link>.
                                 </p>
                             </Prose>
                             <Card className="mt-8 border-slate-200/80 bg-white/80 dark:border-slate-800 dark:bg-slate-950/50">

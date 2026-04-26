@@ -40,8 +40,8 @@ export default function Privacy() {
             >
                 <SectionTitle icon={Shield}>Privacy Policy</SectionTitle>
                 <Prose>
-                    <p className="text-sm text-slate-500 italic">Last updated: April 03, 2026</p>
-                    
+                    <p className="text-sm text-slate-500 italic">Last updated: April 26, 2026</p>
+
                     <p>
                         This Privacy Policy describes Our policies and procedures on the collection, use and disclosure of Your information when You use the Service and tells You about Your privacy rights and how the law protects You.
                     </p>
@@ -51,7 +51,7 @@ export default function Privacy() {
                     </p>
 
                     <SubTitle>Interpretation and Definitions</SubTitle>
-                    
+
                     <TertiaryTitle>Interpretation</TertiaryTitle>
                     <p>
                         The words of which the initial letter is capitalized have meanings defined under the following conditions. The following definitions shall have the same meaning regardless of whether they appear in singular or in plural.
@@ -80,7 +80,7 @@ export default function Privacy() {
 
                     <SubTitle>Collecting and Using Your Personal Data</SubTitle>
                     <TertiaryTitle>Types of Data Collected</TertiaryTitle>
-                    
+
                     <h4 className="font-bold text-slate-900 dark:text-slate-100">Personal Data</h4>
                     <p>
                         While using Our Service, We may ask You to provide Us with certain personally identifiable information that can be used to contact or identify You. Personally identifiable information may include, but is not limited to:
@@ -98,7 +98,7 @@ export default function Privacy() {
                     <p>
                         To provide its core functionality, including continuous dynamic context tracking, context injection, and automated summary generation, Capsule Hub actively monitors and processes conversation content on supported AI Platforms. All collected data is encrypted, strictly maintaining user privacy.
                     </p>
-                    
+
                     <p><strong>User Control: Dynamic Context Toggle</strong></p>
                     <p>
                         We believe in empowering our users with full control over their data. The Extension features a "Dynamic Context Toggle" that allows you to easily enable or disable continuous prompt capturing at any time.
@@ -163,7 +163,7 @@ export default function Privacy() {
 
                     <SubTitle>Usage of Your Personal Data</SubTitle>
                     <p>The Company may use Personal Data for the following purposes:</p>
-                    
+
                     <TertiaryTitle>Core Service Functionality</TertiaryTitle>
                     <ul>
                         <li><strong>Real-time Prompt Processing:</strong> Using Transformer technology to continuously capture and analyze every prompt entered into supported AI platforms, providing seamless real-time context management.</li>
@@ -231,7 +231,7 @@ export default function Privacy() {
                     <p>
                         Your information, including Personal Data, is processed at the Company's operating offices and in any other places where the parties involved in the processing are located. Your consent to this Privacy Policy followed by Your submission of such information represents Your agreement to that transfer.
                     </p>
-                    
+
                     <TertiaryTitle>Disclosure of Your Personal Data</TertiaryTitle>
                     <ul>
                         <li><strong>Business Transactions:</strong> If the Company is involved in a merger, acquisition or asset sale, Your Personal Data may be transferred. Notice will be provided before such transfer.</li>
@@ -239,10 +239,37 @@ export default function Privacy() {
                     </ul>
 
                     <SubTitle>Security of Your Personal Data</SubTitle>
-                    <p>We prioritize the security of Your Personal Data. We employ:</p>
+                    <p>We prioritize the security of Your Personal Data. We employ industry-standard protocols to ensure your data remains protected from unauthorized access.</p>
+
+                    <TertiaryTitle>Encryption Model: Server-Side Encryption (at Rest)</TertiaryTitle>
+                    <p>
+                        Capsule Hub utilizes <strong>Encryption at Rest and Transit (Server-Side Encryption)</strong>. This means that while your data is stored in our systems, it is encrypted using a universal AES-256 key. This setup is the industry standard for enterprise SaaS products like Google Drive, Slack, and Notion.
+                    </p>
+
+                    <p><strong>What it protects against:</strong></p>
+                    <ul>
+                        <li><strong>Database Leaks:</strong> If an unauthorized party breaches our databases, the data they download remains complete gibberish without the application server's encryption key.</li>
+                        <li><strong>Hardware Theft:</strong> Your data will be protected even in the event of physical theft of hard drives from our server facilities.</li>
+                    </ul>
+
+                    <p><strong>Specific Data Encryption:</strong></p>
+                    <ul>
+                        <li><strong>Media Attachments:</strong> All raw Base64 data for images and document attachments are encrypted with this key.</li>
+                        <li><strong>Vector Database:</strong> All text chunks are encrypted before they leave our server.</li>
+                        <li><strong>Conversational History:</strong> Messages stored inside your capsule versions collection are also encrypted at rest.</li>
+                    </ul>
+
+                    <TertiaryTitle>The Trusted Custodian Model</TertiaryTitle>
+                    <p>
+                        In this model, Tilantra acts as a <strong>trusted custodian</strong> of your data. While we don't have access to your data, we dynamically generate the keys to decrypt the data to fulfill your specific requests and cannot access it beyond request calls.
+                    </p>
+                    <p>
+                        <strong>Why we use this instead of End-to-End Encryption (E2EE):</strong> To provide advanced AI features like RAG (Retrieval-Augmented Generation), feeding context into LLMs, and parsing complex images our backend server must be able to read and process the text. E2EE would mathematically lock our system out of reading the data, making these critical features impossible to run.
+                    </p>
+
+                    <TertiaryTitle>Additional Security Layers</TertiaryTitle>
                     <ul>
                         <li><strong>Encryption in Transit:</strong> All backend communication uses HTTPS/TLS encryption.</li>
-                        <li><strong>Encryption at Rest:</strong> Personal data in databases is encrypted using industry-standard algorithms.</li>
                         <li><strong>OAuth 2.0 & JWT:</strong> Secure login and short-lived cryptographically signed session tokens.</li>
                         <li><strong>Secure Local Storage:</strong> Chrome's local storage API is strictly isolated.</li>
                         <li><strong>Access Controls:</strong> Restricted API endpoints ensure precise data boundaries based on authentication.</li>
