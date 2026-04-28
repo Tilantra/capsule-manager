@@ -41,7 +41,7 @@ export default function CreateCapsule() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const client = useMemo(() => new BrowserGuideraClient(), []);
-    
+
     // Metadata State
     const [name, setName] = useState("");
     const [summary, setSummary] = useState("");
@@ -49,17 +49,17 @@ export default function CreateCapsule() {
     const [userTeams, setUserTeams] = useState<any[]>([]);
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [capsuleCount, setCapsuleCount] = useState<number>(0);
-    
+
     // Canvas State
     const [chunks, setChunks] = useState<Chunk[]>([]);
     const [globalFiles, setGlobalFiles] = useState<AttachedFile[]>([]);
-    
+
     // Active Input State
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [textDialogOpen, setTextDialogOpen] = useState(false);
     const [textDraft, setTextDraft] = useState("");
-    
+
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -143,7 +143,7 @@ export default function CreateCapsule() {
             type: file.type || "application/octet-stream",
             previewUrl: file.type.startsWith("image/") ? URL.createObjectURL(file) : undefined
         }));
-        
+
         setGlobalFiles(prev => [...prev, ...newAttachedFiles]);
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
@@ -252,7 +252,7 @@ export default function CreateCapsule() {
         setIsSubmitting(true);
         try {
             const attachment_ids: string[] = [];
-            
+
             // 1. Upload Attachments
             for (const f of globalFiles) {
                 const base64Data = await new Promise<string>((resolve, reject) => {
@@ -265,7 +265,7 @@ export default function CreateCapsule() {
                     reader.onerror = reject;
                     reader.readAsDataURL(f.file);
                 });
-                
+
                 if (base64Data) {
                     const meta = await client.uploadCapsuleAttachment(base64Data, f.file.name, f.type);
                     if (meta && meta.asset_id) {
@@ -279,22 +279,22 @@ export default function CreateCapsule() {
                 role: "user",
                 content: chunk.text
             }));
-            
+
             // 3. Create Capsule Request
             const request = {
-                content: { 
+                content: {
                     messages,
                     metadata: { summary: summary.trim() }
                 },
                 tag: name.trim(),
-                team: team === "private" ? undefined : team,
+                team: team || "private",
                 extracted_from: "tilantra",
                 attachment_ids
             };
-            
+
             await client.createCapsule(request);
             clearCapsuleDraft();
-            
+
             toast.success("Capsule created successfully!");
             navigate("/capsules");
         } catch (error: any) {
@@ -331,9 +331,9 @@ export default function CreateCapsule() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div className="space-y-1.5">
                         <Label htmlFor="capsule-name" className="text-xs">Capsule Name <span className="text-destructive">*</span></Label>
-                        <Input 
-                            id="capsule-name" 
-                            placeholder="e.g. Q3 Research Notes" 
+                        <Input
+                            id="capsule-name"
+                            placeholder="e.g. Q3 Research Notes"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             className="bg-background/50 h-9"
@@ -348,7 +348,7 @@ export default function CreateCapsule() {
                             <SelectContent>
                                 <SelectItem value="private">Private (Default)</SelectItem>
                                 {userTeams.map((t: any) => {
-                                    const val = typeof t === "string" ? t : (t._id || t.id || String(t));
+                                    const val = typeof t === "string" ? t : (t.team_id || t._id || t.id || String(t));
                                     const display = typeof t === "string" ? t : (t.name || val);
                                     return (
                                         <SelectItem key={val} value={val}>
@@ -361,9 +361,9 @@ export default function CreateCapsule() {
                     </div>
                     <div className="space-y-1.5">
                         <Label htmlFor="capsule-summary" className="text-xs">Summary (Optional)</Label>
-                        <Input 
-                            id="capsule-summary" 
-                            placeholder="Brief description..." 
+                        <Input
+                            id="capsule-summary"
+                            placeholder="Brief description..."
                             value={summary}
                             onChange={(e) => setSummary(e.target.value)}
                             className="bg-background/50 h-9"
@@ -373,9 +373,8 @@ export default function CreateCapsule() {
             </Card>
 
             <Card
-                className={`p-6 border bg-gradient-to-br from-card via-card/95 to-card/90 shadow-lg overflow-hidden relative transition-colors ${
-                    isDragging ? "border-primary/60" : "border-border"
-                }`}
+                className={`p-6 border bg-gradient-to-br from-card via-card/95 to-card/90 shadow-lg overflow-hidden relative transition-colors ${isDragging ? "border-primary/60" : "border-border"
+                    }`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
