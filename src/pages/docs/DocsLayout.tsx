@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { BookOpen, Rocket, Layers, MousePointerClick, Puzzle, Sparkles, Network, Shield, ChevronRight } from "lucide-react";
+import { BookOpen, Rocket, Layers, MousePointerClick, Puzzle, Sparkles, Network, Shield, ChevronRight, Bot, BrainCircuit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -14,6 +14,8 @@ const NAV_ITEMS = [
     { path: "/docs/use-cases", label: "Use cases", icon: Layers },
     { path: "/docs/features", label: "Features", icon: MousePointerClick },
     { path: "/docs/mcp", label: "Capsule Hub MCP", icon: Puzzle },
+    { path: "/docs/personal-chatbot", label: "Personal chatbot integration", icon: Bot },
+    { path: "/docs/anthropic-skills", label: "Anthropic skills", icon: BrainCircuit },
     { path: "/docs/plans", label: "Plans & tiers", icon: Sparkles },
     { path: "/docs/platforms", label: "Supported platforms", icon: Network },
     { path: "/docs/privacy", label: "Privacy Policy", icon: Shield },

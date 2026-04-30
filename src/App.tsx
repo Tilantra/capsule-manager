@@ -15,6 +15,8 @@ import GettingStarted from "./pages/docs/GettingStarted";
 import UseCases from "./pages/docs/UseCases";
 import Features from "./pages/docs/Features";
 import MCPIntegration from "./pages/docs/MCP";
+import PersonalChatbot from "./pages/docs/PersonalChatbot";
+import AnthropicSkills from "./pages/docs/AnthropicSkills";
 import Plans from "./pages/docs/Plans";
 import Platforms from "./pages/docs/Platforms";
 import Privacy from "./pages/docs/Privacy";
@@ -64,6 +66,8 @@ function App() {
                     <Route path="/docs/use-cases" element={<UseCases />} />
                     <Route path="/docs/features" element={<Features />} />
                     <Route path="/docs/mcp" element={<MCPIntegration />} />
+                    <Route path="/docs/personal-chatbot" element={<PersonalChatbot />} />
+                    <Route path="/docs/anthropic-skills" element={<AnthropicSkills />} />
                     <Route path="/docs/plans" element={<Plans />} />
                     <Route path="/docs/platforms" element={<Platforms />} />
                     <Route path="/docs/privacy" element={<Privacy />} />
