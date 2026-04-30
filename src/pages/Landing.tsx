@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowDown, ArrowRight, MessageSquarePlus, Paperclip, Sparkles, Upload, Zap, Shield, Layers, RefreshCw } from "lucide-react";
+import { ArrowDown, ArrowRight, Bot, BrainCircuit, Chrome, Globe, MessageSquarePlus, Paperclip, Sparkles, Upload, Zap, Shield, Layers, RefreshCw, ServerCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -46,6 +46,45 @@ const FEATURES = [
     { text: "Prevents hallucinations", icon: RefreshCw },
 ] as const;
 
+const USE_CASES = [
+    {
+        title: "Chrome Extension",
+        description: "Capture from ChatGPT, Claude, Gemini, Perplexity, DeepSeek and Gmail in one click.",
+        href: "https://chromewebstore.google.com/detail/capsule-hub-by-tilantra/ngeoeefidomejcdhiecidpaalfoekjbh?hl=en-US&utm_source=ext_sidebar",
+        external: true,
+        icon: Chrome,
+        highlight: true,
+    },
+    {
+        title: "MCP for Developers",
+        description: "Connect Capsule Hub in Cursor and other MCP-compatible clients.",
+        href: "/docs/mcp",
+        external: false,
+        icon: ServerCog,
+    },
+    {
+        title: "Personal Chatbot Integration",
+        description: "Embed Capsule Hub SDK on your own website chatbot and sync context.",
+        href: "/docs/personal-chatbot",
+        external: false,
+        icon: Bot,
+    },
+    {
+        title: "Capsules as Anthropic Skills",
+        description: "Use Claude Code skills to save, search, read, and version capsules from terminal.",
+        href: "/docs/anthropic-skills",
+        external: false,
+        icon: BrainCircuit,
+    },
+    {
+        title: "Custom Capsules Through Websites",
+        description: "Create and manage capsules directly through the Capsule Hub web experience.",
+        href: "#studio",
+        external: false,
+        icon: Globe,
+    },
+] as const;
+
 const ORBITING_LOGOS = [
     { src: ChatgptLogo, alt: "ChatGPT", side: "left", x: -115, y: -105, delay: 0.05, fx1: 8, fx2: -4, fy1: -7, fy2: 5, r1: -4, r2: 2, drift: 4.3 },
     { src: ClaudeLogo, alt: "Claude", side: "left", x: -128, y: -45, delay: 0.12, fx1: -6, fx2: 5, fy1: 8, fy2: -5, r1: 3, r2: -2, drift: 4.8 },
@@ -64,6 +103,7 @@ export default function LandingPage() {
     const navigate = useNavigate();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const studioSectionRef = useRef<HTMLElement>(null);
+    const useCasesSectionRef = useRef<HTMLElement>(null);
     const [files, setFiles] = useState<LandingFile[]>([]);
     const [chunks, setChunks] = useState<LandingChunk[]>([]);
     const [textDialogOpen, setTextDialogOpen] = useState(false);
@@ -72,6 +112,32 @@ export default function LandingPage() {
     const [showSignInPrompt, setShowSignInPrompt] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [logosActivated, setLogosActivated] = useState(false);
+
+    const smoothScrollToSection = (section: HTMLElement | null) => {
+        if (!section) return;
+        const targetY = section.getBoundingClientRect().top + window.scrollY - 72;
+        const startY = window.scrollY;
+        const distance = targetY - startY;
+        const duration = 1200;
+        let start: number | null = null;
+
+        const easeInOutCubic = (t: number) => {
+            return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        };
+
+        const step = (timestamp: number) => {
+            if (!start) start = timestamp;
+            const progress = Math.min((timestamp - start) / duration, 1);
+            const eased = easeInOutCubic(progress);
+            window.scrollTo(0, startY + distance * eased);
+            if (progress < 1) window.requestAnimationFrame(step);
+        };
+
+        window.requestAnimationFrame(step);
+    };
+
+    const smoothScrollToStudio = () => smoothScrollToSection(studioSectionRef.current);
+    const smoothScrollToUseCases = () => smoothScrollToSection(useCasesSectionRef.current);
 
     const graphItems = useMemo(
         () => [
@@ -220,15 +286,15 @@ export default function LandingPage() {
 
             <div className="relative z-10 mx-auto max-w-7xl px-5 pb-14 pt-20 sm:px-8 sm:pt-24 lg:pt-28">
                 {/* Centered Hero Section */}
-                <section className="mx-auto max-w-5xl text-center mb-7">
+                <section className="mx-auto flex min-h-[88vh] max-w-6xl items-center justify-center text-center">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                        className="space-y-5"
+                        className="space-y-4 sm:space-y-6 -mt-10 sm:-mt-16"
                     >
                         {/* Main Heading - Single Line */}
-                        <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.02]">
+                        <h1 className="text-5xl sm:text-6xl lg:text-[5.5rem] font-extrabold tracking-tight leading-tight text-center">
                             <span className="inline-block bg-gradient-to-r from-slate-900 via-indigo-600 to-violet-600 bg-clip-text text-transparent dark:from-white dark:via-indigo-400 dark:to-violet-400">
                                 Capture your Context
                             </span>
@@ -239,7 +305,7 @@ export default function LandingPage() {
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 0.3, duration: 0.5 }}
-                            className="inline-block"
+                            className="inline-block -mt-2 sm:-mt-4"
                         >
                             <div className="relative py-1 px-1">
                                 <TrueFocusText
@@ -255,17 +321,16 @@ export default function LandingPage() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.5 }}
-                            className="mx-auto max-w-2xl text-base sm:text-lg leading-relaxed text-slate-600 dark:text-slate-300"
+                            className="mx-auto max-w-3xl pt-2 text-base sm:text-lg leading-relaxed text-slate-600 dark:text-slate-300"
                         >
                             Sync context, Version artifacts, and Align agents — Never start from Zero again.
                         </motion.p>
 
-                        {/* Features Grid */}
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 16 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.7, duration: 0.5 }}
-                            className="pt-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 max-w-4xl mx-auto"
+                            transition={{ delay: 0.66, duration: 0.45 }}
+                            className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 max-w-5xl mx-auto"
                         >
                             {FEATURES.map((feature, index) => {
                                 const Icon = feature.icon;
@@ -274,72 +339,134 @@ export default function LandingPage() {
                                         key={feature.text}
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.8 + index * 0.1 }}
-                                        whileHover={{ y: -4, scale: 1.05 }}
-                                        className="group p-4 rounded-xl bg-white/60 dark:bg-slate-900/40 backdrop-blur-sm border border-slate-200/50 dark:border-white/10 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 transition-all cursor-pointer"
+                                        transition={{ delay: 0.74 + index * 0.08 }}
+                                        whileHover={{ y: -3, scale: 1.02 }}
+                                        className="group relative px-4 py-2.5 rounded-full bg-white/45 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200/60 dark:border-white/10 hover:border-indigo-500/40 hover:bg-white/80 dark:hover:bg-slate-900/60 hover:shadow-[0_0_25px_rgba(99,102,241,0.12)] transition-all cursor-pointer flex items-center gap-3"
                                     >
-                                        <motion.div
-                                            whileHover={{ rotate: 360 }}
-                                            transition={{ duration: 0.5 }}
-                                            className="mb-2 mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500/20 to-violet-500/20 group-hover:from-indigo-500/30 group-hover:to-violet-500/30 transition-all"
-                                        >
-                                            <Icon className="h-5 w-5 text-indigo-600 dark:text-indigo-400" strokeWidth={2.5} />
-                                        </motion.div>
-                                        <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-500/10 group-hover:bg-indigo-500/20 transition-colors">
+                                            <Icon className="h-4 w-4 text-indigo-600 dark:text-indigo-400" strokeWidth={2.5} />
+                                        </div>
+                                        <span className="text-[13px] font-semibold text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors whitespace-nowrap">
                                             {feature.text}
-                                        </p>
+                                        </span>
+                                        {/* Subtle accent glow */}
+                                        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-500/0 via-indigo-500/5 to-indigo-500/0 opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </motion.div>
                                 );
                             })}
                         </motion.div>
 
-                        <motion.a
-                            href="#studio"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                if (!studioSectionRef.current) return;
-                                const targetY = studioSectionRef.current.getBoundingClientRect().top + window.scrollY - 72;
-                                const startY = window.scrollY;
-                                const distance = targetY - startY;
-                                const duration = 1200; // 1.2 seconds for gentler scroll
-                                let start: number | null = null;
-
-                                const easeInOutCubic = (t: number) => {
-                                    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-                                };
-
-                                const step = (timestamp: number) => {
-                                    if (!start) start = timestamp;
-                                    const progress = Math.min((timestamp - start) / duration, 1);
-                                    const eased = easeInOutCubic(progress);
-                                    window.scrollTo(0, startY + distance * eased);
-                                    if (progress < 1) {
-                                        window.requestAnimationFrame(step);
-                                    }
-                                };
-
-                                window.requestAnimationFrame(step);
-                            }}
-                            initial={{ opacity: 0, y: 8 }}
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 1.05 }}
-                            className="mx-auto mt-1 inline-flex items-center gap-3 rounded-full border border-indigo-400/55 bg-white/85 px-5 py-2.5 text-base font-bold text-indigo-700 shadow-md shadow-indigo-500/20 transition-all hover:scale-[1.03] hover:bg-indigo-50 dark:border-indigo-600/60 dark:bg-slate-900/70 dark:text-indigo-200 dark:hover:bg-slate-900"
-                            aria-label="Jump to interactive capsule studio"
+                            transition={{ delay: 0.8, duration: 0.4 }}
+                            className="pt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
                         >
-                            Try it out now
-                            <motion.span
-                                className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600 text-white dark:bg-indigo-500"
-                                animate={{ y: [0, 4, 0], scale: [1, 1.08, 1] }}
-                                transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
+                            <Button
+                                onClick={smoothScrollToStudio}
+                                className="group relative inline-flex h-14 items-center gap-2.5 overflow-hidden bg-violet-600 px-8 text-lg font-bold text-white transition-all hover:bg-violet-700 hover:shadow-[0_10px_30px_rgba(124,58,237,0.4)] active:scale-95"
                             >
-                                <ArrowDown className="h-4 w-4" strokeWidth={2.75} />
-                            </motion.span>
-                        </motion.a>
+                                <span className="relative z-10 flex items-center gap-2.5">
+                                    Try it now
+                                    <Sparkles className="h-5 w-5 transition-transform group-hover:rotate-12 group-hover:scale-110" />
+                                </span>
+                                <div className="absolute inset-0 z-0 bg-gradient-to-r from-violet-400/0 via-white/20 to-violet-400/0 -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                            </Button>
+
+                            <Button
+                                onClick={smoothScrollToUseCases}
+                                variant="outline"
+                                className="inline-flex h-14 items-center gap-2.5 border-indigo-200/60 bg-white/60 px-8 text-lg font-semibold text-indigo-700 backdrop-blur-sm transition-all hover:bg-indigo-50 hover:border-indigo-300 dark:border-indigo-500/30 dark:bg-slate-900/40 dark:text-indigo-200 dark:hover:bg-slate-900"
+                            >
+                                Explore Features
+                                <ArrowDown className="h-5 w-5" />
+                            </Button>
+                        </motion.div>
                     </motion.div>
                 </section>
 
+                <section id="use-cases" ref={useCasesSectionRef} className="mx-auto mt-2 max-w-6xl scroll-mt-20">
+                    <motion.div
+                        initial={{ opacity: 0, y: 18 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2, duration: 0.45 }}
+                        className="w-full mt-8"
+                    >
+                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+                            {USE_CASES.map((useCase, idx) => {
+                                const Icon = useCase.icon;
+                                const placementClass =
+                                    idx === 3
+                                        ? "lg:col-span-2 lg:col-start-2"
+                                        : idx === 4
+                                            ? "lg:col-span-2 lg:col-start-4"
+                                            : "lg:col-span-2";
+                                const cardClass = useCase.highlight
+                                    ? "border-indigo-400/70 bg-gradient-to-br from-indigo-500/20 via-violet-500/10 to-white/90 dark:from-indigo-500/30 dark:via-violet-500/20 dark:to-slate-950/60 shadow-lg shadow-indigo-500/20"
+                                    : "border-slate-200/70 bg-white/70 dark:border-white/10 dark:bg-slate-900/40 hover:border-indigo-300 dark:hover:border-indigo-500/50";
+
+                                const ctaText =
+                                    useCase.title === "Custom Capsules Through Websites"
+                                        ? "Try it out below"
+                                        : useCase.title === "Chrome Extension"
+                                            ? "Download now"
+                                            : "Open guide";
+
+                                const content = (
+                                    <motion.div
+                                        whileHover={{ y: -3, scale: 1.01 }}
+                                        transition={{ duration: 0.18 }}
+                                        className={`group flex h-full flex-col rounded-xl border p-4 text-left backdrop-blur-sm transition-all ${cardClass}`}
+                                    >
+                                        <div className="mb-2 flex items-center justify-between">
+                                            <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500/20 to-violet-500/20">
+                                                <Icon className="h-4 w-4 text-indigo-600 dark:text-indigo-300" strokeWidth={2.4} />
+                                            </span>
+                                        </div>
+                                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{useCase.title}</p>
+                                        <p className="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-300">{useCase.description}</p>
+                                        <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 transition-colors group-hover:text-indigo-600 dark:text-indigo-300 dark:group-hover:text-indigo-200">
+                                            {ctaText}
+                                            <ArrowRight className="h-3.5 w-3.5" />
+                                        </span>
+                                    </motion.div>
+                                );
+
+                                return useCase.external ? (
+                                    <a
+                                        key={useCase.title}
+                                        href={useCase.href}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={placementClass}
+                                    >
+                                        {content}
+                                    </a>
+                                ) : useCase.href.startsWith("#") ? (
+                                    <a
+                                        key={useCase.title}
+                                        href={useCase.href}
+                                        className={placementClass}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            smoothScrollToStudio();
+                                        }}
+                                    >
+                                        {content}
+                                    </a>
+                                ) : (
+                                    <Link key={useCase.title} to={useCase.href} className={placementClass}>
+                                        {content}
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    </motion.div>
+
+                </section>
+
                 {/* Interactive Capsule Studio */}
-                <section id="studio" ref={studioSectionRef} className="mx-auto max-w-5xl scroll-mt-20">
+                <section id="studio" ref={studioSectionRef} className="mx-auto mt-14 max-w-5xl scroll-mt-20">
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -431,7 +558,7 @@ export default function LandingPage() {
                                 ))}
                             </div>
 
-                            <Card className="relative z-10 p-4 sm:p-5 bg-white/90 dark:bg-slate-950/40 backdrop-blur-sm border border-slate-200/90 dark:border-white/12 shadow-lg shadow-slate-900/5 dark:shadow-black/40 hover:shadow-xl hover:shadow-slate-900/10 dark:hover:shadow-black/60 transition-all duration-300">
+                            <Card className="relative z-10 p-5 sm:p-6 bg-white/90 dark:bg-slate-950/40 backdrop-blur-sm border border-slate-200/90 dark:border-white/12 shadow-lg shadow-slate-900/5 dark:shadow-black/40 hover:shadow-xl hover:shadow-slate-900/10 dark:hover:shadow-black/60 transition-all duration-300">
                                 {/* Drag overlay */}
                                 {isDragging && (
                                     <motion.div
@@ -462,7 +589,7 @@ export default function LandingPage() {
                                         aria-hidden
                                     />
                                     {graphItems.length === 0 ? (
-                                        <div className="relative z-[1] h-[20rem] flex items-center justify-center text-center px-6">
+                                        <div className="relative z-[1] h-[24rem] flex items-center justify-center text-center px-6">
                                             <div>
                                                 <motion.div
                                                     animate={{
@@ -483,12 +610,12 @@ export default function LandingPage() {
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="relative z-[1] flex min-h-[20rem] items-center justify-center">
+                                        <div className="relative z-[1] flex min-h-[24rem] items-center justify-center">
                                             <CapsuleGraph
                                                 items={graphItems}
                                                 onRemoveItem={removeItem}
                                                 isAbsorbing={isAbsorbing}
-                                                className="h-[20rem]"
+                                                className="h-[24rem]"
                                             />
                                         </div>
                                     )}
