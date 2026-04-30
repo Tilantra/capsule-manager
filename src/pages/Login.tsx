@@ -51,7 +51,8 @@ function LoginContent() {
                 navigate(nextPath);
             } catch (err: any) {
                 console.error("Google login error:", err);
-                setError(err.message || "Google Sign In failed");
+                const errorMessage = err.response?.data?.detail || err.message || "Google Sign In failed";
+                setError(errorMessage);
             } finally {
                 setLoading(false);
             }
@@ -69,7 +70,8 @@ function LoginContent() {
             await client.login(email, password);
             navigate(nextPath);
         } catch (err: any) {
-            setError(err.message || "Login failed");
+            const errorMessage = err.response?.data?.detail || err.message || "Login failed";
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -227,7 +229,13 @@ function LoginContent() {
                                         transition={{ delay: 0.7 }}
                                     >
                                         <div className="flex items-center justify-between">
-                                            <Label htmlFor="password" className="text-sm font-semibold">Password</Label>
+                                            <Label htmlFor="password" title="Password" className="text-sm font-semibold">Password</Label>
+                                            <Link
+                                                to="/forgot-password"
+                                                className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                                            >
+                                                Forgot password?
+                                            </Link>
                                         </div>
                                         <Input
                                             id="password"
