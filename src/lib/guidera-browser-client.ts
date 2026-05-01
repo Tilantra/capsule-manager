@@ -15,6 +15,7 @@ import type {
 
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://backend.tilantra.com';
+//const BASE_URL = 'http://localhost:8000';
 
 export class BrowserGuideraClient {
     private apiBaseUrl: string;
@@ -169,6 +170,18 @@ export class BrowserGuideraClient {
         } else {
             throw new Error(`Registration failed with status ${response.status}: ${response.statusText}`);
         }
+    }
+
+    async forgotPassword(email: string): Promise<{ message: string }> {
+        const url = `${this.apiBaseUrl}/users/forgot-password`;
+        const response = await axios.post(url, { email });
+        return response.data;
+    }
+
+    async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+        const url = `${this.apiBaseUrl}/users/reset-password`;
+        const response = await axios.post(url, { token, new_password: newPassword });
+        return response.data;
     }
 
     async generate(

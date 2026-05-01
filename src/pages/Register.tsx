@@ -45,7 +45,8 @@ export default function Register() {
                 navigate("/login");
             }, 3000);
         } catch (err: any) {
-            setError(err.message || "Registration failed");
+            const errorMessage = err.response?.data?.detail || err.message || "Registration failed";
+            setError(errorMessage);
             setLoading(false);
         }
     };
