@@ -257,6 +257,7 @@ export default function Privacy() {
                         <li><strong>Media Attachments:</strong> All raw Base64 data for images and document attachments are encrypted with this key.</li>
                         <li><strong>Vector Database:</strong> All text chunks are encrypted before they leave our server.</li>
                         <li><strong>Conversational History:</strong> Messages stored inside your capsule versions collection are also encrypted at rest.</li>
+                        <li><strong>Context Summaries:</strong> To power capsule search and dynamic context features, our backend generates lightweight semantic summaries from your encrypted conversation data. These summaries are retained in an application-readable format to support vector indexing and real-time context surfacing, and do not contain verbatim conversation text.</li>
                     </ul>
 
                     <TertiaryTitle>The Trusted Custodian Model</TertiaryTitle>
