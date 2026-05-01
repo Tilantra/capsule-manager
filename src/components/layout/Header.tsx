@@ -3,11 +3,18 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { TilantraLogo } from "@/components/Logo";
 
-const Header = () => {
+interface HeaderProps {
+    topOffset?: number;
+}
+
+const Header = ({ topOffset = 0 }: HeaderProps) => {
     const navigate = useNavigate();
 
     return (
-        <header className="fixed top-0 z-50 w-full border-b border-white/10 bg-white/60 backdrop-blur-2xl dark:bg-slate-950/60">
+        <header
+            className="fixed z-50 w-full border-b border-white/10 bg-white/60 backdrop-blur-2xl dark:bg-slate-950/60"
+            style={{ top: `${topOffset}px` }}
+        >
             <motion.div
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
