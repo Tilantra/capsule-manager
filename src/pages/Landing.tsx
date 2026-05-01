@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowDown, ArrowRight, Bot, BrainCircuit, Chrome, Globe, MessageSquarePlus, Paperclip, Sparkles, Upload, Zap, Shield, Layers, RefreshCw, ServerCog } from "lucide-react";
+import { ArrowDown, ArrowRight, Bot, BrainCircuit, Chrome, Globe, MessageSquarePlus, Paperclip, Sparkles, Upload, Zap, Shield, Layers, RefreshCw, ServerCog, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -99,6 +99,20 @@ const ORBITING_LOGOS = [
     { src: OutlookLogo, alt: "Outlook", side: "right", x: 112, y: 115, delay: 0.38, fx1: -7, fx2: 5, fy1: -7, fy2: 5, r1: 3, r2: -2, drift: 4.6 },
 ] as const;
 
+type ExtensionServiceStatus = "up" | "down";
+
+// Toggle this value during deploys; banner appears only when status is "down".
+const EXTENSION_SERVICE_STATUS: ExtensionServiceStatus = "up";
+
+const EXTENSION_DOWN_BANNER = {
+    title: "MAINTENANCE",
+    message: "The extension service is temporarily down while deployment is in progress. Thank you for your patience.",
+    icon: XCircle,
+    containerClass:
+        "border-orange-400/65 bg-gradient-to-r from-orange-700 via-amber-700 to-orange-700 text-white dark:border-orange-400/55 dark:from-orange-700 dark:via-amber-700 dark:to-orange-700",
+} as const;
+const EXTENSION_DOWN_BANNER_HEIGHT = 36;
+
 export default function LandingPage() {
     const navigate = useNavigate();
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -112,6 +126,8 @@ export default function LandingPage() {
     const [showSignInPrompt, setShowSignInPrompt] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [logosActivated, setLogosActivated] = useState(false);
+    const showExtensionDownBanner = EXTENSION_SERVICE_STATUS === "down";
+    const ExtensionServiceIcon = EXTENSION_DOWN_BANNER.icon;
 
     const smoothScrollToSection = (section: HTMLElement | null) => {
         if (!section) return;
@@ -282,9 +298,31 @@ export default function LandingPage() {
                 COLOR_UPDATE_SPEED={14}
             />
 
-            <Header />
+            {showExtensionDownBanner && (
+                <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35 }}
+                    className={`fixed inset-x-0 top-0 z-[60] flex h-[36px] items-center justify-center border-b px-4 text-center shadow-md ${EXTENSION_DOWN_BANNER.containerClass}`}
+                    role="status"
+                    aria-live="polite"
+                >
+                    <div className="flex items-center gap-2 text-[11px] sm:text-xs">
+                        <ExtensionServiceIcon className="h-3.5 w-3.5 shrink-0 text-white/95" />
+                        <p className="font-bold tracking-wide">{EXTENSION_DOWN_BANNER.title}:</p>
+                        <p className="font-medium text-white/95">{EXTENSION_DOWN_BANNER.message}</p>
+                    </div>
+                </motion.div>
+            )}
 
-            <div className="relative z-10 mx-auto max-w-7xl px-5 pb-14 pt-20 sm:px-8 sm:pt-24 lg:pt-28">
+            <Header topOffset={showExtensionDownBanner ? EXTENSION_DOWN_BANNER_HEIGHT : 0} />
+
+            <div
+                className="relative z-10 mx-auto max-w-7xl px-5 pb-14 sm:px-8"
+                style={{
+                    paddingTop: showExtensionDownBanner ? "7.5rem" : "5rem",
+                }}
+            >
                 {/* Centered Hero Section */}
                 <section className="mx-auto flex min-h-[88vh] max-w-6xl items-center justify-center text-center">
                     <motion.div

@@ -350,6 +350,26 @@ export class BrowserGuideraClient {
         return response.data;
     }
 
+    private normalizeUserTier(user: { tier?: string; tier_expires_at?: string }): { tier?: string; tier_expires_at?: string } {
+        const tier = (user.tier || "").toLowerCase();
+        const expiresAtRaw = user.tier_expires_at;
+        if (!tier || !expiresAtRaw || tier === "basic") {
+            return user;
+        }
+
+        const expiresAt = new Date(expiresAtRaw);
+        if (Number.isNaN(expiresAt.getTime())) {
+            return user;
+        }
+
+        // If paid tier has expired, treat user as basic in UI immediately.
+        if (expiresAt.getTime() <= Date.now()) {
+            return { ...user, tier: "basic" };
+        }
+
+        return user;
+    }
+
 
     async getPolicies(): Promise<{ input_policies: string[]; output_policies: string[] }> {
         if (!this.tokenValid()) {
@@ -372,7 +392,7 @@ export class BrowserGuideraClient {
         }
     }
 
-    async getSingleUser(email?: string, username?: string): Promise<{ username: string; email: string; full_name: string; company: string; teams?: string[]; has_api_key?: boolean; tier?: string }> {
+    async getSingleUser(email?: string, username?: string): Promise<{ username: string; email: string; full_name: string; company: string; teams?: string[]; has_api_key?: boolean; tier?: string; tier_expires_at?: string }> {
         if (!this.tokenValid()) {
             throw new Error('Not authenticated');
         }
@@ -408,7 +428,7 @@ export class BrowserGuideraClient {
         };
         const response = await axios.get(url, { headers });
         if (response.status === 200) {
-            return response.data;
+            return this.normalizeUserTier(response.data);
         } else if (response.status === 401) {
             this.clearJwt();
             window.dispatchEvent(new Event('guidera_unauthorized'));
