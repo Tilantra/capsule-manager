@@ -106,7 +106,7 @@ export class BrowserGuideraClient {
                 const exp = this.extractExpFromToken(token)
                     ?? (result.exp && result.exp > Math.floor(Date.now() / 1000)
                         ? result.exp
-                        : Math.floor(Date.now() / 1000) + 2 * 3600);
+                        : Math.floor(Date.now() / 1000) + 15 * 24 * 3600);
                 this.saveJwt(token, exp);
                 return token;
             } else {
@@ -142,7 +142,7 @@ export class BrowserGuideraClient {
                 const exp = this.extractExpFromToken(authToken)
                     ?? (result.exp && result.exp > Math.floor(Date.now() / 1000)
                         ? result.exp
-                        : Math.floor(Date.now() / 1000) + 2 * 3600);
+                        : Math.floor(Date.now() / 1000) + 15 * 24 * 3600);
                 this.saveJwt(authToken, exp);
                 return authToken;
             } else {
@@ -350,7 +350,7 @@ export class BrowserGuideraClient {
         return response.data;
     }
 
-    private normalizeUserTier(user: { tier?: string; tier_expires_at?: string }): { tier?: string; tier_expires_at?: string } {
+    private normalizeUserTier<T extends { tier?: string; tier_expires_at?: string }>(user: T): T {
         const tier = (user.tier || "").toLowerCase();
         const expiresAtRaw = user.tier_expires_at;
         if (!tier || !expiresAtRaw || tier === "basic") {

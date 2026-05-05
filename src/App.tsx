@@ -21,6 +21,7 @@ import PersonalChatbot from "./pages/docs/PersonalChatbot";
 import AnthropicSkills from "./pages/docs/AnthropicSkills";
 import Plans from "./pages/docs/Plans";
 import Platforms from "./pages/docs/Platforms";
+import Troubleshooting from "./pages/docs/Troubleshooting";
 import Privacy from "./pages/docs/Privacy";
 import AppLayout from "./components/layout/AppLayout";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -74,6 +75,7 @@ function App() {
                     <Route path="/docs/anthropic-skills" element={<AnthropicSkills />} />
                     <Route path="/docs/plans" element={<Plans />} />
                     <Route path="/docs/platforms" element={<Platforms />} />
+                    <Route path="/docs/troubleshooting" element={<Troubleshooting />} />
                     <Route path="/docs/privacy" element={<Privacy />} />
 
                     <Route element={<PrivateRoute><AppLayout /></PrivateRoute>}>

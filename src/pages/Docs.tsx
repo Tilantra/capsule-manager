@@ -18,6 +18,12 @@ import {
     Sparkles,
     Users,
     Zap,
+    HelpCircle,
+    AlertCircle,
+    RefreshCw,
+    Clock,
+    LogOut,
+    Mail
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,6 +50,7 @@ const SECTIONS = [
     { id: "mcp", label: "Capsule Hub MCP" },
     { id: "plans", label: "Plans & tiers" },
     { id: "platforms", label: "Supported platforms" },
+    { id: "troubleshooting", label: "Troubleshooting" },
     { id: "privacy", label: "Privacy & cleaning" },
 ] as const;
 
@@ -123,11 +130,15 @@ export default function DocsPage() {
 
     const mcpSnippet = useMemo(
         () =>
-            `"capsule-service": {
-  "url": "https://backend.tilantra.com/mcp",
-  "headers": {
-    "X_API_KEY": "YOUR_API_KEY",
-    "Content-Type": "application/json"
+            `{
+  "mcpServers": {
+    "capsule-service": {
+      "serverUrl": "https://backend.tilantra.com/mcp/",
+      "headers": {
+        "X-API-Key": "cht-xxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "Content-Type": "application/json"
+      }
+    }
   }
 }`,
         []
@@ -570,15 +581,15 @@ export default function DocsPage() {
                                 <li>Open Settings and generate an API token.</li>
                                 <li>Use the token with your MCP client configuration alongside your capsules.</li>
                             </ol>
-                            <Subheading>Cursor configuration</Subheading>
+                            <Subheading>IDE configuration</Subheading>
                             <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">
-                                In Cursor: Settings → MCPs and Tools → Add MCP server. Add a server entry like:
+                                Configure your MCP client (like Cursor or Antigravity) to connect using the following server configuration:
                             </p>
                             <pre className="mt-3 overflow-x-auto rounded-xl border border-slate-200 bg-slate-950 p-4 text-xs leading-relaxed text-slate-100 dark:border-slate-800">
                                 <code>{mcpSnippet}</code>
                             </pre>
                             <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
-                                Replace <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs dark:bg-slate-800">YOUR_API_KEY</code> with your
+                                Replace <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs dark:bg-slate-800">cht-xxxxxxxxxxxxxxxxxxxxxxxxxx</code> with your
                                 generated key. Antigravity and other MCP-capable clients follow the same pattern: point the client at the MCP URL
                                 and supply headers as required.
                             </p>
@@ -688,6 +699,96 @@ export default function DocsPage() {
                                     </TableBody>
                                 </Table>
                             </div>
+                        </section>
+
+                        <section id="troubleshooting" className="scroll-mt-28">
+                            <SectionTitle icon={HelpCircle}>Troubleshooting</SectionTitle>
+                            <Prose>
+                                <p>
+                                    We understand that using a browser extension can sometimes be flaky due to the dynamic nature of AI platforms.
+                                    We are committed to providing the best possible support and ensuring your experience with Capsule Hub is smooth.
+                                </p>
+                                <p>
+                                    <strong>Please note that we currently only support the CHROME browser. Inter-browser operability features will be coming soon.</strong>
+                                </p>
+                            </Prose>
+
+                            <Subheading>Invalid Token Error</Subheading>
+                            <Prose>
+                                <p>
+                                    If you encounter an <strong>"Invalid token"</strong> error while using the extension:
+                                </p>
+                                <ul className="list-disc pl-5 space-y-2">
+                                    <li>Please <strong>log out</strong> of the Capsule Hub extension.</li>
+                                    <li><strong>Log in again</strong> to refresh your session and security credentials.</li>
+                                </ul>
+                            </Prose>
+
+                            <Subheading>Failed to Generate Capsule</Subheading>
+                            <Prose>
+                                <p>
+                                    If the extension shows <strong>"Failed to generate capsule"</strong>:
+                                </p>
+                                <ul className="list-disc pl-5 space-y-2">
+                                    <li>Please <strong>refresh your chat browser</strong> (the page where the AI chat is running).</li>
+                                    <li>Try the capture process again. This usually resolves temporary synchronization issues with the page DOM.</li>
+                                </ul>
+                            </Prose>
+
+                            <Subheading>Processing Time</Subheading>
+                            <Prose>
+                                <p>
+                                    Please note that <strong>long chats</strong> and <strong>chats with large attachments</strong> take a slightly longer time to capsule. 
+                                    The system needs to process and summarize the additional context to ensure high-quality results.
+                                </p>
+                            </Prose>
+
+                            <Subheading>Pricing & Tiers</Subheading>
+                            <Prose>
+                                <p>
+                                    We have implemented a <strong>freemium tier pricing plan</strong>. All new users automatically receive an 
+                                    <strong>Elite trial (our highest tier) for 3 days</strong>.
+                                </p>
+                                <p>
+                                    After the 3-day trial period:
+                                </p>
+                                <ul className="list-disc pl-5 space-y-2">
+                                    <li>You will be moved to the <strong>Basic plan</strong>.</li>
+                                    <li>The Basic plan does not include support for <strong>attachments or teams</strong>.</li>
+                                    <li>You can continue to delete your capsules and create new ones on the Basic plan, with a limit of <strong>5 capsules at once</strong>.</li>
+                                </ul>
+                                <p className="mt-4 text-sm">
+                                    For more details on our tiers, please visit <a href="/docs/plans" className="text-indigo-600 hover:underline dark:text-indigo-400 font-medium">capsulehub.tilantra.com/docs/plans</a>.
+                                </p>
+                            </Prose>
+
+                            <Subheading>Error Codes (400 & 500)</Subheading>
+                            <Prose>
+                                <div className="grid gap-4 mt-4">
+                                    <div className="p-4 rounded-lg bg-red-500/5 border border-red-500/10">
+                                        <p className="font-semibold text-red-600 dark:text-red-400">400 Bad Request</p>
+                                        <p className="text-sm mt-1">This usually means the request was malformed. Try refreshing the page and ensuring you are logged into both Capsule Hub and the AI platform.</p>
+                                    </div>
+                                    <div className="p-4 rounded-lg bg-orange-500/5 border border-orange-500/10">
+                                        <p className="font-semibold text-orange-600 dark:text-orange-400">500 Internal Server Error</p>
+                                        <p className="text-sm mt-1">This indicates a temporary issue on our servers. Please wait a few minutes and try again. If the issue persists, check our status or contact support.</p>
+                                    </div>
+                                </div>
+                            </Prose>
+
+                            <Subheading>Need More Help?</Subheading>
+                            <Prose>
+                                <p>
+                                    If you have any other issues or questions, please reach out to us at:
+                                </p>
+                                <div className="flex flex-col gap-2 mt-2">
+                                    <a href="mailto:tilantra.technologies@gmail.com" className="text-indigo-600 hover:underline dark:text-indigo-400 font-medium">tilantra.technologies@gmail.com</a>
+                                    <a href="mailto:tech@tilantra.com" className="text-indigo-600 hover:underline dark:text-indigo-400 font-medium">tech@tilantra.com</a>
+                                </div>
+                                <p className="mt-4 font-medium text-slate-800 dark:text-slate-100">
+                                    We would be more than happy to help you out!
+                                </p>
+                            </Prose>
                         </section>
 
                         <section id="privacy" className="scroll-mt-28">

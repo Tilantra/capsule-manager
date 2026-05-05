@@ -123,7 +123,7 @@ export default function BillingPage() {
 
     const handleUpgrade = async (tierId: string, tierName: string) => {
         if (tierId === "enterprise") {
-            toast.info("Please contact sales@tilantra.com for Enterprise plans.");
+            toast.info("Please contact tech@tilantra.com for Enterprise plans.");
             return;
         }
         if (tierId === currentTierNormalized) return;
@@ -320,7 +320,7 @@ export default function BillingPage() {
                     <CardTitle className="text-sm font-semibold">Need help choosing?</CardTitle>
                     <CardDescription className="text-xs">
                         Upgrades take effect immediately. Contact{" "}
-                        <a href="mailto:sales@tilantra.com" className="text-primary hover:underline">
+                        <a href="mailto:tech@tilantra.com" className="text-primary hover:underline">
                             tech@tilantra.com
                         </a>{" "}
                         for Enterprise pricing or custom requirements.

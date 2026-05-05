@@ -29,11 +29,15 @@ function Prose({ children }: { children: React.ReactNode }) {
 export default function MCPIntegration() {
     const mcpSnippet = useMemo(
         () =>
-            `"capsule-service": {
-  "url": "https://backend.tilantra.com/mcp",
-  "headers": {
-    "X_API_KEY": "YOUR_API_KEY",
-    "Content-Type": "application/json"
+            `{
+  "mcpServers": {
+    "capsule-service": {
+      "serverUrl": "https://backend.tilantra.com/mcp/",
+      "headers": {
+        "X-API-Key": "cht-xxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "Content-Type": "application/json"
+      }
+    }
   }
 }`,
         []
@@ -76,15 +80,15 @@ export default function MCPIntegration() {
                     <li>Open Settings and generate an API token.</li>
                     <li>Use the token with your MCP client configuration alongside your capsules.</li>
                 </ol>
-                <Subheading>Cursor configuration</Subheading>
+                <Subheading>IDE configuration</Subheading>
                 <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">
-                    In Cursor: Settings → MCPs and Tools → Add MCP server. Add a server entry like:
+                    Configure your MCP client (like Antigravity) to connect using the following server configuration:
                 </p>
                 <pre className="mt-3 overflow-x-auto rounded-xl border border-slate-200 bg-slate-950 p-4 text-xs leading-relaxed text-slate-100 dark:border-slate-800">
                     <code>{mcpSnippet}</code>
                 </pre>
                 <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
-                    Replace <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs dark:bg-slate-800">YOUR_API_KEY</code> with your
+                    Replace <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs dark:bg-slate-800">cht-xxxxxxxxxxxxxxxxxxxxxxxxxx</code> with your
                     generated key. Antigravity and other MCP-capable clients follow the same pattern: point the client at the MCP URL
                     and supply headers as required.
                 </p>
