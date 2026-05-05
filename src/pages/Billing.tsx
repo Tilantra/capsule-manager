@@ -155,6 +155,7 @@ export default function BillingPage() {
     };
 
     const getButtonConfig = (tier: typeof pricingTiers[0]) => {
+        if (tier.id === "basic") return null;
         const isCurrentTier = tier.id === currentTierNormalized;
 
         const tierOrder = { basic: 0, pro: 1, elite: 2, enterprise: 3 };
@@ -275,22 +276,24 @@ export default function BillingPage() {
                                 </div>
 
                                 {/* CTA Button */}
-                                <Button
-                                    variant={btnConfig.variant}
-                                    className={`w-full mb-6 ${tier.isPopular && !isCurrentTier ? "bg-purple-600 hover:bg-purple-700 text-white border-0" : ""}`}
-                                    onClick={() => handleUpgrade(tier.id, tier.name)}
-                                    disabled={btnConfig.disabled || isUpgrading !== null}
-                                    id={`billing-upgrade-${tier.id}`}
-                                >
-                                    {isUpgrading === tier.id ? (
-                                        <>
-                                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                            Processing...
-                                        </>
-                                    ) : (
-                                        btnConfig.label
-                                    )}
-                                </Button>
+                                {btnConfig && (
+                                    <Button
+                                        variant={btnConfig.variant}
+                                        className={`w-full mb-6 ${tier.isPopular && !isCurrentTier ? "bg-purple-600 hover:bg-purple-700 text-white border-0" : ""}`}
+                                        onClick={() => handleUpgrade(tier.id, tier.name)}
+                                        disabled={btnConfig.disabled || isUpgrading !== null}
+                                        id={`billing-upgrade-${tier.id}`}
+                                    >
+                                        {isUpgrading === tier.id ? (
+                                            <>
+                                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                                Processing...
+                                            </>
+                                        ) : (
+                                            btnConfig.label
+                                        )}
+                                    </Button>
+                                )}
 
                                 {/* Features */}
                                 <div className="space-y-2.5 flex-1">
