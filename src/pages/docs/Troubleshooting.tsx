@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { HelpCircle, AlertCircle, RefreshCw, Mail, Clock, LogOut, Sparkles } from "lucide-react";
+import { HelpCircle, AlertCircle, RefreshCw, Mail, Clock, LogOut, Sparkles, Settings2 } from "lucide-react";
 import DocsLayout from "./DocsLayout";
 
 function SectionTitle({ icon: Icon, children }: { icon: React.ElementType; children: React.ReactNode }) {
@@ -69,6 +69,19 @@ export default function Troubleshooting() {
                         <li>Please <strong>refresh your chat browser</strong> (the page where the AI chat is running).</li>
                         <li>Try the capture process again. This usually resolves temporary synchronization issues with the page.</li>
                     </ul>
+                </Prose>
+
+                <Subheading icon={Settings2}>Dynamic Context Issues</Subheading>
+                <Prose>
+                    <p>
+                        <strong>Dynamic context is currently disabled for all users.</strong>
+                    </p>
+                    <p>
+                        If you are experiencing issues with capsule generation, we advise you to <strong>uncheck the "Dynamic Context" checkbox</strong> in the extension settings.
+                    </p>
+                    <p>
+                        We will be bringing this back up shortly. Thank you for your patience!
+                    </p>
                 </Prose>
 
                 <Subheading icon={Clock}>Processing Time</Subheading>
