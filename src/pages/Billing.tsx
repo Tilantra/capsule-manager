@@ -65,7 +65,7 @@ export default function BillingPage() {
         {
             id: "pro",
             name: "Pro",
-            price: 5,
+            price: 100,
             description: "Advanced features for solo power users.",
             icon: <CreditCard className="h-5 w-5" />,
             paymentLink: "https://rzp.io/rzp/paypro",
@@ -84,7 +84,7 @@ export default function BillingPage() {
         {
             id: "elite",
             name: "Elite",
-            price: 15,
+            price: 300,
             description: "Maximum collaboration and context limits.",
             isPopular: true,
             icon: <Sparkles className="h-5 w-5" />,
@@ -265,7 +265,7 @@ export default function BillingPage() {
                                 <div className="mb-6 text-center py-3 rounded-xl bg-background/40">
                                     <span className="text-4xl font-extrabold tracking-tight">
                                         {typeof tier.price === "number"
-                                            ? `$${tier.price}`
+                                            ? `₹${tier.price}`
                                             : tier.price}
                                     </span>
                                     {typeof tier.price === "number" && (
