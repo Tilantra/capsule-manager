@@ -2,13 +2,23 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { BrowserGuideraClient } from "@/lib/guidera-browser-client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle2, MinusCircle, Sparkles, CreditCard, Crown, Zap } from "lucide-react";
+import { Loader2, CheckCircle2, MinusCircle, Sparkles, CreditCard, Crown, Zap, Star } from "lucide-react";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function BillingPage() {
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [isUpgrading, setIsUpgrading] = useState<string | null>(null);
+    const [currency, setCurrency] = useState<'INR' | 'USD'>('INR');
+
+    // Alternating currency effect
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrency(prev => prev === 'INR' ? 'USD' : 'INR');
+        }, 4000);
+        return () => clearInterval(interval);
+    }, []);
 
 
     const client = useMemo(() => new BrowserGuideraClient(), []);
@@ -48,6 +58,7 @@ export default function BillingPage() {
             id: "basic",
             name: "Basic",
             price: 0,
+            priceUSD: 0,
             description: "Essential capsule management for casual users.",
             icon: <Zap className="h-5 w-5" />,
             features: [
@@ -66,7 +77,9 @@ export default function BillingPage() {
             id: "pro",
             name: "Pro",
             price: 100,
+            priceUSD: 1,
             description: "Advanced features for solo power users.",
+            isPopular: true,
             icon: <CreditCard className="h-5 w-5" />,
             paymentLink: "https://rzp.io/rzp/paypro",
             features: [
@@ -85,8 +98,8 @@ export default function BillingPage() {
             id: "elite",
             name: "Elite",
             price: 300,
+            priceUSD: 3,
             description: "Maximum collaboration and context limits.",
-            isPopular: true,
             icon: <Sparkles className="h-5 w-5" />,
             paymentLink: "https://rzp.io/rzp/payelite",
             features: [
@@ -105,6 +118,7 @@ export default function BillingPage() {
             id: "enterprise",
             name: "Enterprise",
             price: "Custom",
+            priceUSD: "Custom",
             description: "Custom limits and dedicated support for large teams.",
             icon: <Crown className="h-5 w-5" />,
             features: [
@@ -194,22 +208,44 @@ export default function BillingPage() {
                 </p>
             </div>
 
-            <Card className="border-purple-500/30 bg-purple-500/5 dark:bg-purple-500/10 group overflow-hidden relative border-dashed">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-600/5 to-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <CardHeader className="flex flex-row items-center gap-4 py-4">
-                    <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 ring-1 ring-purple-500/20">
-                        <Sparkles className="h-5 w-5 animate-pulse" />
+            <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{
+                    opacity: 1,
+                    y: [0, -4, 0],
+                }}
+                transition={{
+                    initial: { duration: 0.6, delay: 0.1 },
+                    y: { duration: 4, repeat: Infinity, ease: "easeInOut" }
+                }}
+                className="relative group"
+            >
+                {/* Magical Background Glow */}
+                <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-blue-500/20 blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
+
+                <div className="relative flex items-center justify-between p-4 rounded-2xl border border-blue-500/30 bg-white/80 dark:bg-blue-950/40 backdrop-blur-xl shadow-lg shadow-blue-500/10 overflow-hidden">
+                    {/* Shimmer Effect Overlay */}
+                    <motion.div
+                        animate={{ x: ['-100%', '200%'] }}
+                        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 pointer-events-none"
+                    />
+
+                    <div className="flex items-center gap-4 relative z-10">
+                        <div className="flex-shrink-0 p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 text-white shadow-md shadow-blue-500/20">
+                            <Sparkles className="h-5 w-5 animate-pulse" />
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                Special Welcome Offer !!!
+                            </h3>
+                            <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+                                Enjoy <span className="text-blue-600 dark:text-blue-400 font-bold">3 days of Elite features</span> on us to experience the full potential of Capsule Hub.
+                            </p>
+                        </div>
                     </div>
-                    <div>
-                        <CardTitle className="text-base font-bold text-slate-900 dark:text-slate-100">
-                            3-Day Elite Trial
-                        </CardTitle>
-                        <CardDescription className="text-slate-600 dark:text-slate-400 text-sm">
-                            Experience the full power! All users get a <span className="font-bold text-purple-600 dark:text-purple-400">3-day ELITE trial</span> at the start to explore advanced features and unlimited capsules.
-                        </CardDescription>
-                    </div>
-                </CardHeader>
-            </Card>
+                </div>
+            </motion.div>
 
 
 
@@ -220,12 +256,16 @@ export default function BillingPage() {
                     const btnConfig = getButtonConfig(tier);
 
                     return (
-                        <div
+                        <motion.div
                             key={tier.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.1 * pricingTiers.indexOf(tier) }}
+                            whileHover={{ y: -8, transition: { duration: 0.2 } }}
                             className={`relative flex flex-col rounded-2xl border ${tier.borderColor} ${tier.isPopular
-                                ? "ring-2 ring-purple-400/40 shadow-xl scale-[1.02]"
+                                ? "border-blue-500/50 shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)] scale-[1.05] z-10"
                                 : "shadow-sm"
-                                } bg-gradient-to-b ${tier.color} backdrop-blur-sm overflow-hidden transition-all hover:shadow-md`}
+                                } bg-gradient-to-b ${tier.color} backdrop-blur-sm overflow-visible transition-all`}
                         >
                             {tier.isPopular && (
                                 <div className="absolute -top-px left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-purple-400 to-transparent" />
@@ -240,46 +280,78 @@ export default function BillingPage() {
                             )}
 
                             {tier.isPopular && !isCurrentTier && (
-                                <div className="absolute top-3 right-3">
-                                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 flex items-center gap-1">
-                                        <Sparkles className="h-2.5 w-2.5" />
-                                        Popular
-                                    </span>
+                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-30 w-full flex justify-center">
+                                    <motion.span
+                                        initial={{ y: 5, opacity: 0 }}
+                                        animate={{ y: 0, opacity: 1 }}
+                                        className="text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full bg-blue-600 text-white shadow-xl shadow-blue-500/20 flex items-center gap-1.5 border-2 border-white dark:border-slate-900"
+                                    >
+                                        <Star className="h-3 w-3 fill-current" />
+                                        Most Popular
+                                    </motion.span>
                                 </div>
                             )}
 
-                            <div className="p-6 flex flex-col flex-1">
-                                {/* Icon + Name */}
-                                <div className="flex items-center gap-2 mb-3">
-                                    <span className={`p-1.5 rounded-lg ${tier.badgeColor}`}>
+                            <div className="p-5 flex flex-col h-full">
+                                {/* Header: Icon + Name */}
+                                <div className="flex items-center gap-2.5 mb-4">
+                                    <div className={`p-2 rounded-xl ${tier.badgeColor} shadow-sm`}>
                                         {tier.icon}
-                                    </span>
-                                    <h3 className="text-xl font-bold">{tier.name}</h3>
+                                    </div>
+                                    <h3 className="text-xl font-bold tracking-tight">{tier.name}</h3>
                                 </div>
 
-                                <p className="text-sm text-muted-foreground mb-5 leading-snug min-h-[40px]">
+                                {/* Price: Integrated & Clean */}
+                                <div className="mb-4 relative h-10 flex items-center">
+                                    <AnimatePresence mode="wait">
+                                        <motion.div
+                                            key={currency}
+                                            initial={{ y: 10, opacity: 0 }}
+                                            animate={{ y: 0, opacity: 1 }}
+                                            exit={{ y: -10, opacity: 0 }}
+                                            transition={{ duration: 0.4, ease: "easeOut" }}
+                                            className="flex items-baseline"
+                                        >
+                                            <span className="text-3xl font-extrabold tracking-tight">
+                                                {typeof tier.price === "number"
+                                                    ? (currency === 'INR' ? `₹${tier.price}` : `$${(tier as any).priceUSD}`)
+                                                    : tier.price}
+                                            </span>
+                                            {typeof tier.price === "number" && (
+                                                <span className="text-muted-foreground text-xs font-medium ml-1">
+                                                    /month
+                                                </span>
+                                            )}
+                                        </motion.div>
+                                    </AnimatePresence>
+                                </div>
+
+                                <p className="text-xs text-muted-foreground mb-6 leading-relaxed min-h-[32px]">
                                     {tier.description}
                                 </p>
 
-                                {/* Price */}
-                                <div className="mb-6 text-center py-3 rounded-xl bg-background/40">
-                                    <span className="text-4xl font-extrabold tracking-tight">
-                                        {typeof tier.price === "number"
-                                            ? `₹${tier.price}`
-                                            : tier.price}
-                                    </span>
-                                    {typeof tier.price === "number" && (
-                                        <span className="text-muted-foreground text-sm font-medium ml-1">
-                                            /mo
-                                        </span>
-                                    )}
+                                {/* Features List */}
+                                <div className="space-y-3 mb-8 flex-1">
+                                    {tier.features.map((feature, i) => (
+                                        <div
+                                            key={i}
+                                            className={`flex items-start gap-2.5 text-[13px] ${feature.included ? "text-foreground" : "text-muted-foreground opacity-40"}`}
+                                        >
+                                            {feature.included ? (
+                                                <CheckCircle2 className="h-3.5 w-3.5 mt-0.5 text-blue-500 shrink-0" />
+                                            ) : (
+                                                <MinusCircle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                                            )}
+                                            <span className="leading-tight">{feature.name}</span>
+                                        </div>
+                                    ))}
                                 </div>
 
-                                {/* CTA Button */}
+                                {/* CTA Button: Pushed to bottom */}
                                 {btnConfig && (
                                     <Button
                                         variant={btnConfig.variant}
-                                        className={`w-full mb-6 ${tier.isPopular && !isCurrentTier ? "bg-purple-600 hover:bg-purple-700 text-white border-0" : ""}`}
+                                        className={`w-full h-11 rounded-xl font-semibold transition-all ${tier.isPopular && !isCurrentTier ? "bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20" : "hover:bg-accent"}`}
                                         onClick={() => handleUpgrade(tier.id, tier.name)}
                                         disabled={btnConfig.disabled || isUpgrading !== null}
                                         id={`billing-upgrade-${tier.id}`}
@@ -287,32 +359,15 @@ export default function BillingPage() {
                                         {isUpgrading === tier.id ? (
                                             <>
                                                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                                Processing...
+                                                Processing
                                             </>
                                         ) : (
                                             btnConfig.label
                                         )}
                                     </Button>
                                 )}
-
-                                {/* Features */}
-                                <div className="space-y-2.5 flex-1">
-                                    {tier.features.map((feature, i) => (
-                                        <div
-                                            key={i}
-                                            className={`flex items-start gap-2 text-sm ${feature.included ? "text-foreground" : "text-muted-foreground opacity-50"}`}
-                                        >
-                                            {feature.included ? (
-                                                <CheckCircle2 className="h-4 w-4 mt-0.5 text-green-500 shrink-0" />
-                                            ) : (
-                                                <MinusCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                                            )}
-                                            <span className="leading-snug">{feature.name}</span>
-                                        </div>
-                                    ))}
-                                </div>
                             </div>
-                        </div>
+                        </motion.div>
                     );
                 })}
             </div>

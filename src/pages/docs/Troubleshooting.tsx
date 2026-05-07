@@ -63,7 +63,7 @@ export default function Troubleshooting() {
                 <Subheading icon={RefreshCw}>Failed to Generate Capsule</Subheading>
                 <Prose>
                     <p>
-                        If the extension shows <strong>"Failed to generate capsule"</strong>:
+                        If the extension shows <strong>"Failed to generate capsule"</strong> or you don't see the <strong>capture button</strong>:
                     </p>
                     <ul className="list-disc pl-5 space-y-2">
                         <li>Please <strong>refresh your chat browser</strong> (the page where the AI chat is running).</li>
@@ -95,7 +95,7 @@ export default function Troubleshooting() {
                 <Subheading icon={Sparkles}>Pricing & Tiers</Subheading>
                 <Prose>
                     <p>
-                        We have implemented a <strong>freemium tier pricing plan</strong>. All new users automatically receive an 
+                        We have implemented a <strong>freemium tier pricing plan</strong>. All new users automatically receive an
                         <strong>Elite trial (our highest tier) for 3 days</strong>.
                     </p>
                     <p>
