@@ -39,6 +39,19 @@ export default function Troubleshooting() {
                 transition={{ duration: 0.45, ease: "easeOut" }}
             >
                 <SectionTitle icon={HelpCircle}>Troubleshooting</SectionTitle>
+
+                <div className="mb-8 rounded-2xl bg-indigo-500/10 p-6 ring-1 ring-indigo-500/20 dark:bg-indigo-500/20">
+                    <div className="flex items-start gap-4">
+                        <AlertCircle className="mt-1 h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                        <div>
+                            <h4 className="font-semibold text-indigo-900 dark:text-indigo-100">Google Sign-in Issues</h4>
+                            <p className="mt-1 text-sm leading-relaxed text-indigo-700 dark:text-indigo-300">
+                                If you are having issues with google sign in, we request you to uninstall and install the extension again. 
+                                We understand this may not be the best workaround at the moment, we are fixing this.
+                            </p>
+                        </div>
+                    </div>
+                </div>
                 <Prose>
                     <p>
                         We understand that using a browser extension can sometimes be flaky due to the dynamic nature of AI platforms.
