@@ -46,7 +46,7 @@ export default function Troubleshooting() {
                         <div>
                             <h4 className="font-semibold text-indigo-900 dark:text-indigo-100">Google Sign-in Issues</h4>
                             <p className="mt-1 text-sm leading-relaxed text-indigo-700 dark:text-indigo-300">
-                                If you are having issues with google sign in, we request you to uninstall and install the extension again. 
+                                If you are having issues with google sign in, we request you to uninstall and install the extension again.
                                 We understand this may not be the best workaround at the moment, we are fixing this.
                             </p>
                         </div>
@@ -90,10 +90,7 @@ export default function Troubleshooting() {
                         <strong>Dynamic context is currently disabled for all users.</strong>
                     </p>
                     <p>
-                        If you are experiencing issues with capsule generation, we advise you to <strong>uncheck the "Dynamic Context" checkbox</strong> in the extension settings.
-                    </p>
-                    <p>
-                        We will be bringing this back up shortly. Thank you for your patience!
+                        Dynamic context is used for fetching the exact information from a capsuled conversation "dynamically", to ensure you get the most relevant results. We are working on enhancing this feature and will be bringing it back up shortly. Thank you for your patience!
                     </p>
                 </Prose>
 
