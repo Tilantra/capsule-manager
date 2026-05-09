@@ -46,8 +46,7 @@ export default function Troubleshooting() {
                         <div>
                             <h4 className="font-semibold text-indigo-900 dark:text-indigo-100">Google Sign-in Issues</h4>
                             <p className="mt-1 text-sm leading-relaxed text-indigo-700 dark:text-indigo-300">
-                                If you are having issues with google sign in, we request you to uninstall and install the extension again.
-                                We understand this may not be the best workaround at the moment, we are fixing this.
+                                Calm down guys!! 😊 We are hitting our google sign in limits and are throttling because of the number of users (15k users in 1 week!). If you are facing sign in issues with google, please try again later.
                             </p>
                         </div>
                     </div>
