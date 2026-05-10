@@ -169,17 +169,33 @@ export default function BillingPage() {
     };
 
     const getButtonConfig = (tier: typeof pricingTiers[0]) => {
-        if (tier.id === "basic") return null;
         const isCurrentTier = tier.id === currentTierNormalized;
+
+        // If it's the current tier, show "Current Plan"
+        if (isCurrentTier) {
+            return { label: "Current Plan", variant: "outline" as const, disabled: true };
+        }
 
         const tierOrder = { basic: 0, pro: 1, elite: 2, enterprise: 3 };
         const currentVal = tierOrder[currentTierNormalized as keyof typeof tierOrder] ?? 0;
         const targetVal = tierOrder[tier.id as keyof typeof tierOrder] ?? 0;
 
-        if (isCurrentTier) return { label: "Current Plan", variant: "outline" as const, disabled: true };
-        if (tier.id === "enterprise") return { label: "Contact Sales", variant: "outline" as const, disabled: false };
-        if (targetVal < currentVal) return { label: "Downgrade", variant: "outline" as const, disabled: false };
-        return { label: `Upgrade to ${tier.name}`, variant: "default" as const, disabled: false };
+        // Special case for Enterprise
+        if (tier.id === "enterprise") {
+            return { label: "Contact Sales", variant: "outline" as const, disabled: false };
+        }
+
+        // If target tier is lower than current tier, don't show any button (Downgrade hidden)
+        if (targetVal < currentVal) {
+            return null;
+        }
+
+        // If target tier is higher than current tier, show Upgrade button
+        if (targetVal > currentVal) {
+            return { label: `Upgrade to ${tier.name}`, variant: "default" as const, disabled: false };
+        }
+
+        return null;
     };
 
     if (loading) {
