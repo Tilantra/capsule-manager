@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { GitBranchView } from "@/components/GitBranchView";
 import { motion, AnimatePresence } from "framer-motion";
+import { CelebrationPopup } from "@/components/CelebrationPopup";
 
 type Capsule = CapsuleMetadata;
 
@@ -69,6 +70,16 @@ const getYouTubeEmbedUrl = (url: string): string => {
 };
 
 export default function CapsulesPage() {
+    const [showCelebration, setShowCelebration] = useState(false);
+
+    useEffect(() => {
+        const hasSeenCelebration = sessionStorage.getItem("hasSeen15kCelebration");
+        if (!hasSeenCelebration) {
+            setShowCelebration(true);
+            sessionStorage.setItem("hasSeen15kCelebration", "true");
+        }
+    }, []);
+
     const [capsules, setCapsules] = useState<Capsule[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
@@ -438,6 +449,7 @@ export default function CapsulesPage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
         >
+            {showCelebration && <CelebrationPopup onClose={() => setShowCelebration(false)} />}
             <div className="flex flex-col gap-4">
                 <motion.div 
                     className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"

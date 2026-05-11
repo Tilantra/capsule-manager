@@ -3,6 +3,8 @@ import { Sparkles, Check, X } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import DocsLayout from "./DocsLayout";
+import { CelebrationPopup } from "@/components/CelebrationPopup";
+import { useState, useEffect } from "react";
 
 function SectionTitle({ icon: Icon, children }: { icon: React.ElementType; children: React.ReactNode }) {
     return (
@@ -24,8 +26,19 @@ function Prose({ children }: { children: React.ReactNode }) {
 }
 
 export default function Plans() {
+    const [showCelebration, setShowCelebration] = useState(false);
+
+    useEffect(() => {
+        const hasSeenCelebration = sessionStorage.getItem("hasSeen15kCelebration");
+        if (!hasSeenCelebration) {
+            setShowCelebration(true);
+            sessionStorage.setItem("hasSeen15kCelebration", "true");
+        }
+    }, []);
+
     return (
         <DocsLayout>
+            {showCelebration && <CelebrationPopup onClose={() => setShowCelebration(false)} />}
             <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}

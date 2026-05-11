@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { HelpCircle, AlertCircle, RefreshCw, Mail, Clock, LogOut, Sparkles, Settings2 } from "lucide-react";
+import { HelpCircle, AlertCircle, RefreshCw, Mail, Clock, LogOut, Sparkles, Settings2, Zap } from "lucide-react";
 import DocsLayout from "./DocsLayout";
 
 function SectionTitle({ icon: Icon, children }: { icon: React.ElementType; children: React.ReactNode }) {
@@ -40,13 +40,25 @@ export default function Troubleshooting() {
             >
                 <SectionTitle icon={HelpCircle}>Troubleshooting</SectionTitle>
 
+                <div className="mb-4 rounded-2xl bg-blue-500/10 p-6 ring-1 ring-blue-500/20 dark:bg-blue-500/20">
+                    <div className="flex items-start gap-4">
+                        <Zap className="mt-1 h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        <div>
+                            <h4 className="font-semibold text-blue-900 dark:text-blue-100">Extension Update Available</h4>
+                            <p className="mt-1 text-sm leading-relaxed text-blue-700 dark:text-blue-300">
+                                We have updated our extension version! Make sure to update it on your end to access the latest features like Lovable, GPT, and Claude Projects!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 <div className="mb-8 rounded-2xl bg-indigo-500/10 p-6 ring-1 ring-indigo-500/20 dark:bg-indigo-500/20">
                     <div className="flex items-start gap-4">
                         <AlertCircle className="mt-1 h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                         <div>
                             <h4 className="font-semibold text-indigo-900 dark:text-indigo-100">Google Sign-in Issues</h4>
                             <p className="mt-1 text-sm leading-relaxed text-indigo-700 dark:text-indigo-300">
-                                Calm down guys!! 😊 We are hitting our google sign in limits and are throttling because of the number of users (15k users in 1 week!). If you are facing sign in issues with google, please try again later.
+                                Calm down guys!! 😊 We are hitting our Google sign-in limits and are throttling because of the massive volume of users (15k users in just 1 week!). If you are facing sign-in issues with Google, please try again later.
                             </p>
                         </div>
                     </div>

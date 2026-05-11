@@ -23,6 +23,9 @@ import { toast } from "sonner";
 import TrueFocusText from "@/components/TrueFocusText";
 import SplashCursor from "@/components/SplashCursor";
 import Header from "@/components/layout/Header";
+import { CelebrationBanner } from "@/components/CelebrationBanner";
+
+const CELEBRATION_BANNER_HEIGHT = 40;
 
 interface LandingFile {
     id: string;
@@ -298,12 +301,14 @@ export default function LandingPage() {
                 COLOR_UPDATE_SPEED={14}
             />
 
+            <CelebrationBanner />
             {showExtensionDownBanner && (
                 <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.35 }}
                     className={`fixed inset-x-0 top-0 z-[60] flex h-[36px] items-center justify-center border-b px-4 text-center shadow-md ${EXTENSION_DOWN_BANNER.containerClass}`}
+                    style={{ top: `${CELEBRATION_BANNER_HEIGHT}px` }}
                     role="status"
                     aria-live="polite"
                 >
@@ -315,12 +320,12 @@ export default function LandingPage() {
                 </motion.div>
             )}
 
-            <Header topOffset={showExtensionDownBanner ? EXTENSION_DOWN_BANNER_HEIGHT : 0} />
+            <Header topOffset={CELEBRATION_BANNER_HEIGHT + (showExtensionDownBanner ? EXTENSION_DOWN_BANNER_HEIGHT : 0)} />
 
             <div
                 className="relative z-10 mx-auto max-w-7xl px-5 pb-14 sm:px-8"
                 style={{
-                    paddingTop: showExtensionDownBanner ? "7.5rem" : "5rem",
+                    paddingTop: `${CELEBRATION_BANNER_HEIGHT + (showExtensionDownBanner ? EXTENSION_DOWN_BANNER_HEIGHT : 0) + 80}px`,
                 }}
             >
                 {/* Centered Hero Section */}
