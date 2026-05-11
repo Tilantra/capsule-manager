@@ -10,7 +10,7 @@ import LandingPage from "./pages/Landing";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
-import WhatsNext from "./pages/WhatsNext";
+
 import Contact from "./pages/Contact";
 import DocsOverview from "./pages/docs/Overview";
 import GettingStarted from "./pages/docs/GettingStarted";
@@ -58,7 +58,7 @@ function App() {
             <BrowserRouter>
                 <Routes>
                     <Route path="/" element={<LandingPage />} />
-                    <Route path="/whats-next" element={<WhatsNext />} />
+
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />

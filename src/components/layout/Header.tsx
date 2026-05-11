@@ -50,14 +50,7 @@ const Header = ({ topOffset = 0 }: HeaderProps) => {
                             Docs
                         </Link>
                     </motion.div>
-                    <motion.div whileHover={{ y: -1 }} className="hidden sm:block">
-                        <Link
-                            to="/whats-next"
-                            className="text-sm font-semibold text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
-                        >
-                            What's Next
-                        </Link>
-                    </motion.div>
+
                 </div>
                 <div className="flex items-center gap-3">
                     <motion.div
