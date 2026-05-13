@@ -32,12 +32,19 @@ export default function Register() {
         setError("");
         try {
             const client = new BrowserGuideraClient();
-            await client.register({
+            const result = await client.register({
                 ...formData,
                 models: ["gpt4", "llama3", "gemini2.5-flash"],
                 teams: [],
                 tier: "basic",
             });
+
+            if (result && result.error) {
+                setError(result.error);
+                setLoading(false);
+                return;
+            }
+
             // Show success message
             setIsRegistered(true);
             // Redirect after 3 seconds
@@ -45,7 +52,11 @@ export default function Register() {
                 navigate("/login");
             }, 3000);
         } catch (err: any) {
-            const errorMessage = err.response?.data?.detail || err.message || "Registration failed";
+            const errorMessage =
+                err.response?.data?.error ||
+                err.response?.data?.detail ||
+                err.message ||
+                "Registration failed. Please try again.";
             setError(errorMessage);
             setLoading(false);
         }
