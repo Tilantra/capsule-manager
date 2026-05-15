@@ -105,7 +105,7 @@ const ORBITING_LOGOS = [
 type ExtensionServiceStatus = "up" | "down";
 
 // Toggle this value during deploys; banner appears only when status is "down".
-const EXTENSION_SERVICE_STATUS: ExtensionServiceStatus = "up";
+const EXTENSION_SERVICE_STATUS: ExtensionServiceStatus = "down";
 
 const EXTENSION_DOWN_BANNER = {
     title: "MAINTENANCE",
