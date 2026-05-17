@@ -21,11 +21,7 @@ export const CelebrationBanner: React.FC = () => {
         <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm font-semibold">
           <Sparkles className="w-4 h-4 text-yellow-300 animate-pulse" />
           <p className="flex items-center gap-1.5 flex-wrap justify-center">
-            <span>Celebrating 15,000 Users in 10 Days!</span>
-            <span className="hidden sm:inline opacity-40">|</span>
-            <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px] sm:text-xs">
-              +15 Days Elite Tier for Everyone
-            </span>
+            <span>Celebrating 30,000 Users in 15 Days!</span>
           </p>
           <Sparkles className="w-4 h-4 text-yellow-300 animate-pulse" />
         </div>

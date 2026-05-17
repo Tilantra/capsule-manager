@@ -58,7 +58,7 @@ export default function Troubleshooting() {
                         <div>
                             <h4 className="font-semibold text-indigo-900 dark:text-indigo-100">Google Sign-in Issues</h4>
                             <p className="mt-1 text-sm leading-relaxed text-indigo-700 dark:text-indigo-300">
-                                Calm down guys!! 😊 We are hitting our Google sign-in limits and are throttling because of the massive volume of users (15k users in just 1 week!). If you are facing sign-in issues with Google, please try again later.
+                                Calm down guys!! 😊 We are hitting our Google sign-in limits and are throttling because of the massive volume of users (30k users in just 2 weeks!). If you are facing sign-in issues with Google, please try again later.
                             </p>
                         </div>
                     </div>

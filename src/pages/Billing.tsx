@@ -5,22 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, MinusCircle, Sparkles, CreditCard, Crown, Zap, Star } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { CelebrationPopup } from "@/components/CelebrationPopup";
+
 
 export default function BillingPage() {
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [isUpgrading, setIsUpgrading] = useState<string | null>(null);
     const [currency, setCurrency] = useState<'INR' | 'USD'>('INR');
-    const [showCelebration, setShowCelebration] = useState(false);
 
-    useEffect(() => {
-        const hasSeenCelebration = sessionStorage.getItem("hasSeen15kCelebration");
-        if (!hasSeenCelebration) {
-            setShowCelebration(true);
-            sessionStorage.setItem("hasSeen15kCelebration", "true");
-        }
-    }, []);
 
     // Alternating currency effect
     useEffect(() => {
@@ -218,7 +210,7 @@ export default function BillingPage() {
 
     return (
         <div className="max-w-6xl mx-auto space-y-8">
-            {showCelebration && <CelebrationPopup onClose={() => setShowCelebration(false)} />}
+
             {/* Header */}
             <div>
                 <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
