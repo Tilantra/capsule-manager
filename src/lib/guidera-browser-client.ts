@@ -14,8 +14,8 @@ import type {
 } from './capsule-types';
 
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://backend.tilantra.com';
-//const BASE_URL = 'http://localhost:8000';
+//const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://backend.tilantra.com';
+const BASE_URL = 'http://localhost:8000';
 
 export class BrowserGuideraClient {
     private apiBaseUrl: string;
@@ -1082,10 +1082,6 @@ export class BrowserGuideraClient {
         }
     }
 
-    /**
-     * Simple mock upgrade: sets the user's tier immediately.
-     * No order creation or verification steps required.
-     */
     async upgradeTier(tier: 'pro' | 'elite' | 'enterprise'): Promise<{ status: string; new_tier: string; payment_url?: string }> {
         if (!this.tokenValid()) throw new Error('Not authenticated');
         const url = `${this.apiBaseUrl}/payments/upgrade`;
@@ -1099,6 +1095,25 @@ export class BrowserGuideraClient {
             return response.data;
         } else {
             throw new Error(`Upgrade failed with status ${response.status}: ${response.statusText}`);
+        }
+    }
+
+    /**
+     * Subscribe to a yearly auto-renewing plan.
+     */
+    async subscribeTier(tier: 'pro' | 'elite'): Promise<{ status: string; tier: string; payment_url?: string; subscription_id: string }> {
+        if (!this.tokenValid()) throw new Error('Not authenticated');
+        const url = `${this.apiBaseUrl}/payments/subscribe`;
+        const headers = {
+            Authorization: `Bearer ${this.authToken}`,
+            'Content-Type': 'application/json'
+        };
+
+        const response = await axios.post(url, { tier }, { headers });
+        if (response.status === 200 || response.status === 201) {
+            return response.data;
+        } else {
+            throw new Error(`Subscribe failed with status ${response.status}: ${response.statusText}`);
         }
     }
 

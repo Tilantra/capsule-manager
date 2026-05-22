@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, MinusCircle, Sparkles, CreditCard, Crown, Zap, Star } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-
+import { Switch } from "@/components/ui/switch";
 
 export default function BillingPage() {
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [isUpgrading, setIsUpgrading] = useState<string | null>(null);
+    const [isUpgrading, setIsUpgrading] = useState<{ tier: string, mode: string } | null>(null);
     const [currency, setCurrency] = useState<'INR' | 'USD'>('INR');
 
 
@@ -137,20 +137,25 @@ export default function BillingPage() {
         },
     ];
 
-    const handleUpgrade = async (tierId: string, tierName: string) => {
-        if (tierId === "enterprise") {
+    const handleUpgrade = async (tierId: string, tierName: string, mode: 'one-time' | 'subscription' | 'contact') => {
+        if (mode === "contact" || tierId === "enterprise") {
             toast.info("Please contact tech@tilantra.com for Enterprise plans.");
             return;
         }
         if (tierId === currentTierNormalized) return;
 
-        setIsUpgrading(tierId);
+        setIsUpgrading({ tier: tierId, mode });
         try {
             const targetTier = tierId as 'pro' | 'elite' | 'enterprise';
-            toast.info(`Upgrading to ${tierName}...`, { duration: 1000 });
+            toast.info(`${mode === 'subscription' ? 'Subscribing' : 'Upgrading'} to ${tierName}...`, { duration: 1000 });
 
             // Call backend to get the upgrade response or payment link
-            const result = await client.upgradeTier(targetTier);
+            let result;
+            if (mode === 'subscription') {
+                result = await client.subscribeTier(targetTier as 'pro' | 'elite');
+            } else {
+                result = await client.upgradeTier(targetTier);
+            }
 
             // If the backend returned a payment URL (Razorpay link), redirect to it
             if (result.payment_url) {
@@ -212,19 +217,21 @@ export default function BillingPage() {
         <div className="max-w-6xl mx-auto space-y-8">
 
             {/* Header */}
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                    Billing & Plans
-                </h1>
-                <p className="text-muted-foreground mt-1">
-                    Choose the perfect plan for you and your team.
-                    {user && (
-                        <span className="ml-2 font-medium text-foreground">
-                            You are currently on the{" "}
-                            <span className="text-primary font-bold capitalize">{currentTier}</span> plan.
-                        </span>
-                    )}
-                </p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                        Billing & Plans
+                    </h1>
+                    <p className="text-muted-foreground mt-1">
+                        Choose the perfect plan for you and your team.
+                        {user && (
+                            <span className="ml-2 font-medium text-foreground">
+                                You are currently on the{" "}
+                                <span className="text-primary font-bold capitalize">{currentTier}</span> plan.
+                            </span>
+                        )}
+                    </p>
+                </div>
             </div>
 
             <motion.div
@@ -366,24 +373,51 @@ export default function BillingPage() {
                                     ))}
                                 </div>
 
-                                {/* CTA Button: Pushed to bottom */}
+                                {/* CTA Buttons: Pushed to bottom */}
                                 {btnConfig && (
-                                    <Button
-                                        variant={btnConfig.variant}
-                                        className={`w-full h-11 rounded-xl font-semibold transition-all ${tier.isPopular && !isCurrentTier ? "bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20" : "hover:bg-accent"}`}
-                                        onClick={() => handleUpgrade(tier.id, tier.name)}
-                                        disabled={btnConfig.disabled || isUpgrading !== null}
-                                        id={`billing-upgrade-${tier.id}`}
-                                    >
-                                        {isUpgrading === tier.id ? (
-                                            <>
-                                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                                Processing
-                                            </>
+                                    <div className="flex flex-col gap-2 mt-auto">
+                                        {/* Enterprise or Current Plan or Downgrade logic handled here */}
+                                        {btnConfig.label === "Contact Sales" || btnConfig.label === "Current Plan" ? (
+                                            <Button
+                                                variant={btnConfig.variant}
+                                                className={`w-full h-11 rounded-xl font-semibold transition-all hover:bg-accent`}
+                                                onClick={() => handleUpgrade(tier.id, tier.name, 'contact')}
+                                                disabled={btnConfig.disabled}
+                                            >
+                                                {btnConfig.label}
+                                            </Button>
                                         ) : (
-                                            btnConfig.label
+                                            <>
+                                                {/* Subscription Button (Primary) */}
+                                                <Button
+                                                    variant="default"
+                                                    className={`w-full h-11 rounded-xl font-semibold transition-all ${tier.isPopular && !isCurrentTier ? "bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20" : ""}`}
+                                                    onClick={() => handleUpgrade(tier.id, tier.name, 'subscription')}
+                                                    disabled={isUpgrading !== null}
+                                                >
+                                                    {isUpgrading?.tier === tier.id && isUpgrading?.mode === 'subscription' ? (
+                                                        <><Loader2 className="h-4 w-4 animate-spin mr-2" />Processing</>
+                                                    ) : (
+                                                        "Subscribe (Auto-Renew)"
+                                                    )}
+                                                </Button>
+
+                                                {/* One-Time Payment Button (Secondary) */}
+                                                <Button
+                                                    variant="outline"
+                                                    className="w-full h-10 rounded-xl font-medium text-xs text-muted-foreground hover:text-foreground border-transparent bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800/50 shadow-none transition-all"
+                                                    onClick={() => handleUpgrade(tier.id, tier.name, 'one-time')}
+                                                    disabled={isUpgrading !== null}
+                                                >
+                                                    {isUpgrading?.tier === tier.id && isUpgrading?.mode === 'one-time' ? (
+                                                        <><Loader2 className="h-3 w-3 animate-spin mr-2" />Processing</>
+                                                    ) : (
+                                                        "Pay Once (1 Month)"
+                                                    )}
+                                                </Button>
+                                            </>
                                         )}
-                                    </Button>
+                                    </div>
                                 )}
                             </div>
                         </motion.div>
