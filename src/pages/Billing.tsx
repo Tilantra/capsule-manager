@@ -398,21 +398,7 @@ export default function BillingPage() {
                                                     {isUpgrading?.tier === tier.id && isUpgrading?.mode === 'subscription' ? (
                                                         <><Loader2 className="h-4 w-4 animate-spin mr-2" />Processing</>
                                                     ) : (
-                                                        "Subscribe (Auto-Renew)"
-                                                    )}
-                                                </Button>
-
-                                                {/* One-Time Payment Button (Secondary) */}
-                                                <Button
-                                                    variant="outline"
-                                                    className="w-full h-10 rounded-xl font-medium text-xs text-muted-foreground hover:text-foreground border-transparent bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800/50 shadow-none transition-all"
-                                                    onClick={() => handleUpgrade(tier.id, tier.name, 'one-time')}
-                                                    disabled={isUpgrading !== null}
-                                                >
-                                                    {isUpgrading?.tier === tier.id && isUpgrading?.mode === 'one-time' ? (
-                                                        <><Loader2 className="h-3 w-3 animate-spin mr-2" />Processing</>
-                                                    ) : (
-                                                        "Pay Once (1 Month)"
+                                                        "Upgrade Now"
                                                     )}
                                                 </Button>
                                             </>
