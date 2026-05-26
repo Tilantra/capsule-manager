@@ -22,6 +22,7 @@ function LoginContent() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const nextPath = searchParams.get("next") || "/capsules";
+    const sdkMode = searchParams.get("mode") === "sdk";
 
     const client = new BrowserGuideraClient();
 
@@ -30,15 +31,14 @@ function LoginContent() {
             setLoading(true);
             setError("");
             try {
-                // Determine user info for "registration" if needed
+                // Determine user info for "registration" if needed or fetch foofle profile info
                 const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
                     headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
                 });
                 const userInfo = await userInfoResponse.json();
 
-                // Call backend google-auth endpoint
-                // We pass registration defaults just in case the backend creates a NEW user
-                await client.googleAuth(tokenResponse.access_token, {
+                // Authenticate with backend
+                const jwtToken = await client.googleAuth(tokenResponse.access_token, {
                     email: userInfo.email,
                     username: userInfo.email?.split('@')[0],
                     full_name: userInfo.name,
@@ -48,7 +48,41 @@ function LoginContent() {
                     tier: "elite"
                 });
 
+                if (sdkMode && window.opener) {
+                    // SDK popup mode: relay credentials back to the opener and close.
+                    // Decode exp from JWT; fall back to 15 days.
+                    let exp = Math.floor(Date.now() / 1000) + 15 * 24 * 3600;
+                    try {
+                        const parts = jwtToken.split('.');
+                        if (parts.length === 3) {
+                            const payload = JSON.parse(atob(parts[1]));
+                            if (payload.exp) exp = payload.exp;
+                        }
+                    } catch { /* ignore decode errors */ }
+
+                    // Fetch tier (may differ from defaults above if user already existed)
+                    let tier = "basic";
+                    try {
+                        const userDetails = await client.getSingleUser(userInfo.email);
+                        tier = userDetails.tier || "basic";
+                    } catch { /* fall back to basic */ }
+
+                    window.opener.postMessage(
+                        {
+                            type: "CH_AUTH_SUCCESS",
+                            token: jwtToken,
+                            email: userInfo.email,
+                            tier,
+                            exp,
+                        },
+                        "*"   // Target origin is unknown (any third-party site); SDK validates source
+                    );
+                    window.close();
+                    return;
+                }
+
                 window.location.href = nextPath;
+
             } catch (err: any) {
                 console.error("Google login error:", err);
                 const errorMessage = err.response?.data?.detail || err.message || "Google Sign In failed";
@@ -68,14 +102,6 @@ function LoginContent() {
         setError("");
         try {
             await client.login(email, password);
-
-            // DIAGNOSTIC — remove after fix confirmed
-            const storedToken = localStorage.getItem('guidera_jwt');
-            const storedExp = localStorage.getItem('guidera_jwt_exp');
-            const now = Math.floor(Date.now() / 1000);
-            console.log('[Login Debug] stored token:', storedToken ? storedToken.slice(0, 40) + '...' : 'MISSING');
-            console.log('[Login Debug] stored exp:', storedExp, '| now:', now, '| valid:', storedExp ? now < parseInt(storedExp, 10) : false);
-
             window.location.href = nextPath;
         } catch (err: any) {
             const errorMessage = err.response?.data?.detail || err.message || "Login failed";
