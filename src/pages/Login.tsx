@@ -48,7 +48,7 @@ function LoginContent() {
                     tier: "elite"
                 });
 
-                navigate(nextPath, { replace: true });
+                window.location.href = nextPath;
             } catch (err: any) {
                 console.error("Google login error:", err);
                 const errorMessage = err.response?.data?.detail || err.message || "Google Sign In failed";
@@ -68,7 +68,7 @@ function LoginContent() {
         setError("");
         try {
             await client.login(email, password);
-            navigate(nextPath, { replace: true });
+            window.location.href = nextPath;
         } catch (err: any) {
             const errorMessage = err.response?.data?.detail || err.message || "Login failed";
             setError(errorMessage);
