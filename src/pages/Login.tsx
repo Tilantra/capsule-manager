@@ -68,6 +68,14 @@ function LoginContent() {
         setError("");
         try {
             await client.login(email, password);
+
+            // DIAGNOSTIC — remove after fix confirmed
+            const storedToken = localStorage.getItem('guidera_jwt');
+            const storedExp = localStorage.getItem('guidera_jwt_exp');
+            const now = Math.floor(Date.now() / 1000);
+            console.log('[Login Debug] stored token:', storedToken ? storedToken.slice(0, 40) + '...' : 'MISSING');
+            console.log('[Login Debug] stored exp:', storedExp, '| now:', now, '| valid:', storedExp ? now < parseInt(storedExp, 10) : false);
+
             window.location.href = nextPath;
         } catch (err: any) {
             const errorMessage = err.response?.data?.detail || err.message || "Login failed";

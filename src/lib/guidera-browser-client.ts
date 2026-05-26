@@ -100,13 +100,15 @@ export class BrowserGuideraClient {
             // Accept both 'token' and 'access_token' keys from backend
             const token = result.token || result.access_token;
             if (token) {
-                // Always decode the JWT to get the real absolute exp timestamp.
-                // Backend may return exp as a relative offset (e.g. 3600s) which
-                // would break PrivateRoute's `now < exp` check.
-                const exp = this.extractExpFromToken(token)
-                    ?? (result.exp && result.exp > Math.floor(Date.now() / 1000)
+                const now = Math.floor(Date.now() / 1000);
+                // Only trust the JWT's exp if it is actually in the future.
+                // Some backends return already-expired or stale exp values.
+                const jwtExp = this.extractExpFromToken(token);
+                const exp = (jwtExp && jwtExp > now)
+                    ? jwtExp
+                    : (result.exp && result.exp > now)
                         ? result.exp
-                        : Math.floor(Date.now() / 1000) + 15 * 24 * 3600);
+                        : now + 15 * 24 * 3600; // fallback: 15 days
                 this.saveJwt(token, exp);
                 return token;
             } else {
@@ -135,14 +137,16 @@ export class BrowserGuideraClient {
 
         if (response.status === 200) {
             const result = response.data;
-            // Check for 'token' OR 'access_token' to be robust
             const authToken = result.token || result.access_token;
 
             if (authToken) {
-                const exp = this.extractExpFromToken(authToken)
-                    ?? (result.exp && result.exp > Math.floor(Date.now() / 1000)
+                const now = Math.floor(Date.now() / 1000);
+                const jwtExp = this.extractExpFromToken(authToken);
+                const exp = (jwtExp && jwtExp > now)
+                    ? jwtExp
+                    : (result.exp && result.exp > now)
                         ? result.exp
-                        : Math.floor(Date.now() / 1000) + 15 * 24 * 3600);
+                        : now + 15 * 24 * 3600; // fallback: 15 days
                 this.saveJwt(authToken, exp);
                 return authToken;
             } else {

@@ -38,6 +38,11 @@ function PrivateRoute({ children }: { children: JSX.Element }) {
         const exp = parseInt(expStr, 10);
         const now = Math.floor(Date.now() / 1000);
         isValid = now < exp;
+        // DIAGNOSTIC — remove after fix confirmed
+        console.log('[PrivateRoute Debug] token:', token ? token.slice(0, 40) + '...' : 'MISSING');
+        console.log('[PrivateRoute Debug] exp stored:', exp, '| now:', now, '| diff (exp-now):', exp - now, '| valid:', isValid);
+    } else {
+        console.log('[PrivateRoute Debug] token:', token ? 'PRESENT' : 'MISSING', '| expStr:', expStr ?? 'MISSING');
     }
 
     if (!isValid) {
