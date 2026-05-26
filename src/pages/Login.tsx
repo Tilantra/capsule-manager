@@ -22,8 +22,6 @@ function LoginContent() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const nextPath = searchParams.get("next") || "/capsules";
-    // SDK popup mode: opened by the npm package on a third-party site
-    const sdkMode = searchParams.get("mode") === "sdk";
 
     const client = new BrowserGuideraClient();
 
@@ -32,14 +30,15 @@ function LoginContent() {
             setLoading(true);
             setError("");
             try {
-                // Fetch Google profile info
+                // Determine user info for "registration" if needed
                 const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
                     headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
                 });
                 const userInfo = await userInfoResponse.json();
 
-                // Authenticate with the backend
-                const jwtToken = await client.googleAuth(tokenResponse.access_token, {
+                // Call backend google-auth endpoint
+                // We pass registration defaults just in case the backend creates a NEW user
+                await client.googleAuth(tokenResponse.access_token, {
                     email: userInfo.email,
                     username: userInfo.email?.split('@')[0],
                     full_name: userInfo.name,
@@ -48,39 +47,6 @@ function LoginContent() {
                     models: ["gpt4", "llama3", "gemini2.5-flash"],
                     tier: "elite"
                 });
-
-                if (sdkMode && window.opener) {
-                    // SDK popup mode: relay credentials back to the opener and close.
-                    // Decode exp from JWT; fall back to 15 days.
-                    let exp = Math.floor(Date.now() / 1000) + 15 * 24 * 3600;
-                    try {
-                        const parts = jwtToken.split('.');
-                        if (parts.length === 3) {
-                            const payload = JSON.parse(atob(parts[1]));
-                            if (payload.exp) exp = payload.exp;
-                        }
-                    } catch { /* ignore decode errors */ }
-
-                    // Fetch tier (may differ from defaults above if user already existed)
-                    let tier = "basic";
-                    try {
-                        const userDetails = await client.getSingleUser(userInfo.email);
-                        tier = userDetails.tier || "basic";
-                    } catch { /* fall back to basic */ }
-
-                    window.opener.postMessage(
-                        {
-                            type: "CH_AUTH_SUCCESS",
-                            token: jwtToken,
-                            email: userInfo.email,
-                            tier,
-                            exp,
-                        },
-                        "*"   // Target origin is unknown (any third-party site); SDK validates source
-                    );
-                    window.close();
-                    return;
-                }
 
                 navigate(nextPath);
             } catch (err: any) {
