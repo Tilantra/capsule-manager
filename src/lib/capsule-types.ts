@@ -54,6 +54,8 @@ export interface CapsuleMetadata {
     tag?: string;
     team?: string;
     version_count?: number;
+    is_merged?: boolean;
+    merged_from_capsule_ids?: string[];
 }
 
 export interface SearchResponse {
@@ -98,4 +100,26 @@ export interface CapsuleRollbackResponse {
     version_id: string;
     version_number: number;
     summary?: string;
+}
+
+export type MergeStrategy = 'new_capsule' | 'append_version';
+
+export interface MergeCapsuleRequest {
+    capsule_ids: string[];
+    strategy: MergeStrategy;
+    tag?: string;
+    team?: string;
+}
+
+export interface MergeCapsuleResponse {
+    capsule_id: string;
+    tag: string;
+    created_at: string;
+    created_by: string;
+    summary: string;
+    team?: string;
+    version_id: string;
+    version_number: number;
+    merged_from_capsule_ids: string[];
+    strategy: MergeStrategy;
 }

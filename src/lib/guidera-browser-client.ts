@@ -11,6 +11,8 @@ import type {
     VersionListResponse,
     CapsuleRollbackRequest,
     CapsuleRollbackResponse,
+    MergeStrategy,
+    MergeCapsuleResponse,
 } from './capsule-types';
 
 
@@ -1118,6 +1120,72 @@ export class BrowserGuideraClient {
             return response.data;
         } else {
             throw new Error(`Subscribe failed with status ${response.status}: ${response.statusText}`);
+        }
+    }
+
+    // ============================================
+    // CAPSULE MERGE
+    // ============================================
+
+    async mergeCapsules(
+        selectedCapsules: CapsuleMetadata[],
+        strategy: MergeStrategy,
+        tag: string,
+        team?: string
+    ): Promise<MergeCapsuleResponse> {
+        if (!this.tokenValid()) throw new Error('Not authenticated');
+        if (selectedCapsules.length < 2) throw new Error('At least 2 capsules are required to merge');
+
+        const messages = selectedCapsules.map(c => ({
+            role: 'user',
+            content: `Context from "${c.tag || 'Untitled'}": ${c.summary || 'No summary available.'}`
+        }));
+
+        const extractedFrom = [...new Set(
+            selectedCapsules.flatMap(c =>
+                Array.isArray(c.extracted_from)
+                    ? c.extracted_from
+                    : c.extracted_from ? [c.extracted_from] : ['tilantra']
+            )
+        )].join(',');
+
+        if (strategy === 'new_capsule') {
+            const response = await this.createCapsule({
+                content: { messages },
+                tag,
+                team,
+                extracted_from: extractedFrom,
+            });
+            return {
+                capsule_id: response.capsule_id,
+                tag: response.tag,
+                created_at: response.created_at,
+                created_by: response.created_by,
+                summary: response.summary,
+                team: response.team || team,
+                version_id: '',
+                version_number: 1,
+                merged_from_capsule_ids: selectedCapsules.map(c => c.capsule_id),
+                strategy,
+            };
+        } else {
+            const firstCapsule = selectedCapsules[0];
+            const response = await this.createCapsuleVersion(firstCapsule.capsule_id, {
+                content: { messages },
+                extracted_from: extractedFrom,
+            });
+            return {
+                capsule_id: firstCapsule.capsule_id,
+                tag: firstCapsule.tag || tag,
+                created_at: new Date().toISOString(),
+                created_by: firstCapsule.created_by,
+                summary: selectedCapsules.map(c => c.summary || 'No summary available.').join(' | '),
+                team: team ?? firstCapsule.team,
+                version_id: response.version_id,
+                version_number: (firstCapsule.current_version_number || 1) + 1,
+                merged_from_capsule_ids: selectedCapsules.map(c => c.capsule_id),
+                strategy,
+            };
         }
     }
 
