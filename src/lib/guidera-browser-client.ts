@@ -1131,16 +1131,42 @@ export class BrowserGuideraClient {
         selectedCapsules: CapsuleMetadata[],
         strategy: MergeStrategy,
         tag: string,
-        team?: string
+        team?: string,
+        includeAttachments: boolean = false
     ): Promise<MergeCapsuleResponse> {
         if (!this.tokenValid()) throw new Error('Not authenticated');
         if (selectedCapsules.length < 2) throw new Error('At least 2 capsules are required to merge');
 
-        const messages = selectedCapsules.map(c => ({
-            role: 'user',
-            content: `Context from "${c.tag || 'Untitled'}": ${c.summary || 'No summary available.'}`
-        }));
+        // Combine summaries from all selected capsules into a single string
+        const combinedSummaryBody = selectedCapsules
+            .map(c => {
+                let text = c.summary?.trim() || '';
+                // Remove the header to avoid duplication in the merged output
+                return text.replace(/^\*\*ACTIVE CAPSULE CONTEXT\*\*\s*/i, '');
+            })
+            .filter(Boolean)
+            .join('\n\n______\n\n');
 
+        const combinedSummary = `**ACTIVE CAPSULE CONTEXT**\n\n${combinedSummaryBody}`;
+
+        // Gather unique attachment IDs from all selected capsules
+        const attachmentIds = includeAttachments ? Array.from(
+            new Set(
+                selectedCapsules.flatMap(c => {
+                    const ids = (c as any).attachment_ids || [];
+                    const atts = ((c as any).attachments || []).map((a: any) => typeof a === 'string' ? a : (a.asset_id || a.id || a._id));
+                    return [...ids, ...atts].filter(Boolean);
+                })
+            )
+        ) : [];
+
+        // Build a single message payload for the merged capsule
+        const messages = [{
+            role: 'user',
+            content: `Combined context from merged capsules: ${combinedSummary}`
+        }];
+
+        // Combine extracted_from sources, preserving uniqueness
         const extractedFrom = [...new Set(
             selectedCapsules.flatMap(c =>
                 Array.isArray(c.extracted_from)
@@ -1151,17 +1177,21 @@ export class BrowserGuideraClient {
 
         if (strategy === 'new_capsule') {
             const response = await this.createCapsule({
-                content: { messages },
+                content: { 
+                    messages,
+                    metadata: { summary: combinedSummary }
+                },
                 tag,
                 team,
                 extracted_from: extractedFrom,
-            });
+                attachment_ids: attachmentIds.length ? attachmentIds : undefined,
+            } as any);
             return {
                 capsule_id: response.capsule_id,
                 tag: response.tag,
                 created_at: response.created_at,
                 created_by: response.created_by,
-                summary: response.summary,
+                summary: combinedSummary,
                 team: response.team || team,
                 version_id: '',
                 version_number: 1,
@@ -1171,15 +1201,19 @@ export class BrowserGuideraClient {
         } else {
             const firstCapsule = selectedCapsules[0];
             const response = await this.createCapsuleVersion(firstCapsule.capsule_id, {
-                content: { messages },
+                content: { 
+                    messages,
+                    metadata: { summary: combinedSummary }
+                },
                 extracted_from: extractedFrom,
-            });
+                attachment_ids: attachmentIds.length ? attachmentIds : undefined,
+            } as any);
             return {
                 capsule_id: firstCapsule.capsule_id,
                 tag: firstCapsule.tag || tag,
                 created_at: new Date().toISOString(),
                 created_by: firstCapsule.created_by,
-                summary: selectedCapsules.map(c => c.summary || 'No summary available.').join(' | '),
+                summary: combinedSummary,
                 team: team ?? firstCapsule.team,
                 version_id: response.version_id,
                 version_number: (firstCapsule.current_version_number || 1) + 1,

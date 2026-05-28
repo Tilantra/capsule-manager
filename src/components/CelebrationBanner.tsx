@@ -21,7 +21,7 @@ export const CelebrationBanner: React.FC = () => {
         <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm font-semibold">
           <Sparkles className="w-4 h-4 text-yellow-300 animate-pulse" />
           <p className="flex items-center gap-1.5 flex-wrap justify-center">
-            <span>Celebrating 30,000 Users in 15 Days!</span>
+            <span>Celebrating 60,000 Users in 30 Days!</span>
           </p>
           <Sparkles className="w-4 h-4 text-yellow-300 animate-pulse" />
         </div>

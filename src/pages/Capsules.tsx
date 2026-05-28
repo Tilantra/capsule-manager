@@ -96,6 +96,7 @@ export default function CapsulesPage() {
     const [mergeTag, setMergeTag] = useState('');
     const [mergeTeam, setMergeTeam] = useState<string | undefined>(undefined);
     const [merging, setMerging] = useState(false);
+    const [includeAttachments, setIncludeAttachments] = useState(false);
 
     const client = useMemo(() => new BrowserGuideraClient(), []);
 
@@ -103,6 +104,14 @@ export default function CapsulesPage() {
         () => capsules.filter(c => selectedForMerge.has(c.capsule_id)),
         [capsules, selectedForMerge]
     );
+
+    const hasAttachments = useMemo(() => {
+        return selectedCapsuleObjects.some(c => 
+            ((c as any).attachment_count && (c as any).attachment_count > 0) || 
+            ((c as any).attachments && (c as any).attachments.length > 0) || 
+            ((c as any).attachment_ids && (c as any).attachment_ids.length > 0)
+        );
+    }, [selectedCapsuleObjects]);
 
     const mergeVisibility = useMemo(() => {
         const allPrivate = selectedCapsuleObjects.every(c => !c.team || c.team === '');
@@ -271,7 +280,8 @@ export default function CapsulesPage() {
                 selectedObjects,
                 mergeStrategy,
                 effectiveTag,
-                mergeTeam
+                mergeTeam,
+                includeAttachments
             );
             const newCapsule: CapsuleMetadata = {
                 capsule_id: result.capsule_id,
@@ -504,6 +514,11 @@ export default function CapsulesPage() {
                             <table className="w-full">
                                 <thead className="bg-muted/30 border-b">
                                     <tr>
+                                        {mergeMode && (
+                                            <th className="px-4 py-4 w-10">
+                                                <span className="sr-only">Select</span>
+                                            </th>
+                                        )}
                                         <th className="px-6 py-4 text-left text-sm font-semibold">Name</th>
                                         <th className="px-6 py-4 text-left text-sm font-semibold">Created</th>
                                         <th className="px-6 py-4 text-left text-sm font-semibold">Version</th>
@@ -512,48 +527,90 @@ export default function CapsulesPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredCapsules.map((capsule, index) => (
-                                        <motion.tr
-                                            key={capsule.capsule_id}
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: index * 0.02 }}
-                                            className="border-b hover:bg-muted/20 cursor-pointer transition-colors"
-                                            onClick={() => openDetails(capsule)}
-                                        >
-                                            <td className="px-6 py-4">
-                                                <div className="font-medium">{capsule.tag || "Untitled"}</div>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-muted-foreground">
-                                                {format(new Date(capsule.created_at), "MMM d, yyyy")}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <Badge variant="secondary">v{capsule.current_version_number || 1}</Badge>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                {!capsule.team || capsule.team === "" ? (
-                                                    <Badge variant="secondary" className="gap-1">
-                                                        <Lock className="h-3 w-3" />
-                                                        Private
-                                                    </Badge>
-                                                ) : (
-                                                    <Badge variant="secondary">
-                                                        {teamIdToName[capsule.team] || capsule.team}
-                                                    </Badge>
+                                    {filteredCapsules.map((capsule, index) => {
+                                        const isSelected = selectedForMerge.has(capsule.capsule_id);
+                                        const handleTableRowClick = () => {
+                                            if (mergeMode) {
+                                                setSelectedForMerge(prev => {
+                                                    const next = new Set(prev);
+                                                    if (next.has(capsule.capsule_id)) next.delete(capsule.capsule_id);
+                                                    else next.add(capsule.capsule_id);
+                                                    return next;
+                                                });
+                                            } else {
+                                                openDetails(capsule);
+                                            }
+                                        };
+                                        return (
+                                            <motion.tr
+                                                key={capsule.capsule_id}
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: index * 0.02 }}
+                                                className={`border-b cursor-pointer transition-colors ${
+                                                    mergeMode && isSelected
+                                                        ? 'bg-primary/8 hover:bg-primary/12'
+                                                        : 'hover:bg-muted/20'
+                                                }`}
+                                                onClick={handleTableRowClick}
+                                            >
+                                                {mergeMode && (
+                                                    <td className="px-4 py-4" onClick={e => e.stopPropagation()}>
+                                                        <motion.div
+                                                            onClick={() => {
+                                                                setSelectedForMerge(prev => {
+                                                                    const next = new Set(prev);
+                                                                    if (next.has(capsule.capsule_id)) next.delete(capsule.capsule_id);
+                                                                    else next.add(capsule.capsule_id);
+                                                                    return next;
+                                                                });
+                                                            }}
+                                                            className={`h-5 w-5 rounded border-2 flex items-center justify-center cursor-pointer transition-all ${
+                                                                isSelected
+                                                                    ? 'bg-primary border-primary text-primary-foreground'
+                                                                    : 'border-muted-foreground/50 bg-background hover:border-primary/70'
+                                                            }`}
+                                                            whileHover={{ scale: 1.15 }}
+                                                            whileTap={{ scale: 0.9 }}
+                                                        >
+                                                            {isSelected && <Check className="h-3 w-3" />}
+                                                        </motion.div>
+                                                    </td>
                                                 )}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                                    onClick={(e) => handleDelete(capsule.capsule_id, e)}
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </td>
-                                        </motion.tr>
-                                    ))}
+                                                <td className="px-6 py-4">
+                                                    <div className={`font-medium ${mergeMode && isSelected ? 'text-primary' : ''}`}>{capsule.tag || "Untitled"}</div>
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-muted-foreground">
+                                                    {format(new Date(capsule.created_at), "MMM d, yyyy")}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <Badge variant="secondary">v{capsule.current_version_number || 1}</Badge>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    {!capsule.team || capsule.team === "" ? (
+                                                        <Badge variant="secondary" className="gap-1">
+                                                            <Lock className="h-3 w-3" />
+                                                            Private
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge variant="secondary">
+                                                            {teamIdToName[capsule.team] || capsule.team}
+                                                        </Badge>
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                                        onClick={(e) => { e.stopPropagation(); handleDelete(capsule.capsule_id, e); }}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </td>
+                                            </motion.tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
@@ -654,27 +711,40 @@ export default function CapsulesPage() {
                     </div>
 
                     {/* View Toggle + Merge Mode */}
-                    <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/30 border border-border/50">
+                    <div className="flex items-center gap-3">
+                        {/* View toggle — labeled & visually prominent */}
+                        <div className="flex items-center gap-1 p-1 rounded-xl bg-muted/50 border border-border shadow-sm">
                             <motion.button
                                 onClick={() => setViewMode('grid')}
-                                className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-background shadow-sm' : 'hover:bg-background/50'}`}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                                    viewMode === 'grid'
+                                        ? 'bg-primary text-primary-foreground shadow-md'
+                                        : 'text-muted-foreground hover:text-foreground hover:bg-background/60'
+                                }`}
+                                whileHover={{ scale: 1.04 }}
+                                whileTap={{ scale: 0.96 }}
                                 title="Grid View"
                             >
-                                <Grid3x3 className={`h-4 w-4 ${viewMode === 'grid' ? 'text-primary' : 'text-muted-foreground'}`} />
+                                <Grid3x3 className="h-3.5 w-3.5" />
+                                Grid
                             </motion.button>
                             <motion.button
                                 onClick={() => setViewMode('table')}
-                                className={`p-2 rounded-md transition-all ${viewMode === 'table' ? 'bg-background shadow-sm' : 'hover:bg-background/50'}`}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                                    viewMode === 'table'
+                                        ? 'bg-primary text-primary-foreground shadow-md'
+                                        : 'text-muted-foreground hover:text-foreground hover:bg-background/60'
+                                }`}
+                                whileHover={{ scale: 1.04 }}
+                                whileTap={{ scale: 0.96 }}
                                 title="Table View"
                             >
-                                <Table2 className={`h-4 w-4 ${viewMode === 'table' ? 'text-primary' : 'text-muted-foreground'}`} />
+                                <Table2 className="h-3.5 w-3.5" />
+                                Table
                             </motion.button>
                         </div>
+
+                        {/* Merge / Cancel button */}
                         <AnimatePresence mode="wait">
                             {mergeMode ? (
                                 <motion.div
@@ -686,7 +756,7 @@ export default function CapsulesPage() {
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="h-9"
+                                        className="h-9 px-4 font-semibold"
                                         onClick={() => { setMergeMode(false); setSelectedForMerge(new Set()); }}
                                     >
                                         Cancel
@@ -702,13 +772,12 @@ export default function CapsulesPage() {
                                     whileTap={{ scale: 0.95 }}
                                 >
                                     <Button
-                                        variant="outline"
                                         size="sm"
-                                        className="h-9 gap-1.5 border-primary/50 text-primary hover:bg-primary/10 hover:border-primary/70 font-medium shadow-sm"
+                                        className="h-9 px-4 gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-semibold shadow-lg shadow-purple-500/30 border-0"
                                         onClick={() => setMergeMode(true)}
                                     >
                                         <GitMerge className="h-4 w-4" />
-                                        Merge
+                                        Merge Capsules
                                     </Button>
                                 </motion.div>
                             )}
@@ -934,6 +1003,29 @@ export default function CapsulesPage() {
                                 </Select>
                             )}
                         </div>
+
+                        {hasAttachments && (
+                            <>
+                                <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+                                <div className="space-y-2">
+                                    <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60">Attachments</p>
+                                    <label className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-muted/30 transition-colors">
+                                        <div className="relative flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={includeAttachments}
+                                                onChange={e => setIncludeAttachments(e.target.checked)}
+                                                className="peer sr-only"
+                                            />
+                                            <div className="h-5 w-5 rounded border-2 border-border/60 bg-background peer-checked:bg-primary peer-checked:border-primary transition-all flex items-center justify-center">
+                                                <Check className={`h-3.5 w-3.5 text-primary-foreground ${includeAttachments ? 'opacity-100' : 'opacity-0'} transition-opacity`} />
+                                            </div>
+                                        </div>
+                                        <span className="text-sm text-foreground">Include attachments from selected capsules</span>
+                                    </label>
+                                </div>
+                            </>
+                        )}
 
                         {/* Preview */}
                         <div className="rounded-xl bg-gradient-to-br from-primary/10 to-purple-500/5 border border-primary/20 p-4">
