@@ -325,9 +325,10 @@ export default function Privacy() {
                     </ul>
 
                     <p className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
-                        By using Capsule Hub, you acknowledge that you have read and understood this Privacy Policy.
-                        <br />
                         <span className="block mt-2 font-semibold">© 2026 Tilantra. All rights reserved.</span>
+                        <br />
+                        <span className="block mt-1 text-sm font-medium text-slate-600 dark:text-slate-400">By using Capsule Hub, you acknowledge that you have read and understood this Privacy Policy.</span>
+                        <span className="block mt-1 text-sm font-medium text-slate-600 dark:text-slate-400">By using this service, you agree not to copy or reproduce its features or underlying ideas, which are protected by copyright, trademarks and patents.</span>
                     </p>
                 </Prose>
             </motion.div>

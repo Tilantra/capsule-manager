@@ -24,6 +24,11 @@ import GeminiLogo from "@/components/assets/GeminiLogo.png";
 import DeepSeekLogo from "@/components/assets/DeepseekLogo.png";
 import GmailLogo from "@/components/assets/GmailLogo.png";
 import GuideraLogo from "@/components/assets/logo-small.jpeg";
+import PerplexityLogo from "@/components/assets/PerplexityLogo.png";
+import ReplitLogo from "@/components/assets/ReplitLogo.png";
+import EmergentLogo from "@/components/assets/EmergentLogo.png";
+import LovableLogo from "@/components/assets/LovableLogo.png";
+import CopilotLogo from "@/components/assets/CopilotLogo.png";
 import {
     Select,
     SelectContent,
@@ -50,6 +55,11 @@ const modelLogos: Record<string, string> = {
     gmail: GmailLogo,
     guidera: GuideraLogo,
     tilantra: GuideraLogo,
+    perplexity: PerplexityLogo,
+    replit: ReplitLogo,
+    emergent: EmergentLogo,
+    lovable: LovableLogo,
+    copilot: CopilotLogo,
 };
 
 const getModelLogo = (modelName: string): string | null => {
@@ -106,9 +116,9 @@ export default function CapsulesPage() {
     );
 
     const hasAttachments = useMemo(() => {
-        return selectedCapsuleObjects.some(c => 
-            ((c as any).attachment_count && (c as any).attachment_count > 0) || 
-            ((c as any).attachments && (c as any).attachments.length > 0) || 
+        return selectedCapsuleObjects.some(c =>
+            ((c as any).attachment_count && (c as any).attachment_count > 0) ||
+            ((c as any).attachments && (c as any).attachments.length > 0) ||
             ((c as any).attachment_ids && (c as any).attachment_ids.length > 0)
         );
     }, [selectedCapsuleObjects]);
@@ -307,7 +317,7 @@ export default function CapsulesPage() {
                             current_version_number: result.version_number,
                             version_count: (c.version_count || 1) + 1,
                             latest_version_id: result.version_id,
-                          }
+                        }
                         : c
                 ));
             }
@@ -364,11 +374,10 @@ export default function CapsulesPage() {
                 whileHover={{ y: -8, transition: { duration: 0.2 } }}
             >
                 <Card
-                    className={`group relative overflow-hidden cursor-pointer border p-6 h-full transition-all duration-300 hover:shadow-2xl bg-gradient-to-br from-card via-card to-card/50 ${
-                        mergeMode && isSelected
+                    className={`group relative overflow-hidden cursor-pointer border p-6 h-full transition-all duration-300 hover:shadow-2xl bg-gradient-to-br from-card via-card to-card/50 ${mergeMode && isSelected
                             ? 'border-primary/70 ring-2 ring-primary/30'
                             : 'border-border/50 hover:border-primary/40'
-                    }`}
+                        }`}
                     onClick={handleCardClick}
                 >
                     {/* Animated gradient overlay */}
@@ -380,11 +389,10 @@ export default function CapsulesPage() {
                             <motion.div
                                 initial={{ scale: 0.8, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
-                                className={`h-6 w-6 rounded border-2 flex items-center justify-center transition-all ${
-                                    isSelected
+                                className={`h-6 w-6 rounded border-2 flex items-center justify-center transition-all ${isSelected
                                         ? 'bg-primary border-primary text-primary-foreground'
                                         : 'border-muted-foreground/50 bg-background/80'
-                                }`}
+                                    }`}
                             >
                                 {isSelected && <Check className="h-3.5 w-3.5" />}
                             </motion.div>
@@ -510,7 +518,7 @@ export default function CapsulesPage() {
     const renderCapsulesView = () => {
         if (viewMode === 'grid') {
             return (
-                <motion.div 
+                <motion.div
                     key="grid"
                     className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6"
                     initial={{ opacity: 0 }}
@@ -523,7 +531,7 @@ export default function CapsulesPage() {
         } else {
             // Table view
             return (
-                <motion.div 
+                <motion.div
                     key="table"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -540,9 +548,10 @@ export default function CapsulesPage() {
                                             </th>
                                         )}
                                         <th className="px-6 py-4 text-left text-sm font-semibold">Name</th>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold">Source</th>
                                         <th className="px-6 py-4 text-left text-sm font-semibold">Created</th>
                                         <th className="px-6 py-4 text-left text-sm font-semibold">Version</th>
-                                        <th className="px-6 py-4 text-left text-sm font-semibold">Visibility</th>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold">Team</th>
                                         <th className="px-6 py-4 text-left text-sm font-semibold">Actions</th>
                                     </tr>
                                 </thead>
@@ -567,11 +576,10 @@ export default function CapsulesPage() {
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ delay: index * 0.02 }}
-                                                className={`border-b cursor-pointer transition-colors ${
-                                                    mergeMode && isSelected
+                                                className={`border-b cursor-pointer transition-colors ${mergeMode && isSelected
                                                         ? 'bg-primary/8 hover:bg-primary/12'
                                                         : 'hover:bg-muted/20'
-                                                }`}
+                                                    }`}
                                                 onClick={handleTableRowClick}
                                             >
                                                 {mergeMode && (
@@ -585,11 +593,10 @@ export default function CapsulesPage() {
                                                                     return next;
                                                                 });
                                                             }}
-                                                            className={`h-5 w-5 rounded border-2 flex items-center justify-center cursor-pointer transition-all ${
-                                                                isSelected
+                                                            className={`h-5 w-5 rounded border-2 flex items-center justify-center cursor-pointer transition-all ${isSelected
                                                                     ? 'bg-primary border-primary text-primary-foreground'
                                                                     : 'border-muted-foreground/50 bg-background hover:border-primary/70'
-                                                            }`}
+                                                                }`}
                                                             whileHover={{ scale: 1.15 }}
                                                             whileTap={{ scale: 0.9 }}
                                                         >
@@ -599,6 +606,42 @@ export default function CapsulesPage() {
                                                 )}
                                                 <td className="px-6 py-4">
                                                     <div className={`font-medium ${mergeMode && isSelected ? 'text-primary' : ''}`}>{capsule.tag || "Untitled"}</div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-1.5">
+                                                        {capsule.is_merged && (
+                                                            <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 font-medium text-purple-600 border-purple-500/30 bg-purple-500/10 gap-1">
+                                                                <GitMerge className="h-3 w-3" />
+                                                            </Badge>
+                                                        )}
+                                                        {(() => {
+                                                            const rawSources = capsule.extracted_from;
+                                                            const sources = rawSources && rawSources.length > 0
+                                                                ? (Array.isArray(rawSources)
+                                                                    ? rawSources
+                                                                    : rawSources.includes(',')
+                                                                        ? rawSources.split(',').map((s: string) => s.trim())
+                                                                        : [rawSources])
+                                                                : ["tilantra"];
+
+                                                            return sources.slice(0, 3).map((source, i) => {
+                                                                const logo = getModelLogo(source);
+                                                                return logo ? (
+                                                                    <img
+                                                                        key={i}
+                                                                        src={logo}
+                                                                        alt={source}
+                                                                        className="h-6 w-6 object-contain rounded p-0.5 bg-background shadow-sm border border-border/50"
+                                                                        title={source}
+                                                                    />
+                                                                ) : (
+                                                                    <Badge key={i} variant="outline" className="text-[10px] px-1.5 py-0 capitalize font-medium">
+                                                                        {source.substring(0, 3)}
+                                                                    </Badge>
+                                                                );
+                                                            });
+                                                        })()}
+                                                    </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-muted-foreground">
                                                     {format(new Date(capsule.created_at), "MMM d, yyyy")}
@@ -641,7 +684,7 @@ export default function CapsulesPage() {
     };
 
     return (
-        <motion.div 
+        <motion.div
             className="space-y-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -649,7 +692,7 @@ export default function CapsulesPage() {
         >
 
             <div className="flex flex-col gap-4">
-                <motion.div 
+                <motion.div
                     className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
                     initial={{ y: -20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -659,7 +702,7 @@ export default function CapsulesPage() {
                         <div className="flex items-center gap-3">
                             <h1 className="text-4xl font-bold tracking-tight">
                                 <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
-                                    Capsules
+                                    Capsule Hub
                                 </span>
                             </h1>
                             <motion.button
@@ -674,7 +717,7 @@ export default function CapsulesPage() {
                         <p className="text-muted-foreground mt-2 text-sm">View and Manage your Context Capsules</p>
                     </div>
                     <form onSubmit={handleSearch} className="flex w-full md:w-auto items-center gap-2 flex-wrap">
-                        <motion.div 
+                        <motion.div
                             className="relative w-full md:w-80"
                             whileHover={{ scale: 1.02 }}
                             transition={{ type: "spring", stiffness: 300 }}
@@ -697,7 +740,7 @@ export default function CapsulesPage() {
                 </motion.div>
 
                 {/* Filter Section */}
-                <motion.div 
+                <motion.div
                     className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
                     initial={{ x: -20, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
@@ -719,7 +762,7 @@ export default function CapsulesPage() {
                                 </SelectContent>
                             </Select>
                         </div>
-                        <motion.span 
+                        <motion.span
                             className="text-sm text-muted-foreground font-medium"
                             key={filteredCapsules.length}
                             initial={{ scale: 0.8, opacity: 0 }}
@@ -736,11 +779,10 @@ export default function CapsulesPage() {
                         <div className="flex items-center gap-1 p-1 rounded-xl bg-muted/50 border border-border shadow-sm">
                             <motion.button
                                 onClick={() => setViewMode('grid')}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                                    viewMode === 'grid'
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${viewMode === 'grid'
                                         ? 'bg-primary text-primary-foreground shadow-md'
                                         : 'text-muted-foreground hover:text-foreground hover:bg-background/60'
-                                }`}
+                                    }`}
                                 whileHover={{ scale: 1.04 }}
                                 whileTap={{ scale: 0.96 }}
                                 title="Grid View"
@@ -750,11 +792,10 @@ export default function CapsulesPage() {
                             </motion.button>
                             <motion.button
                                 onClick={() => setViewMode('table')}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                                    viewMode === 'table'
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${viewMode === 'table'
                                         ? 'bg-primary text-primary-foreground shadow-md'
                                         : 'text-muted-foreground hover:text-foreground hover:bg-background/60'
-                                }`}
+                                    }`}
                                 whileHover={{ scale: 1.04 }}
                                 whileTap={{ scale: 0.96 }}
                                 title="Table View"
@@ -808,7 +849,7 @@ export default function CapsulesPage() {
 
             <AnimatePresence mode="wait">
                 {loading ? (
-                    <motion.div 
+                    <motion.div
                         key="loading"
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -824,7 +865,7 @@ export default function CapsulesPage() {
                         <p className="text-muted-foreground mt-4 font-medium">Loading capsules...</p>
                     </motion.div>
                 ) : filteredCapsules.length === 0 ? (
-                    <motion.div 
+                    <motion.div
                         key="empty"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -832,7 +873,7 @@ export default function CapsulesPage() {
                         className="flex flex-col items-center justify-center h-64 bg-gradient-to-br from-primary/5 via-purple-500/5 to-blue-500/5 rounded-2xl border border-dashed border-primary/30 relative overflow-hidden"
                     >
                         <div className="absolute inset-0 bg-grid-pattern opacity-5" />
-                        <motion.div 
+                        <motion.div
                             className="bg-gradient-to-br from-primary/20 to-purple-500/20 p-5 rounded-2xl mb-4 relative z-10"
                             animate={{ y: [0, -10, 0] }}
                             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
@@ -937,11 +978,10 @@ export default function CapsulesPage() {
                                 <button
                                     type="button"
                                     onClick={() => setMergeStrategy('new_capsule')}
-                                    className={`relative p-4 rounded-xl border-2 text-left transition-all duration-200 ${
-                                        mergeStrategy === 'new_capsule'
+                                    className={`relative p-4 rounded-xl border-2 text-left transition-all duration-200 ${mergeStrategy === 'new_capsule'
                                             ? 'border-primary bg-gradient-to-br from-primary/10 to-purple-500/5 shadow-sm'
                                             : 'border-border/60 hover:border-primary/40 hover:bg-muted/30'
-                                    }`}
+                                        }`}
                                 >
                                     {mergeStrategy === 'new_capsule' && (
                                         <div className="absolute top-2.5 right-2.5 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
@@ -955,11 +995,10 @@ export default function CapsulesPage() {
                                 <button
                                     type="button"
                                     onClick={() => setMergeStrategy('append_version')}
-                                    className={`relative p-4 rounded-xl border-2 text-left transition-all duration-200 ${
-                                        mergeStrategy === 'append_version'
+                                    className={`relative p-4 rounded-xl border-2 text-left transition-all duration-200 ${mergeStrategy === 'append_version'
                                             ? 'border-primary bg-gradient-to-br from-primary/10 to-purple-500/5 shadow-sm'
                                             : 'border-border/60 hover:border-primary/40 hover:bg-muted/30'
-                                    }`}
+                                        }`}
                                 >
                                     {mergeStrategy === 'append_version' && (
                                         <div className="absolute top-2.5 right-2.5 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
@@ -1127,13 +1166,13 @@ export default function CapsulesPage() {
                                 </DialogDescription>
                             </div>
                             <Button
-                                variant="outline"
+                                variant={showBranchView ? "outline" : "default"}
                                 size="sm"
-                                className="gap-2"
+                                className={`gap-2 mr-6 transition-all ${!showBranchView ? 'shadow-md hover:shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground' : ''}`}
                                 onClick={() => setShowBranchView(!showBranchView)}
                             >
-                                <History className="h-4 w-4" />
-                                {showBranchView ? "List View" : "Branch View"}
+                                {showBranchView ? <History className="h-4 w-4" /> : <GitBranch className="h-4 w-4" />}
+                                {showBranchView ? "List View" : "Graph View"}
                             </Button>
                         </div>
                     </DialogHeader>
