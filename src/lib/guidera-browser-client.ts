@@ -1137,89 +1137,29 @@ export class BrowserGuideraClient {
         if (!this.tokenValid()) throw new Error('Not authenticated');
         if (selectedCapsules.length < 2) throw new Error('At least 2 capsules are required to merge');
 
-        // Combine summaries from all selected capsules into a single string
-        const combinedSummaryBody = selectedCapsules
-            .map(c => {
-                let text = c.summary?.trim() || '';
-                // Remove the header to avoid duplication in the merged output
-                return text.replace(/^\*\*ACTIVE CAPSULE CONTEXT\*\*\s*/i, '');
-            })
-            .filter(Boolean)
-            .join('\n\n______\n\n');
+        const url = `${this.apiBaseUrl}/capsules/merge`;
+        const headers = {
+            Authorization: `Bearer ${this.authToken}`,
+            'Content-Type': 'application/json',
+        };
 
-        const combinedSummary = `**ACTIVE CAPSULE CONTEXT**\n\n${combinedSummaryBody}`;
+        const payload = {
+            capsule_ids: selectedCapsules.map(c => c.capsule_id),
+            strategy,
+            tag,
+            team,
+            include_attachments: includeAttachments,
+        };
 
-        // Gather unique attachment IDs from all selected capsules
-        const attachmentIds = includeAttachments ? Array.from(
-            new Set(
-                selectedCapsules.flatMap(c => {
-                    const ids = (c as any).attachment_ids || [];
-                    const atts = ((c as any).attachments || []).map((a: any) => typeof a === 'string' ? a : (a.asset_id || a.id || a._id));
-                    return [...ids, ...atts].filter(Boolean);
-                })
-            )
-        ) : [];
-
-        // Build a single message payload for the merged capsule
-        const messages = [{
-            role: 'user',
-            content: `Combined context from merged capsules: ${combinedSummary}`
-        }];
-
-        // Combine extracted_from sources, preserving uniqueness
-        const extractedFrom = [...new Set(
-            selectedCapsules.flatMap(c =>
-                Array.isArray(c.extracted_from)
-                    ? c.extracted_from
-                    : c.extracted_from ? [c.extracted_from] : ['tilantra']
-            )
-        )].join(',');
-
-        if (strategy === 'new_capsule') {
-            const response = await this.createCapsule({
-                content: { 
-                    messages,
-                    metadata: { summary: combinedSummary }
-                },
-                tag,
-                team,
-                extracted_from: extractedFrom,
-                attachment_ids: attachmentIds.length ? attachmentIds : undefined,
-            } as any);
-            return {
-                capsule_id: response.capsule_id,
-                tag: response.tag,
-                created_at: response.created_at,
-                created_by: response.created_by,
-                summary: combinedSummary,
-                team: response.team || team,
-                version_id: '',
-                version_number: 1,
-                merged_from_capsule_ids: selectedCapsules.map(c => c.capsule_id),
-                strategy,
-            };
+        const response = await axios.post(url, payload, { headers });
+        if (response.status === 200 || response.status === 201) {
+            return response.data;
+        } else if (response.status === 401) {
+            this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
+            throw new Error('Session expired or invalid. Please log in again.');
         } else {
-            const firstCapsule = selectedCapsules[0];
-            const response = await this.createCapsuleVersion(firstCapsule.capsule_id, {
-                content: { 
-                    messages,
-                    metadata: { summary: combinedSummary }
-                },
-                extracted_from: extractedFrom,
-                attachment_ids: attachmentIds.length ? attachmentIds : undefined,
-            } as any);
-            return {
-                capsule_id: firstCapsule.capsule_id,
-                tag: firstCapsule.tag || tag,
-                created_at: new Date().toISOString(),
-                created_by: firstCapsule.created_by,
-                summary: combinedSummary,
-                team: team ?? firstCapsule.team,
-                version_id: response.version_id,
-                version_number: (firstCapsule.current_version_number || 1) + 1,
-                merged_from_capsule_ids: selectedCapsules.map(c => c.capsule_id),
-                strategy,
-            };
+            throw new Error(`Merge failed: HTTP ${response.status}: ${response.statusText}`);
         }
     }
 

@@ -283,27 +283,43 @@ export default function CapsulesPage() {
                 mergeTeam,
                 includeAttachments
             );
-            const newCapsule: CapsuleMetadata = {
-                capsule_id: result.capsule_id,
-                tag: result.tag || effectiveTag,
-                created_at: result.created_at || new Date().toISOString(),
-                created_by: result.created_by || selectedObjects[0]?.created_by || '',
-                summary: result.summary,
-                team: result.team,
-                latest_version_id: result.version_id,
-                current_version_number: result.version_number,
-                version_count: 1,
-                is_merged: true,
-                merged_from_capsule_ids: result.merged_from_capsule_ids,
-                extracted_from: optimisticExtractedFrom.length > 0 ? optimisticExtractedFrom : undefined,
-            };
-            setCapsules(prev => [newCapsule, ...prev]);
+            if (mergeStrategy === 'new_capsule') {
+                const newCapsule: CapsuleMetadata = {
+                    capsule_id: result.capsule_id,
+                    tag: result.tag || effectiveTag,
+                    created_at: result.created_at || new Date().toISOString(),
+                    created_by: result.created_by || selectedObjects[0]?.created_by || '',
+                    summary: result.summary,
+                    team: result.team,
+                    latest_version_id: result.version_id,
+                    current_version_number: result.version_number,
+                    version_count: 1,
+                    is_merged: true,
+                    merged_from_capsule_ids: result.merged_from_capsule_ids,
+                    extracted_from: result.extracted_from.length > 0 ? result.extracted_from : undefined,
+                };
+                setCapsules(prev => [newCapsule, ...prev]);
+            } else {
+                setCapsules(prev => prev.map(c =>
+                    c.capsule_id === result.capsule_id
+                        ? {
+                            ...c,
+                            current_version_number: result.version_number,
+                            version_count: (c.version_count || 1) + 1,
+                            latest_version_id: result.version_id,
+                          }
+                        : c
+                ));
+            }
             setMergeModalOpen(false);
             setMergeMode(false);
             setSelectedForMerge(new Set());
-            toast.success(`"${effectiveTag}" created`, {
-                description: 'Merged capsule is ready to use.',
-            });
+            toast.success(
+                mergeStrategy === 'new_capsule'
+                    ? `"${effectiveTag}" created`
+                    : `"${effectiveTag}" updated`,
+                { description: 'Merged capsule is ready to use.' }
+            );
         } catch (err) {
             toast.error('Merge failed', { description: (err as Error).message });
         } finally {
@@ -431,7 +447,11 @@ export default function CapsulesPage() {
                                 {(() => {
                                     const rawSources = capsule.extracted_from;
                                     const sources = rawSources && rawSources.length > 0
-                                        ? (Array.isArray(rawSources) ? rawSources : [rawSources])
+                                        ? (Array.isArray(rawSources)
+                                            ? rawSources
+                                            : rawSources.includes(',')
+                                                ? rawSources.split(',').map((s: string) => s.trim())
+                                                : [rawSources])
                                         : ["tilantra"];
 
                                     return sources.slice(0, 3).map((source, i) => {
@@ -1184,8 +1204,12 @@ export default function CapsulesPage() {
                                                                 <div className="flex flex-wrap gap-2">
                                                                     {(() => {
                                                                         const rawSources = version.extracted_from;
-                                                                        const sources = rawSources && rawSources.length > 0 
-                                                                            ? (Array.isArray(rawSources) ? rawSources : [rawSources])
+                                                                        const sources = rawSources && rawSources.length > 0
+                                                                            ? (Array.isArray(rawSources)
+                                                                                ? rawSources
+                                                                                : rawSources.includes(',')
+                                                                                    ? rawSources.split(',').map((s: string) => s.trim())
+                                                                                    : [rawSources])
                                                                             : ["tilantra"];
 
                                                                         return sources.map((source: string, i: number) => {

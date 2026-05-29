@@ -122,4 +122,5 @@ export interface MergeCapsuleResponse {
     version_number: number;
     merged_from_capsule_ids: string[];
     strategy: MergeStrategy;
+    extracted_from: string[];
 }
