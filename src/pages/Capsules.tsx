@@ -1,19 +1,21 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { BrowserGuideraClient } from "@/lib/guidera-browser-client";
-import { CapsuleMetadata, CapsuleVersion } from "@/lib/capsule-types";
+import { CapsuleMetadata, CapsuleVersion, MergeStrategy } from "@/lib/capsule-types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, Trash2, Calendar, Filter, History, Lock, Grid3x3, Table2, HelpCircle } from "lucide-react";
+import { Loader2, Search, Trash2, Calendar, Filter, History, Lock, Grid3x3, Table2, HelpCircle, GitMerge, Check, Plus, GitBranch, Sparkles } from "lucide-react";
 import { format } from "date-fns";
 import {
     Dialog,
     DialogContent,
     DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import CapsuleImage from "@/components/assets/capsule.png";
 import ChatGPTLogo from "@/components/assets/ChatgptLogo.png";
@@ -22,6 +24,11 @@ import GeminiLogo from "@/components/assets/GeminiLogo.png";
 import DeepSeekLogo from "@/components/assets/DeepseekLogo.png";
 import GmailLogo from "@/components/assets/GmailLogo.png";
 import GuideraLogo from "@/components/assets/logo-small.jpeg";
+import PerplexityLogo from "@/components/assets/PerplexityLogo.png";
+import ReplitLogo from "@/components/assets/ReplitLogo.png";
+import EmergentLogo from "@/components/assets/EmergentLogo.png";
+import LovableLogo from "@/components/assets/LovableLogo.png";
+import CopilotLogo from "@/components/assets/CopilotLogo.png";
 import {
     Select,
     SelectContent,
@@ -48,6 +55,11 @@ const modelLogos: Record<string, string> = {
     gmail: GmailLogo,
     guidera: GuideraLogo,
     tilantra: GuideraLogo,
+    perplexity: PerplexityLogo,
+    replit: ReplitLogo,
+    emergent: EmergentLogo,
+    lovable: LovableLogo,
+    copilot: CopilotLogo,
 };
 
 const getModelLogo = (modelName: string): string | null => {
@@ -87,11 +99,40 @@ export default function CapsulesPage() {
     const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
     const [showVideoModal, setShowVideoModal] = useState(false);
     const featureVideoUrl = "https://www.youtube.com/watch?v=3NH3ArEe0dE";
+    const [mergeMode, setMergeMode] = useState(false);
+    const [selectedForMerge, setSelectedForMerge] = useState<Set<string>>(new Set());
+    const [mergeModalOpen, setMergeModalOpen] = useState(false);
+    const [mergeStrategy, setMergeStrategy] = useState<MergeStrategy>('new_capsule');
+    const [mergeTag, setMergeTag] = useState('');
+    const [mergeTeam, setMergeTeam] = useState<string | undefined>(undefined);
+    const [merging, setMerging] = useState(false);
+    const [includeAttachments, setIncludeAttachments] = useState(false);
 
     const client = useMemo(() => new BrowserGuideraClient(), []);
 
-    const fetchCapsules = useCallback(async () => {
-        setLoading(true);
+    const selectedCapsuleObjects = useMemo(
+        () => capsules.filter(c => selectedForMerge.has(c.capsule_id)),
+        [capsules, selectedForMerge]
+    );
+
+    const hasAttachments = useMemo(() => {
+        return selectedCapsuleObjects.some(c =>
+            ((c as any).attachment_count && (c as any).attachment_count > 0) ||
+            ((c as any).attachments && (c as any).attachments.length > 0) ||
+            ((c as any).attachment_ids && (c as any).attachment_ids.length > 0)
+        );
+    }, [selectedCapsuleObjects]);
+
+    const mergeVisibility = useMemo(() => {
+        const allPrivate = selectedCapsuleObjects.every(c => !c.team || c.team === '');
+        const uniqueTeams = [...new Set(selectedCapsuleObjects.map(c => c.team).filter(Boolean))] as string[];
+        const allSameTeam = !allPrivate && uniqueTeams.length === 1 && selectedCapsuleObjects.every(c => c.team === uniqueTeams[0]);
+        return { allPrivate, uniqueTeams, allSameTeam, isMixed: !allPrivate && !allSameTeam };
+    }, [selectedCapsuleObjects]);
+
+    const fetchCapsules = useCallback(async (options?: { silent?: boolean }) => {
+        const silent = options?.silent ?? false;
+        if (!silent) setLoading(true);
         try {
             const response = await client.getUserCapsules(100, 0);
             setCapsules(response.results);
@@ -109,16 +150,16 @@ export default function CapsulesPage() {
                         teamNameMap[teamId] = teamDetails.name || teamId;
                     } catch (error) {
                         console.error(`Failed to fetch team ${teamId}:`, error);
-                        teamNameMap[teamId] = teamId; // Fallback to ID
+                        teamNameMap[teamId] = teamId;
                     }
                 })
             );
             setTeamIdToName(teamNameMap);
         } catch (error) {
             console.error("Failed to fetch capsules:", error);
-            toast.error("Failed to load capsules");
+            if (!silent) toast.error("Failed to load capsules");
         } finally {
-            setLoading(false);
+            if (!silent) setLoading(false);
         }
     }, [client]);
 
@@ -218,6 +259,84 @@ export default function CapsulesPage() {
         }
     };
 
+    const handleOpenMergeModal = () => {
+        const objs = capsules.filter(c => selectedForMerge.has(c.capsule_id));
+        const allPrivate = objs.every(c => !c.team || c.team === '');
+        const uniqueTeams = [...new Set(objs.map(c => c.team).filter(Boolean))] as string[];
+        const allSameTeam = uniqueTeams.length === 1 && objs.every(c => c.team === uniqueTeams[0]);
+        if (allSameTeam) {
+            setMergeTeam(uniqueTeams[0]);
+        } else {
+            setMergeTeam(undefined);
+        }
+        setMergeTag(objs.map(c => c.tag || 'Untitled').join(' + '));
+        setMergeStrategy('new_capsule');
+        setMergeModalOpen(true);
+    };
+
+    const handleMerge = async () => {
+        setMerging(true);
+        try {
+            const selectedObjects = capsules.filter(c => selectedForMerge.has(c.capsule_id));
+            const effectiveTag = mergeTag || selectedObjects.map(c => c.tag || 'Untitled').join(' + ');
+            const optimisticExtractedFrom = [...new Set(
+                selectedObjects.flatMap(c =>
+                    Array.isArray(c.extracted_from)
+                        ? c.extracted_from
+                        : c.extracted_from ? [c.extracted_from] : []
+                )
+            )];
+            const result = await client.mergeCapsules(
+                selectedObjects,
+                mergeStrategy,
+                effectiveTag,
+                mergeTeam,
+                includeAttachments
+            );
+            if (mergeStrategy === 'new_capsule') {
+                const newCapsule: CapsuleMetadata = {
+                    capsule_id: result.capsule_id,
+                    tag: result.tag || effectiveTag,
+                    created_at: result.created_at || new Date().toISOString(),
+                    created_by: result.created_by || selectedObjects[0]?.created_by || '',
+                    summary: result.summary,
+                    team: result.team,
+                    latest_version_id: result.version_id,
+                    current_version_number: result.version_number,
+                    version_count: 1,
+                    is_merged: true,
+                    merged_from_capsule_ids: result.merged_from_capsule_ids,
+                    extracted_from: result.extracted_from.length > 0 ? result.extracted_from : undefined,
+                };
+                setCapsules(prev => [newCapsule, ...prev]);
+            } else {
+                setCapsules(prev => prev.map(c =>
+                    c.capsule_id === result.capsule_id
+                        ? {
+                            ...c,
+                            current_version_number: result.version_number,
+                            version_count: (c.version_count || 1) + 1,
+                            latest_version_id: result.version_id,
+                        }
+                        : c
+                ));
+            }
+            setMergeModalOpen(false);
+            setMergeMode(false);
+            setSelectedForMerge(new Set());
+            toast.success(
+                mergeStrategy === 'new_capsule'
+                    ? `"${effectiveTag}" created`
+                    : `"${effectiveTag}" updated`,
+                { description: 'Merged capsule is ready to use.' }
+            );
+        } catch (err) {
+            toast.error('Merge failed', { description: (err as Error).message });
+        } finally {
+            setMerging(false);
+        }
+    };
+
     // Filter capsules based on selected filter
     const filteredCapsules = useMemo(() => {
         if (filterType === "all") return capsules;
@@ -227,131 +346,179 @@ export default function CapsulesPage() {
     }, [capsules, filterType]);
 
     // Render capsule card content
-    const renderCapsuleCard = (capsule: Capsule, index: number) => (
-        <motion.div
-            key={capsule.capsule_id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05, duration: 0.3 }}
-            whileHover={{ y: -8, transition: { duration: 0.2 } }}
-        >
-            <Card
-                className="group relative overflow-hidden cursor-pointer border border-border/50 bg-gradient-to-br from-card via-card to-card/50 hover:border-primary/40 p-6 h-full transition-all duration-300 hover:shadow-2xl"
-                onClick={() => openDetails(capsule)}
-            >
-                {/* Animated gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/0 to-purple-500/0 group-hover:from-primary/5 group-hover:via-purple-500/5 group-hover:to-blue-500/5 transition-all duration-500" />
-                
-                {/* Delete Button */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    whileHover={{ opacity: 1, scale: 1 }}
-                    className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-all"
-                >
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shadow-lg backdrop-blur-sm"
-                        onClick={(e) => handleDelete(capsule.capsule_id, e)}
-                    >
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
-                </motion.div>
+    const renderCapsuleCard = (capsule: Capsule, index: number) => {
+        const isSelected = selectedForMerge.has(capsule.capsule_id);
 
-                <div className="space-y-3 mb-4 relative z-10">
-                    <div className="flex items-start gap-3">
-                        <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-lg truncate group-hover:text-primary transition-colors">
-                                {capsule.tag || "Untitled"}
-                            </h3>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1.5">
-                                <Calendar className="h-3.5 w-3.5" />
-                                <span className="font-medium">{format(new Date(capsule.created_at), "MMM d, yyyy")}</span>
+        const handleCardClick = () => {
+            if (mergeMode) {
+                setSelectedForMerge(prev => {
+                    const next = new Set(prev);
+                    if (next.has(capsule.capsule_id)) {
+                        next.delete(capsule.capsule_id);
+                    } else {
+                        next.add(capsule.capsule_id);
+                    }
+                    return next;
+                });
+            } else {
+                openDetails(capsule);
+            }
+        };
+
+        return (
+            <motion.div
+                key={capsule.capsule_id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05, duration: 0.3 }}
+                whileHover={{ y: -8, transition: { duration: 0.2 } }}
+            >
+                <Card
+                    className={`group relative overflow-hidden cursor-pointer border p-6 h-full transition-all duration-300 hover:shadow-2xl bg-gradient-to-br from-card via-card to-card/50 ${mergeMode && isSelected
+                            ? 'border-primary/70 ring-2 ring-primary/30'
+                            : 'border-border/50 hover:border-primary/40'
+                        }`}
+                    onClick={handleCardClick}
+                >
+                    {/* Animated gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/0 to-purple-500/0 group-hover:from-primary/5 group-hover:via-purple-500/5 group-hover:to-blue-500/5 transition-all duration-500" />
+
+                    {/* Delete Button or Merge Checkbox */}
+                    <div className="absolute top-3 right-3 z-10">
+                        {mergeMode ? (
+                            <motion.div
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                className={`h-6 w-6 rounded border-2 flex items-center justify-center transition-all ${isSelected
+                                        ? 'bg-primary border-primary text-primary-foreground'
+                                        : 'border-muted-foreground/50 bg-background/80'
+                                    }`}
+                            >
+                                {isSelected && <Check className="h-3.5 w-3.5" />}
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                whileHover={{ opacity: 1, scale: 1 }}
+                                className="opacity-0 group-hover:opacity-100 transition-all"
+                            >
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shadow-lg backdrop-blur-sm"
+                                    onClick={(e) => handleDelete(capsule.capsule_id, e)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </motion.div>
+                        )}
+                    </div>
+
+                    <div className="space-y-3 mb-4 relative z-10">
+                        <div className="flex items-start gap-3">
+                            <div className="flex-1 min-w-0">
+                                <h3 className="font-bold text-lg truncate group-hover:text-primary transition-colors">
+                                    {capsule.tag || "Untitled"}
+                                </h3>
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1.5">
+                                    <Calendar className="h-3.5 w-3.5" />
+                                    <span className="font-medium">{format(new Date(capsule.created_at), "MMM d, yyyy")}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mb-4 relative z-10" />
+                    <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mb-4 relative z-10" />
 
-                <div className="space-y-3.5 relative z-10">
-                    <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-muted-foreground">Versions</span>
-                        <div className="flex items-center gap-2">
-                            <Badge variant="secondary" className="text-xs font-bold px-2.5 py-1 bg-primary/10 text-primary border border-primary/20">
-                                v{capsule.current_version_number || capsule.version_count || 1}
-                            </Badge>
-                            {(capsule.version_count || 1) > 1 && (
-                                <History className="h-4 w-4 text-primary" />
+                    <div className="space-y-3.5 relative z-10">
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-semibold text-muted-foreground">Versions</span>
+                            <div className="flex items-center gap-2">
+                                <Badge variant="secondary" className="text-xs font-bold px-2.5 py-1 bg-primary/10 text-primary border border-primary/20">
+                                    v{capsule.current_version_number || capsule.version_count || 1}
+                                </Badge>
+                                {(capsule.version_count || 1) > 1 && (
+                                    <History className="h-4 w-4 text-primary" />
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-semibold text-muted-foreground">Source</span>
+                            <div className="flex items-center gap-2">
+                                {capsule.is_merged && (
+                                    <Badge variant="outline" className="text-[10px] px-2 py-0.5 font-medium text-purple-600 border-purple-500/30 bg-purple-500/10 gap-1">
+                                        <GitMerge className="h-3 w-3" />
+                                        Merged
+                                    </Badge>
+                                )}
+                                {(() => {
+                                    const rawSources = capsule.extracted_from;
+                                    const sources = rawSources && rawSources.length > 0
+                                        ? (Array.isArray(rawSources)
+                                            ? rawSources
+                                            : rawSources.includes(',')
+                                                ? rawSources.split(',').map((s: string) => s.trim())
+                                                : [rawSources])
+                                        : ["tilantra"];
+
+                                    return sources.slice(0, 3).map((source, i) => {
+                                        const logo = getModelLogo(source);
+                                        return logo ? (
+                                            <motion.div
+                                                key={i}
+                                                className="relative group/logo"
+                                                whileHover={{ scale: 1.2, rotate: 5 }}
+                                                transition={{ type: "spring", stiffness: 300 }}
+                                            >
+                                                <img
+                                                    src={logo}
+                                                    alt={source}
+                                                    className="h-7 w-7 object-contain rounded-lg p-1 bg-background shadow-sm border border-border/50"
+                                                    title={source}
+                                                />
+                                            </motion.div>
+                                        ) : (
+                                            <Badge key={i} variant="outline" className="text-[10px] px-2 py-0.5 capitalize font-medium">
+                                                {source.substring(0, 3)}
+                                            </Badge>
+                                        );
+                                    });
+                                })()}
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-semibold text-muted-foreground">Visibility</span>
+                            {!capsule.team || capsule.team === "" ? (
+                                <Badge variant="secondary" className="text-xs gap-1.5 bg-muted/50 font-medium px-3 py-1">
+                                    <Lock className="h-3.5 w-3.5" />
+                                    Private
+                                </Badge>
+                            ) : (
+                                <Badge variant="secondary" className="text-xs bg-blue-500/10 text-blue-600 border-blue-500/30 font-medium px-3 py-1">
+                                    {teamIdToName[capsule.team] || capsule.team}
+                                </Badge>
                             )}
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-muted-foreground">Source</span>
-                        <div className="flex items-center gap-2">
-                            {(() => {
-                                const rawSources = capsule.extracted_from;
-                                const sources = rawSources && rawSources.length > 0 
-                                    ? (Array.isArray(rawSources) ? rawSources : [rawSources])
-                                    : ["tilantra"];
-
-                                return sources.slice(0, 3).map((source, i) => {
-                                    const logo = getModelLogo(source);
-                                    return logo ? (
-                                        <motion.div 
-                                            key={i}
-                                            className="relative group/logo"
-                                            whileHover={{ scale: 1.2, rotate: 5 }}
-                                            transition={{ type: "spring", stiffness: 300 }}
-                                        >
-                                            <img
-                                                src={logo}
-                                                alt={source}
-                                                className="h-7 w-7 object-contain rounded-lg p-1 bg-background shadow-sm border border-border/50"
-                                                title={source}
-                                            />
-                                        </motion.div>
-                                    ) : (
-                                        <Badge key={i} variant="outline" className="text-[10px] px-2 py-0.5 capitalize font-medium">
-                                            {source.substring(0, 3)}
-                                        </Badge>
-                                    );
-                                });
-                            })()}
-                        </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-muted-foreground">Visibility</span>
-                        {!capsule.team || capsule.team === "" ? (
-                            <Badge variant="secondary" className="text-xs gap-1.5 bg-muted/50 font-medium px-3 py-1">
-                                <Lock className="h-3.5 w-3.5" />
-                                Private
-                            </Badge>
-                        ) : (
-                            <Badge variant="secondary" className="text-xs bg-blue-500/10 text-blue-600 border-blue-500/30 font-medium px-3 py-1">
-                                {teamIdToName[capsule.team] || capsule.team}
-                            </Badge>
-                        )}
-                    </div>
-                </div>
-
-                <motion.div 
-                    className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500"
-                    initial={{ scaleX: 0 }}
-                    whileHover={{ scaleX: 1 }}
-                    transition={{ duration: 0.3 }}
-                />
-            </Card>
-        </motion.div>
-    );
+                    <motion.div
+                        className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500"
+                        initial={{ scaleX: 0 }}
+                        whileHover={{ scaleX: 1 }}
+                        transition={{ duration: 0.3 }}
+                    />
+                </Card>
+            </motion.div>
+        );
+    };
 
     // Render different view modes
     const renderCapsulesView = () => {
         if (viewMode === 'grid') {
             return (
-                <motion.div 
+                <motion.div
                     key="grid"
                     className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6"
                     initial={{ opacity: 0 }}
@@ -364,7 +531,7 @@ export default function CapsulesPage() {
         } else {
             // Table view
             return (
-                <motion.div 
+                <motion.div
                     key="table"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -375,56 +542,138 @@ export default function CapsulesPage() {
                             <table className="w-full">
                                 <thead className="bg-muted/30 border-b">
                                     <tr>
+                                        {mergeMode && (
+                                            <th className="px-4 py-4 w-10">
+                                                <span className="sr-only">Select</span>
+                                            </th>
+                                        )}
                                         <th className="px-6 py-4 text-left text-sm font-semibold">Name</th>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold">Source</th>
                                         <th className="px-6 py-4 text-left text-sm font-semibold">Created</th>
                                         <th className="px-6 py-4 text-left text-sm font-semibold">Version</th>
-                                        <th className="px-6 py-4 text-left text-sm font-semibold">Visibility</th>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold">Team</th>
                                         <th className="px-6 py-4 text-left text-sm font-semibold">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredCapsules.map((capsule, index) => (
-                                        <motion.tr
-                                            key={capsule.capsule_id}
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: index * 0.02 }}
-                                            className="border-b hover:bg-muted/20 cursor-pointer transition-colors"
-                                            onClick={() => openDetails(capsule)}
-                                        >
-                                            <td className="px-6 py-4">
-                                                <div className="font-medium">{capsule.tag || "Untitled"}</div>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-muted-foreground">
-                                                {format(new Date(capsule.created_at), "MMM d, yyyy")}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <Badge variant="secondary">v{capsule.current_version_number || 1}</Badge>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                {!capsule.team || capsule.team === "" ? (
-                                                    <Badge variant="secondary" className="gap-1">
-                                                        <Lock className="h-3 w-3" />
-                                                        Private
-                                                    </Badge>
-                                                ) : (
-                                                    <Badge variant="secondary">
-                                                        {teamIdToName[capsule.team] || capsule.team}
-                                                    </Badge>
+                                    {filteredCapsules.map((capsule, index) => {
+                                        const isSelected = selectedForMerge.has(capsule.capsule_id);
+                                        const handleTableRowClick = () => {
+                                            if (mergeMode) {
+                                                setSelectedForMerge(prev => {
+                                                    const next = new Set(prev);
+                                                    if (next.has(capsule.capsule_id)) next.delete(capsule.capsule_id);
+                                                    else next.add(capsule.capsule_id);
+                                                    return next;
+                                                });
+                                            } else {
+                                                openDetails(capsule);
+                                            }
+                                        };
+                                        return (
+                                            <motion.tr
+                                                key={capsule.capsule_id}
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: index * 0.02 }}
+                                                className={`border-b cursor-pointer transition-colors ${mergeMode && isSelected
+                                                        ? 'bg-primary/8 hover:bg-primary/12'
+                                                        : 'hover:bg-muted/20'
+                                                    }`}
+                                                onClick={handleTableRowClick}
+                                            >
+                                                {mergeMode && (
+                                                    <td className="px-4 py-4" onClick={e => e.stopPropagation()}>
+                                                        <motion.div
+                                                            onClick={() => {
+                                                                setSelectedForMerge(prev => {
+                                                                    const next = new Set(prev);
+                                                                    if (next.has(capsule.capsule_id)) next.delete(capsule.capsule_id);
+                                                                    else next.add(capsule.capsule_id);
+                                                                    return next;
+                                                                });
+                                                            }}
+                                                            className={`h-5 w-5 rounded border-2 flex items-center justify-center cursor-pointer transition-all ${isSelected
+                                                                    ? 'bg-primary border-primary text-primary-foreground'
+                                                                    : 'border-muted-foreground/50 bg-background hover:border-primary/70'
+                                                                }`}
+                                                            whileHover={{ scale: 1.15 }}
+                                                            whileTap={{ scale: 0.9 }}
+                                                        >
+                                                            {isSelected && <Check className="h-3 w-3" />}
+                                                        </motion.div>
+                                                    </td>
                                                 )}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                                    onClick={(e) => handleDelete(capsule.capsule_id, e)}
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </td>
-                                        </motion.tr>
-                                    ))}
+                                                <td className="px-6 py-4">
+                                                    <div className={`font-medium ${mergeMode && isSelected ? 'text-primary' : ''}`}>{capsule.tag || "Untitled"}</div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-1.5">
+                                                        {capsule.is_merged && (
+                                                            <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 font-medium text-purple-600 border-purple-500/30 bg-purple-500/10 gap-1">
+                                                                <GitMerge className="h-3 w-3" />
+                                                            </Badge>
+                                                        )}
+                                                        {(() => {
+                                                            const rawSources = capsule.extracted_from;
+                                                            const sources = rawSources && rawSources.length > 0
+                                                                ? (Array.isArray(rawSources)
+                                                                    ? rawSources
+                                                                    : rawSources.includes(',')
+                                                                        ? rawSources.split(',').map((s: string) => s.trim())
+                                                                        : [rawSources])
+                                                                : ["tilantra"];
+
+                                                            return sources.slice(0, 3).map((source, i) => {
+                                                                const logo = getModelLogo(source);
+                                                                return logo ? (
+                                                                    <img
+                                                                        key={i}
+                                                                        src={logo}
+                                                                        alt={source}
+                                                                        className="h-6 w-6 object-contain rounded p-0.5 bg-background shadow-sm border border-border/50"
+                                                                        title={source}
+                                                                    />
+                                                                ) : (
+                                                                    <Badge key={i} variant="outline" className="text-[10px] px-1.5 py-0 capitalize font-medium">
+                                                                        {source.substring(0, 3)}
+                                                                    </Badge>
+                                                                );
+                                                            });
+                                                        })()}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-muted-foreground">
+                                                    {format(new Date(capsule.created_at), "MMM d, yyyy")}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <Badge variant="secondary">v{capsule.current_version_number || 1}</Badge>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    {!capsule.team || capsule.team === "" ? (
+                                                        <Badge variant="secondary" className="gap-1">
+                                                            <Lock className="h-3 w-3" />
+                                                            Private
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge variant="secondary">
+                                                            {teamIdToName[capsule.team] || capsule.team}
+                                                        </Badge>
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                                        onClick={(e) => { e.stopPropagation(); handleDelete(capsule.capsule_id, e); }}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </td>
+                                            </motion.tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
@@ -435,7 +684,7 @@ export default function CapsulesPage() {
     };
 
     return (
-        <motion.div 
+        <motion.div
             className="space-y-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -443,7 +692,7 @@ export default function CapsulesPage() {
         >
 
             <div className="flex flex-col gap-4">
-                <motion.div 
+                <motion.div
                     className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
                     initial={{ y: -20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -453,7 +702,7 @@ export default function CapsulesPage() {
                         <div className="flex items-center gap-3">
                             <h1 className="text-4xl font-bold tracking-tight">
                                 <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
-                                    Capsules
+                                    Capsule Hub
                                 </span>
                             </h1>
                             <motion.button
@@ -468,7 +717,7 @@ export default function CapsulesPage() {
                         <p className="text-muted-foreground mt-2 text-sm">View and Manage your Context Capsules</p>
                     </div>
                     <form onSubmit={handleSearch} className="flex w-full md:w-auto items-center gap-2 flex-wrap">
-                        <motion.div 
+                        <motion.div
                             className="relative w-full md:w-80"
                             whileHover={{ scale: 1.02 }}
                             transition={{ type: "spring", stiffness: 300 }}
@@ -491,7 +740,7 @@ export default function CapsulesPage() {
                 </motion.div>
 
                 {/* Filter Section */}
-                <motion.div 
+                <motion.div
                     className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
                     initial={{ x: -20, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
@@ -513,7 +762,7 @@ export default function CapsulesPage() {
                                 </SelectContent>
                             </Select>
                         </div>
-                        <motion.span 
+                        <motion.span
                             className="text-sm text-muted-foreground font-medium"
                             key={filteredCapsules.length}
                             initial={{ scale: 0.8, opacity: 0 }}
@@ -524,33 +773,83 @@ export default function CapsulesPage() {
                         </motion.span>
                     </div>
 
-                    {/* View Toggle */}
-                    <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/30 border border-border/50">
-                        <motion.button
-                            onClick={() => setViewMode('grid')}
-                            className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-background shadow-sm' : 'hover:bg-background/50'}`}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            title="Grid View"
-                        >
-                            <Grid3x3 className={`h-4 w-4 ${viewMode === 'grid' ? 'text-primary' : 'text-muted-foreground'}`} />
-                        </motion.button>
-                        <motion.button
-                            onClick={() => setViewMode('table')}
-                            className={`p-2 rounded-md transition-all ${viewMode === 'table' ? 'bg-background shadow-sm' : 'hover:bg-background/50'}`}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            title="Table View"
-                        >
-                            <Table2 className={`h-4 w-4 ${viewMode === 'table' ? 'text-primary' : 'text-muted-foreground'}`} />
-                        </motion.button>
+                    {/* View Toggle + Merge Mode */}
+                    <div className="flex items-center gap-3">
+                        {/* View toggle — labeled & visually prominent */}
+                        <div className="flex items-center gap-1 p-1 rounded-xl bg-muted/50 border border-border shadow-sm">
+                            <motion.button
+                                onClick={() => setViewMode('grid')}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${viewMode === 'grid'
+                                        ? 'bg-primary text-primary-foreground shadow-md'
+                                        : 'text-muted-foreground hover:text-foreground hover:bg-background/60'
+                                    }`}
+                                whileHover={{ scale: 1.04 }}
+                                whileTap={{ scale: 0.96 }}
+                                title="Grid View"
+                            >
+                                <Grid3x3 className="h-3.5 w-3.5" />
+                                Grid
+                            </motion.button>
+                            <motion.button
+                                onClick={() => setViewMode('table')}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${viewMode === 'table'
+                                        ? 'bg-primary text-primary-foreground shadow-md'
+                                        : 'text-muted-foreground hover:text-foreground hover:bg-background/60'
+                                    }`}
+                                whileHover={{ scale: 1.04 }}
+                                whileTap={{ scale: 0.96 }}
+                                title="Table View"
+                            >
+                                <Table2 className="h-3.5 w-3.5" />
+                                Table
+                            </motion.button>
+                        </div>
+
+                        {/* Merge / Cancel button */}
+                        <AnimatePresence mode="wait">
+                            {mergeMode ? (
+                                <motion.div
+                                    key="cancel"
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                >
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-9 px-4 font-semibold"
+                                        onClick={() => { setMergeMode(false); setSelectedForMerge(new Set()); }}
+                                    >
+                                        Cancel
+                                    </Button>
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    key="merge"
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                >
+                                    <Button
+                                        size="sm"
+                                        className="h-9 px-4 gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-semibold shadow-lg shadow-purple-500/30 border-0"
+                                        onClick={() => setMergeMode(true)}
+                                    >
+                                        <GitMerge className="h-4 w-4" />
+                                        Merge Capsules
+                                    </Button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </motion.div>
             </div>
 
             <AnimatePresence mode="wait">
                 {loading ? (
-                    <motion.div 
+                    <motion.div
                         key="loading"
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -566,7 +865,7 @@ export default function CapsulesPage() {
                         <p className="text-muted-foreground mt-4 font-medium">Loading capsules...</p>
                     </motion.div>
                 ) : filteredCapsules.length === 0 ? (
-                    <motion.div 
+                    <motion.div
                         key="empty"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -574,7 +873,7 @@ export default function CapsulesPage() {
                         className="flex flex-col items-center justify-center h-64 bg-gradient-to-br from-primary/5 via-purple-500/5 to-blue-500/5 rounded-2xl border border-dashed border-primary/30 relative overflow-hidden"
                     >
                         <div className="absolute inset-0 bg-grid-pattern opacity-5" />
-                        <motion.div 
+                        <motion.div
                             className="bg-gradient-to-br from-primary/20 to-purple-500/20 p-5 rounded-2xl mb-4 relative z-10"
                             animate={{ y: [0, -10, 0] }}
                             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
@@ -586,6 +885,33 @@ export default function CapsulesPage() {
                     </motion.div>
                 ) : (
                     renderCapsulesView()
+                )}
+            </AnimatePresence>
+
+            {/* Merge Mode Floating Action Bar */}
+            <AnimatePresence>
+                {mergeMode && (
+                    <div className="fixed bottom-6 left-0 right-0 flex justify-center z-50 pointer-events-none">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 20 }}
+                            className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-background border border-border/70 shadow-2xl pointer-events-auto"
+                        >
+                            <span className="text-sm font-medium text-muted-foreground">
+                                {selectedForMerge.size} capsule{selectedForMerge.size !== 1 ? 's' : ''} selected
+                            </span>
+                            <Button
+                                size="sm"
+                                disabled={selectedForMerge.size < 2}
+                                onClick={handleOpenMergeModal}
+                                className="gap-2"
+                            >
+                                <GitMerge className="h-4 w-4" />
+                                Merge
+                            </Button>
+                        </motion.div>
+                    </div>
                 )}
             </AnimatePresence>
 
@@ -603,6 +929,212 @@ export default function CapsulesPage() {
                             allowFullScreen
                             className="w-full h-full"
                         />
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Merge Modal */}
+            <Dialog open={mergeModalOpen} onOpenChange={setMergeModalOpen}>
+                <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden">
+                    {/* Gradient header */}
+                    <div className="bg-gradient-to-br from-primary/20 via-purple-500/10 to-blue-500/5 px-6 pt-6 pb-5 border-b border-border/50">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2.5 rounded-xl bg-primary/20 border border-primary/30 shadow-inner shrink-0">
+                                <GitMerge className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                                <DialogTitle className="text-xl font-bold text-left">Merge Capsules</DialogTitle>
+                                <DialogDescription className="text-sm text-left mt-0.5">
+                                    Combine summaries into one unified context capsule.
+                                </DialogDescription>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Scrollable body */}
+                    <div className="px-6 py-5 space-y-5 overflow-y-auto max-h-[62vh] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 scrollbar-thin"
+                        style={{ scrollbarColor: 'hsl(var(--muted-foreground) / 0.2) transparent' }}
+                    >
+
+                        {/* Merging */}
+                        <div className="space-y-2">
+                            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60">Capsules being merged</p>
+                            <div className="flex flex-wrap gap-2">
+                                {selectedCapsuleObjects.map((c, i) => (
+                                    <div key={c.capsule_id} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/25 text-xs font-semibold text-primary">
+                                        <span className="h-4 w-4 rounded-full bg-primary/30 flex items-center justify-center text-[9px] font-bold shrink-0">{i + 1}</span>
+                                        {c.tag || 'Untitled'}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+
+                        {/* Strategy */}
+                        <div className="space-y-2.5">
+                            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60">Merge strategy</p>
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setMergeStrategy('new_capsule')}
+                                    className={`relative p-4 rounded-xl border-2 text-left transition-all duration-200 ${mergeStrategy === 'new_capsule'
+                                            ? 'border-primary bg-gradient-to-br from-primary/10 to-purple-500/5 shadow-sm'
+                                            : 'border-border/60 hover:border-primary/40 hover:bg-muted/30'
+                                        }`}
+                                >
+                                    {mergeStrategy === 'new_capsule' && (
+                                        <div className="absolute top-2.5 right-2.5 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
+                                            <Check className="h-2.5 w-2.5 text-primary-foreground" />
+                                        </div>
+                                    )}
+                                    <Plus className={`h-5 w-5 mb-2 ${mergeStrategy === 'new_capsule' ? 'text-primary' : 'text-muted-foreground'}`} />
+                                    <div className="font-semibold text-sm">New capsule</div>
+                                    <div className="text-xs text-muted-foreground mt-0.5 leading-relaxed">Create a brand-new combined capsule</div>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setMergeStrategy('append_version')}
+                                    className={`relative p-4 rounded-xl border-2 text-left transition-all duration-200 ${mergeStrategy === 'append_version'
+                                            ? 'border-primary bg-gradient-to-br from-primary/10 to-purple-500/5 shadow-sm'
+                                            : 'border-border/60 hover:border-primary/40 hover:bg-muted/30'
+                                        }`}
+                                >
+                                    {mergeStrategy === 'append_version' && (
+                                        <div className="absolute top-2.5 right-2.5 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
+                                            <Check className="h-2.5 w-2.5 text-primary-foreground" />
+                                        </div>
+                                    )}
+                                    <GitBranch className={`h-5 w-5 mb-2 ${mergeStrategy === 'append_version' ? 'text-primary' : 'text-muted-foreground'}`} />
+                                    <div className="font-semibold text-sm">Append version</div>
+                                    <div className="text-xs text-muted-foreground mt-0.5 leading-relaxed">Add to the first capsule's history</div>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Name input */}
+                        {mergeStrategy === 'new_capsule' && (
+                            <div className="space-y-2">
+                                <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60">Capsule name</p>
+                                <Input
+                                    id="merge-tag"
+                                    value={mergeTag}
+                                    onChange={e => setMergeTag(e.target.value)}
+                                    placeholder="e.g. Combined context"
+                                    className="bg-muted/20 border-border/60 focus:border-primary/50"
+                                />
+                            </div>
+                        )}
+
+                        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+
+                        {/* Visibility */}
+                        <div className="space-y-2">
+                            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60">Visibility</p>
+                            {mergeVisibility.allPrivate ? (
+                                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-muted/30 border border-border/50 text-sm text-muted-foreground">
+                                    <Lock className="h-3.5 w-3.5 shrink-0" />
+                                    <span>Merged capsule will be <span className="font-semibold text-foreground">private</span></span>
+                                </div>
+                            ) : mergeVisibility.allSameTeam ? (
+                                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-sm">
+                                    <div className="h-2 w-2 rounded-full bg-blue-500 shrink-0" />
+                                    <span className="text-muted-foreground">Shared with <span className="font-semibold text-blue-400">{teamIdToName[mergeVisibility.uniqueTeams[0]] || mergeVisibility.uniqueTeams[0]}</span></span>
+                                </div>
+                            ) : (
+                                <Select value={mergeTeam ?? '__private__'} onValueChange={v => setMergeTeam(v === '__private__' ? undefined : v)}>
+                                    <SelectTrigger className="bg-muted/20 border-border/60">
+                                        <SelectValue placeholder="Choose visibility" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="__private__">
+                                            <span className="flex items-center gap-2">
+                                                <Lock className="h-3.5 w-3.5" />
+                                                Private
+                                            </span>
+                                        </SelectItem>
+                                        {mergeVisibility.uniqueTeams.map(teamId => (
+                                            <SelectItem key={teamId} value={teamId}>
+                                                {teamIdToName[teamId] || teamId}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            )}
+                        </div>
+
+                        {hasAttachments && (
+                            <>
+                                <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+                                <div className="space-y-2">
+                                    <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60">Attachments</p>
+                                    <label className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-muted/30 transition-colors">
+                                        <div className="relative flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={includeAttachments}
+                                                onChange={e => setIncludeAttachments(e.target.checked)}
+                                                className="peer sr-only"
+                                            />
+                                            <div className="h-5 w-5 rounded border-2 border-border/60 bg-background peer-checked:bg-primary peer-checked:border-primary transition-all flex items-center justify-center">
+                                                <Check className={`h-3.5 w-3.5 text-primary-foreground ${includeAttachments ? 'opacity-100' : 'opacity-0'} transition-opacity`} />
+                                            </div>
+                                        </div>
+                                        <span className="text-sm text-foreground">Include attachments from selected capsules</span>
+                                    </label>
+                                </div>
+                            </>
+                        )}
+
+                        {/* Preview */}
+                        <div className="rounded-xl bg-gradient-to-br from-primary/10 to-purple-500/5 border border-primary/20 p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                                <span className="text-[11px] font-bold uppercase tracking-widest text-primary/80">What will happen</span>
+                            </div>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                {mergeStrategy === 'new_capsule' ? (
+                                    <>
+                                        Creates a new capsule combining the summaries of{' '}
+                                        <span className="font-semibold text-foreground">
+                                            {selectedCapsuleObjects.map(c => c.tag || 'Untitled').join(' and ')}
+                                        </span>
+                                        . Drop it into any AI platform to get combined context from {selectedCapsuleObjects.length > 2 ? 'all sources' : 'both'}.
+                                    </>
+                                ) : (
+                                    <>
+                                        Appends the context of{' '}
+                                        <span className="font-semibold text-foreground">
+                                            {selectedCapsuleObjects.slice(1).map(c => c.tag || 'Untitled').join(' and ')}
+                                        </span>
+                                        {' '}as a new version of{' '}
+                                        <span className="font-semibold text-foreground">
+                                            {selectedCapsuleObjects[0]?.tag || 'Untitled'}
+                                        </span>
+                                        . The original capsule's history is preserved.
+                                    </>
+                                )}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border/50 bg-muted/10">
+                        <Button variant="ghost" onClick={() => setMergeModalOpen(false)} disabled={merging} className="text-muted-foreground hover:text-foreground">
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleMerge}
+                            disabled={merging}
+                            className="gap-2 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 shadow-md shadow-primary/25 px-6 font-semibold"
+                        >
+                            {merging ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <GitMerge className="h-4 w-4" />
+                            )}
+                            {merging ? 'Merging...' : 'Merge Capsules'}
+                        </Button>
                     </div>
                 </DialogContent>
             </Dialog>
@@ -634,13 +1166,13 @@ export default function CapsulesPage() {
                                 </DialogDescription>
                             </div>
                             <Button
-                                variant="outline"
+                                variant={showBranchView ? "outline" : "default"}
                                 size="sm"
-                                className="gap-2"
+                                className={`gap-2 mr-6 transition-all ${!showBranchView ? 'shadow-md hover:shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground' : ''}`}
                                 onClick={() => setShowBranchView(!showBranchView)}
                             >
-                                <History className="h-4 w-4" />
-                                {showBranchView ? "List View" : "Branch View"}
+                                {showBranchView ? <History className="h-4 w-4" /> : <GitBranch className="h-4 w-4" />}
+                                {showBranchView ? "List View" : "Graph View"}
                             </Button>
                         </div>
                     </DialogHeader>
@@ -711,8 +1243,12 @@ export default function CapsulesPage() {
                                                                 <div className="flex flex-wrap gap-2">
                                                                     {(() => {
                                                                         const rawSources = version.extracted_from;
-                                                                        const sources = rawSources && rawSources.length > 0 
-                                                                            ? (Array.isArray(rawSources) ? rawSources : [rawSources])
+                                                                        const sources = rawSources && rawSources.length > 0
+                                                                            ? (Array.isArray(rawSources)
+                                                                                ? rawSources
+                                                                                : rawSources.includes(',')
+                                                                                    ? rawSources.split(',').map((s: string) => s.trim())
+                                                                                    : [rawSources])
                                                                             : ["tilantra"];
 
                                                                         return sources.map((source: string, i: number) => {

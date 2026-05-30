@@ -65,12 +65,42 @@ export default function Platforms() {
                                 <TableCell className="text-slate-600 dark:text-slate-300">Multi-turn conversation capture with clean injection.</TableCell>
                             </TableRow>
                             <TableRow>
+                                <TableCell className="font-medium">Copilot</TableCell>
+                                <TableCell>Full</TableCell>
+                                <TableCell className="text-slate-600 dark:text-slate-300">IDE integration and context management.</TableCell>
+                            </TableRow>
+                            <TableRow>
                                 <TableCell className="font-medium">DeepSeek</TableCell>
                                 <TableCell>Full</TableCell>
                                 <TableCell className="text-slate-600 dark:text-slate-300">Optimized for responsive context injection.</TableCell>
                             </TableRow>
                             <TableRow>
+                                <TableCell className="font-medium">Perplexity</TableCell>
+                                <TableCell>Full</TableCell>
+                                <TableCell className="text-slate-600 dark:text-slate-300">Research thread capture and knowledge base integration.</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-medium">Emergent</TableCell>
+                                <TableCell>Full</TableCell>
+                                <TableCell className="text-slate-600 dark:text-slate-300">Native platform integration.</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-medium">Replit</TableCell>
+                                <TableCell>Full</TableCell>
+                                <TableCell className="text-slate-600 dark:text-slate-300">Codebase context capture and injection.</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-medium">Lovable</TableCell>
+                                <TableCell>Full</TableCell>
+                                <TableCell className="text-slate-600 dark:text-slate-300">Design context and code generation integration.</TableCell>
+                            </TableRow>
+                            <TableRow>
                                 <TableCell className="font-medium">Gmail</TableCell>
+                                <TableCell>Context</TableCell>
+                                <TableCell className="text-slate-600 dark:text-slate-300">Email thread → capsule for downstream AI work.</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-medium">Outlook</TableCell>
                                 <TableCell>Context</TableCell>
                                 <TableCell className="text-slate-600 dark:text-slate-300">Email thread → capsule for downstream AI work.</TableCell>
                             </TableRow>

@@ -15,7 +15,7 @@ import DeepseekLogo from "@/components/assets/DeepseekLogo.png";
 import GmailLogo from "@/components/assets/GmailLogo.png";
 import WindsurfLogo from "@/components/assets/windsurfLogo.png";
 import SlackLogo from "@/components/assets/SlackLogo.png";
-import PerplexityLogo from "@/components/assets/perplexity-color.png";
+import PerplexityLogo from "@/components/assets/PerplexityLogo.png";
 import FigmaLogo from "@/components/assets/figmaLogo.png";
 import OutlookLogo from "@/components/assets/outlookLogo.png";
 import { saveCapsuleDraft } from "@/lib/capsule-draft";

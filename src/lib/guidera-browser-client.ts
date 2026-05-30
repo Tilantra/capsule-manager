@@ -11,6 +11,8 @@ import type {
     VersionListResponse,
     CapsuleRollbackRequest,
     CapsuleRollbackResponse,
+    MergeStrategy,
+    MergeCapsuleResponse,
 } from './capsule-types';
 
 
@@ -1118,6 +1120,46 @@ export class BrowserGuideraClient {
             return response.data;
         } else {
             throw new Error(`Subscribe failed with status ${response.status}: ${response.statusText}`);
+        }
+    }
+
+    // ============================================
+    // CAPSULE MERGE
+    // ============================================
+
+    async mergeCapsules(
+        selectedCapsules: CapsuleMetadata[],
+        strategy: MergeStrategy,
+        tag: string,
+        team?: string,
+        includeAttachments: boolean = false
+    ): Promise<MergeCapsuleResponse> {
+        if (!this.tokenValid()) throw new Error('Not authenticated');
+        if (selectedCapsules.length < 2) throw new Error('At least 2 capsules are required to merge');
+
+        const url = `${this.apiBaseUrl}/capsules/merge`;
+        const headers = {
+            Authorization: `Bearer ${this.authToken}`,
+            'Content-Type': 'application/json',
+        };
+
+        const payload = {
+            capsule_ids: selectedCapsules.map(c => c.capsule_id),
+            strategy,
+            tag,
+            team,
+            include_attachments: includeAttachments,
+        };
+
+        const response = await axios.post(url, payload, { headers });
+        if (response.status === 200 || response.status === 201) {
+            return response.data;
+        } else if (response.status === 401) {
+            this.clearJwt();
+            window.dispatchEvent(new Event('guidera_unauthorized'));
+            throw new Error('Session expired or invalid. Please log in again.');
+        } else {
+            throw new Error(`Merge failed: HTTP ${response.status}: ${response.statusText}`);
         }
     }
 
