@@ -172,8 +172,8 @@ export default function TeamsPage() {
     };
 
     const getUserRole = (team: Team): "owner" | "admin" | "member" => {
-        if (!currentUser) return "member";
-        if (currentUser.email === team.admin_email) return "admin";
+        if (!currentUser || !currentUser.email || !team.admin_email) return "member";
+        if (currentUser.email.toLowerCase() === team.admin_email.toLowerCase()) return "admin";
         return "member";
     };
 
@@ -386,7 +386,7 @@ export default function TeamsPage() {
                                 <Label className="text-sm font-semibold">Team Members ({selectedTeam?.members?.length || 0})</Label>
                                 <div className="space-y-2">
                                     {selectedTeam?.members?.map((memberEmail) => {
-                                        const isAdmin = memberEmail === selectedTeam.admin_email;
+                                        const isAdmin = memberEmail && selectedTeam.admin_email && memberEmail.toLowerCase() === selectedTeam.admin_email.toLowerCase();
                                         const roleLabel = isAdmin ? "admin" : "member";
 
                                         return (
@@ -410,7 +410,7 @@ export default function TeamsPage() {
                                                         {getRoleIcon(roleLabel)}
                                                         {roleLabel.charAt(0).toUpperCase() + roleLabel.slice(1)}
                                                     </Badge>
-                                                    {selectedTeam && canManageMembers(selectedTeam) && !isAdmin && memberEmail !== currentUser?.email && (
+                                                    {selectedTeam && canManageMembers(selectedTeam) && !isAdmin && memberEmail.toLowerCase() !== currentUser?.email?.toLowerCase() && (
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
