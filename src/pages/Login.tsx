@@ -71,21 +71,34 @@ function LoginContent() {
                 // global is not typed in a standard web app (no @types/chrome installed).
                 const extensionId = import.meta.env.VITE_EXTENSION_ID;
                 const chromeRuntime = (window as any)?.chrome?.runtime;
+                
+                let syncPromise = Promise.resolve();
                 if (extensionId && chromeRuntime?.sendMessage) {
-                    try {
-                        chromeRuntime.sendMessage(extensionId, {
-                            type: "SYNC_AUTH",
-                            payload: {
-                                authToken: jwtToken,
-                                authExp: jwtExp,
-                                userEmail: userInfo.email,
-                                tier: userTier,
-                            }
-                        });
-                    } catch {
-                        // Extension may not be installed — silently ignore
-                    }
+                    syncPromise = new Promise((resolve) => {
+                        // Set a short timeout so we never block login forever if the extension fails to respond
+                        const timeoutId = setTimeout(resolve, 500);
+                        try {
+                            chromeRuntime.sendMessage(extensionId, {
+                                type: "SYNC_AUTH",
+                                payload: {
+                                    authToken: jwtToken,
+                                    authExp: jwtExp,
+                                    userEmail: userInfo.email,
+                                    tier: userTier,
+                                }
+                            }, () => {
+                                clearTimeout(timeoutId);
+                                resolve(undefined);
+                            });
+                        } catch {
+                            clearTimeout(timeoutId);
+                            resolve(undefined);
+                        }
+                    });
                 }
+                
+                // Wait for the sync to finish before navigating away
+                await syncPromise;
 
                 if (sdkMode && window.opener) {
                     // SDK popup mode: relay credentials back to the opener and close.
