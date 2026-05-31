@@ -48,32 +48,54 @@ function LoginContent() {
                     tier: "elite"
                 });
 
+                // Decode JWT exp for use in both SDK mode and extension sync
+                let jwtExp = Math.floor(Date.now() / 1000) + 15 * 24 * 3600;
+                try {
+                    const parts = jwtToken.split('.');
+                    if (parts.length === 3) {
+                        const payload = JSON.parse(atob(parts[1]));
+                        if (payload.exp) jwtExp = payload.exp;
+                    }
+                } catch { /* ignore decode errors */ }
+
+                // Fetch the user's actual tier from the backend
+                let userTier = "basic";
+                try {
+                    const userDetails = await client.getSingleUser(userInfo.email);
+                    userTier = userDetails.tier || "basic";
+                } catch { /* fall back to basic */ }
+
+                // Sync the new token into the Chrome extension's storage so it
+                // doesn't hold a stale token after the user logs in on the website.
+                // Use (window as any).chrome to avoid TypeScript errors — the chrome
+                // global is not typed in a standard web app (no @types/chrome installed).
+                const extensionId = import.meta.env.VITE_EXTENSION_ID;
+                const chromeRuntime = (window as any)?.chrome?.runtime;
+                if (extensionId && chromeRuntime?.sendMessage) {
+                    try {
+                        chromeRuntime.sendMessage(extensionId, {
+                            type: "SYNC_AUTH",
+                            payload: {
+                                authToken: jwtToken,
+                                authExp: jwtExp,
+                                userEmail: userInfo.email,
+                                tier: userTier,
+                            }
+                        });
+                    } catch {
+                        // Extension may not be installed — silently ignore
+                    }
+                }
+
                 if (sdkMode && window.opener) {
                     // SDK popup mode: relay credentials back to the opener and close.
-                    // Decode exp from JWT; fall back to 15 days.
-                    let exp = Math.floor(Date.now() / 1000) + 15 * 24 * 3600;
-                    try {
-                        const parts = jwtToken.split('.');
-                        if (parts.length === 3) {
-                            const payload = JSON.parse(atob(parts[1]));
-                            if (payload.exp) exp = payload.exp;
-                        }
-                    } catch { /* ignore decode errors */ }
-
-                    // Fetch tier (may differ from defaults above if user already existed)
-                    let tier = "basic";
-                    try {
-                        const userDetails = await client.getSingleUser(userInfo.email);
-                        tier = userDetails.tier || "basic";
-                    } catch { /* fall back to basic */ }
-
                     window.opener.postMessage(
                         {
                             type: "CH_AUTH_SUCCESS",
                             token: jwtToken,
                             email: userInfo.email,
-                            tier,
-                            exp,
+                            tier: userTier,
+                            exp: jwtExp,
                         },
                         "*"   // Target origin is unknown (any third-party site); SDK validates source
                     );
