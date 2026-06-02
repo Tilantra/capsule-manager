@@ -264,3 +264,38 @@
     @apply active:scale-95 transition-transform duration-100;
   }
 }
+
+/* Mobile resets & safe area support */
+html, body {
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  touch-action: pan-y;
+}
+
+/* iOS safe area for fixed bottom elements */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Prevent content from hiding behind mobile bottom nav */
+.mobile-content-padding {
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* Reduce motion for perf-sensitive animations */
+@media (prefers-reduced-motion: reduce) {
+  .splash-cursor { display: none; }
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

@@ -18,12 +18,7 @@ import {
     Sparkles,
     Users,
     Zap,
-    HelpCircle,
-    AlertCircle,
-    RefreshCw,
-    Clock,
-    LogOut,
-    Mail
+    HelpCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

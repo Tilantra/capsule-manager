@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Trophy, ArrowRight } from 'lucide-react';
+import { Sparkles, Trophy } from 'lucide-react';
 
 export const CelebrationBanner: React.FC = () => {
   return (

@@ -36,7 +36,7 @@ export function TilantraLogo({ className }: TilantraLogoProps) {
     }, [theme]);
 
     const adjustedClassName = resolvedTheme === "dark" 
-        ? className?.replace(/h-(\d+)/, (_, p1) => `h-${parseInt(p1) * 3}`)
+        ? `${className?.replace(/h-(\d+)/, (_, p1) => `h-${parseInt(p1) * 3}`)} relative -left-7`
         : className;
 
     return (

@@ -11,11 +11,9 @@ import {
     Dialog,
     DialogContent,
     DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import CapsuleImage from "@/components/assets/capsule.png";
 import ChatGPTLogo from "@/components/assets/ChatgptLogo.png";
@@ -261,7 +259,7 @@ export default function CapsulesPage() {
 
     const handleOpenMergeModal = () => {
         const objs = capsules.filter(c => selectedForMerge.has(c.capsule_id));
-        const allPrivate = objs.every(c => !c.team || c.team === '');
+        // const allPrivate = objs.every(c => !c.team || c.team === '');
         const uniqueTeams = [...new Set(objs.map(c => c.team).filter(Boolean))] as string[];
         const allSameTeam = uniqueTeams.length === 1 && objs.every(c => c.team === uniqueTeams[0]);
         if (allSameTeam) {
@@ -279,6 +277,7 @@ export default function CapsulesPage() {
         try {
             const selectedObjects = capsules.filter(c => selectedForMerge.has(c.capsule_id));
             const effectiveTag = mergeTag || selectedObjects.map(c => c.tag || 'Untitled').join(' + ');
+            /*
             const optimisticExtractedFrom = [...new Set(
                 selectedObjects.flatMap(c =>
                     Array.isArray(c.extracted_from)
@@ -286,6 +285,7 @@ export default function CapsulesPage() {
                         : c.extracted_from ? [c.extracted_from] : []
                 )
             )];
+            */
             const result = await client.mergeCapsules(
                 selectedObjects,
                 mergeStrategy,
@@ -529,7 +529,7 @@ export default function CapsulesPage() {
                 </motion.div>
             );
         } else {
-            // Table view
+            // Table view (switches to card stack on mobile)
             return (
                 <motion.div
                     key="table"
@@ -537,7 +537,12 @@ export default function CapsulesPage() {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                 >
-                    <Card className="overflow-hidden">
+                    {/* Mobile fallback card stack */}
+                    <div className="md:hidden grid grid-cols-1 gap-6 mb-6">
+                        {filteredCapsules.map((capsule, index) => renderCapsuleCard(capsule, index))}
+                    </div>
+                    {/* Desktop table view */}
+                    <Card className="hidden md:block overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead className="bg-muted/30 border-b">
@@ -716,9 +721,9 @@ export default function CapsulesPage() {
                         </div>
                         <p className="text-muted-foreground mt-2 text-sm">View and Manage your Context Capsules</p>
                     </div>
-                    <form onSubmit={handleSearch} className="flex w-full md:w-auto items-center gap-2 flex-wrap">
+                    <form onSubmit={handleSearch} className="flex w-full md:w-auto items-center gap-2">
                         <motion.div
-                            className="relative w-full md:w-80"
+                            className="relative flex-1 md:w-80 md:flex-none"
                             whileHover={{ scale: 1.02 }}
                             transition={{ type: "spring", stiffness: 300 }}
                         >
@@ -726,7 +731,7 @@ export default function CapsulesPage() {
                             <Input
                                 type="search"
                                 placeholder="Search capsules..."
-                                className="pl-9 h-11 bg-background/50 border-muted-foreground/20 focus:border-primary/50 transition-all"
+                                className="pl-9 h-11 bg-background/50 border-muted-foreground/20 focus:border-primary/50 transition-all w-full"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
@@ -774,7 +779,7 @@ export default function CapsulesPage() {
                     </div>
 
                     {/* View Toggle + Merge Mode */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
                         {/* View toggle — labeled & visually prominent */}
                         <div className="flex items-center gap-1 p-1 rounded-xl bg-muted/50 border border-border shadow-sm">
                             <motion.button
@@ -788,7 +793,7 @@ export default function CapsulesPage() {
                                 title="Grid View"
                             >
                                 <Grid3x3 className="h-3.5 w-3.5" />
-                                Grid
+                                <span className="hidden sm:inline">Grid</span>
                             </motion.button>
                             <motion.button
                                 onClick={() => setViewMode('table')}
@@ -801,7 +806,7 @@ export default function CapsulesPage() {
                                 title="Table View"
                             >
                                 <Table2 className="h-3.5 w-3.5" />
-                                Table
+                                <span className="hidden sm:inline">Table</span>
                             </motion.button>
                         </div>
 
@@ -935,7 +940,7 @@ export default function CapsulesPage() {
 
             {/* Merge Modal */}
             <Dialog open={mergeModalOpen} onOpenChange={setMergeModalOpen}>
-                <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden">
+                <DialogContent className="sm:max-w-lg w-[calc(100vw-2rem)] p-0 gap-0 overflow-hidden">
                     {/* Gradient header */}
                     <div className="bg-gradient-to-br from-primary/20 via-purple-500/10 to-blue-500/5 px-6 pt-6 pb-5 border-b border-border/50">
                         <div className="flex items-center gap-3">
@@ -1141,7 +1146,7 @@ export default function CapsulesPage() {
 
             {/* Version History Dialog */}
             <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-                <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-0 overflow-visible">
+                <DialogContent className="sm:max-w-4xl w-[calc(100vw-2rem)] max-h-[85vh] flex flex-col p-0 overflow-visible">
                     <DialogHeader className="px-6 py-5 border-b bg-muted/30">
                         <div className="flex items-start justify-between">
                             <div className="space-y-2">
@@ -1217,7 +1222,7 @@ export default function CapsulesPage() {
                                             extracted_from: selectedCapsule.extracted_from
                                         } as any] : [])).map((version, index) => (
                                             <Card key={version.version_id} className={`p-4 hover:shadow-md transition-shadow border ${selectedCapsule?.latest_version_id === version.version_id ? 'border-primary/50 bg-primary/5' : ''}`}>
-                                                <div className="flex items-start justify-between gap-4">
+                                                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                                                     <div className="space-y-3 flex-1">
                                                         <div className="flex items-center gap-2">
                                                             <Badge variant="default" className="bg-primary/10 text-primary">
@@ -1279,7 +1284,7 @@ export default function CapsulesPage() {
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
-                                                            className="shrink-0"
+                                                            className="shrink-0 w-full sm:w-auto"
                                                             onClick={() => handleRollback(version)}
                                                             disabled={rollingBack === version.version_id}
                                                         >

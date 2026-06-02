@@ -1,10 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
-import { BookOpen, Rocket, Layers, MousePointerClick, Puzzle, Sparkles, Network, Shield, ChevronRight, Bot, BrainCircuit, HelpCircle } from "lucide-react";
+import { BookOpen, Rocket, Layers, MousePointerClick, Puzzle, Sparkles, Network, Shield, ChevronRight, Bot, BrainCircuit, HelpCircle, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { TilantraLogo } from "@/components/Logo";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 import { useEffect, useState } from "react";
 
@@ -33,6 +34,7 @@ function isJwtValid(): boolean {
 export default function DocsLayout({ children }: { children: React.ReactNode }) {
     const location = useLocation();
     const [loggedIn, setLoggedIn] = useState(false);
+    const [isDocsMenuOpen, setIsDocsMenuOpen] = useState(false);
 
     useEffect(() => {
         setLoggedIn(isJwtValid());
@@ -44,8 +46,46 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(800px_420px_at_0%_0%,rgba(99,102,241,0.12),transparent_55%),radial-gradient(700px_400px_at_100%_0%,rgba(139,92,246,0.10),transparent_55%)] dark:bg-[radial-gradient(900px_480px_at_0%_0%,rgba(99,102,241,0.22),transparent_55%),radial-gradient(800px_420px_at_100%_0%,rgba(139,92,246,0.18),transparent_55%)]" />
 
             <header className="sticky top-0 z-50 border-b border-white/10 bg-white/70 backdrop-blur-xl dark:bg-slate-950/70">
-                <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
-                    <div className="flex min-w-0 items-center gap-4 sm:gap-6">
+                <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-3 sm:px-8">
+                    <div className="flex min-w-0 items-center gap-1.5 sm:gap-6">
+                        {/* Mobile menu trigger */}
+                        <Sheet open={isDocsMenuOpen} onOpenChange={setIsDocsMenuOpen}>
+                            <SheetTrigger asChild>
+                                <Button variant="ghost" size="icon" className="lg:hidden shrink-0 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+                                    <Menu className="h-5 w-5" />
+                                </Button>
+                            </SheetTrigger>
+                            <SheetContent side="left" className="w-64 p-0 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-r border-gray-200 dark:border-slate-800">
+                                <div className="h-16 flex items-center px-6 border-b border-gray-200 dark:border-slate-800">
+                                    <TilantraLogo className="h-8 w-auto" />
+                                </div>
+                                <ScrollArea className="h-[calc(100vh-4rem)] py-6">
+                                    <nav className="space-y-1 px-4">
+                                        {NAV_ITEMS.map((item) => {
+                                            const Icon = item.icon;
+                                            const isActive = location.pathname === item.path;
+                                            return (
+                                                <Link
+                                                    key={item.path}
+                                                    to={item.path}
+                                                    className={cn(
+                                                        "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
+                                                        isActive
+                                                            ? "bg-indigo-500/10 text-indigo-700 shadow-sm dark:bg-indigo-500/20 dark:text-indigo-300"
+                                                            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                                                    )}
+                                                    onClick={() => setIsDocsMenuOpen(false)}
+                                                >
+                                                    <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 dark:text-slate-500")} />
+                                                    <span className="flex-1">{item.label}</span>
+                                                    {isActive && <ChevronRight className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />}
+                                                </Link>
+                                            );
+                                        })}
+                                    </nav>
+                                </ScrollArea>
+                            </SheetContent>
+                        </Sheet>
                         <Link to="/" className="shrink-0 rounded-lg outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-indigo-500/50">
                             <TilantraLogo className="h-8 w-auto" />
                         </Link>

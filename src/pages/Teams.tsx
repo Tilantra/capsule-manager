@@ -224,7 +224,7 @@ export default function TeamsPage() {
                         return (
                             <Card
                                 key={team.team_id}
-                                className="group relative flex flex-col h-[240px] overflow-hidden hover:shadow-xl transition-all duration-300 border bg-gradient-to-br from-card to-card/50 hover:border-primary/40 cursor-default"
+                                className="group relative flex flex-col min-h-[220px] h-auto pb-4 overflow-hidden hover:shadow-xl transition-all duration-300 border bg-gradient-to-br from-card to-card/50 hover:border-primary/40 cursor-default"
                             >
                                 <CardHeader className="pb-3">
                                     <div className="flex items-start justify-between">
@@ -288,7 +288,7 @@ export default function TeamsPage() {
 
             {/* Create Team Dialog */}
             <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-                <DialogContent>
+                <DialogContent className="sm:max-w-md w-[calc(100vw-2rem)]">
                     <DialogHeader>
                         <DialogTitle>Create New Team</DialogTitle>
                         <DialogDescription>Create a team to collaborate with others.</DialogDescription>
@@ -347,7 +347,7 @@ export default function TeamsPage() {
 
             {/* Manage Members Dialog */}
             <Dialog open={manageMembersDialogOpen} onOpenChange={setManageMembersDialogOpen}>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="sm:max-w-2xl w-[calc(100vw-2rem)]">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                             <Users className="h-5 w-5" />
@@ -361,17 +361,18 @@ export default function TeamsPage() {
                     <ScrollArea className="max-h-[400px] pr-4">
                         <div className="space-y-4">
                             {/* Add Member Section */}
-                            {selectedTeam && canManageMembers(selectedTeam) && (
+                             {selectedTeam && canManageMembers(selectedTeam) && (
                                 <div className="bg-muted/30 p-4 rounded-lg space-y-3">
                                     <Label className="text-sm font-semibold">Add New Member</Label>
-                                    <div className="flex gap-2">
+                                    <div className="flex flex-col sm:flex-row gap-2">
                                         <Input
                                             placeholder="member@example.com"
                                             value={newMemberEmail}
                                             onChange={(e) => setNewMemberEmail(e.target.value)}
                                             onKeyDown={(e) => e.key === 'Enter' && handleAddMember()}
+                                            className="flex-1"
                                         />
-                                        <Button onClick={handleAddMember} className="gap-2">
+                                        <Button onClick={handleAddMember} className="gap-2 w-full sm:w-auto shrink-0 justify-center">
                                             <UserPlus className="h-4 w-4" />
                                             Add
                                         </Button>
@@ -392,20 +393,20 @@ export default function TeamsPage() {
                                         return (
                                             <div
                                                 key={memberEmail}
-                                                className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors"
+                                                className="flex flex-col sm:flex-row sm:items-center justify-between p-3 gap-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors"
                                             >
-                                                <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                    <Avatar className="h-9 w-9">
+                                                <div className="flex items-center gap-3 flex-1 min-w-0 w-full">
+                                                    <Avatar className="h-9 w-9 shrink-0">
                                                         <AvatarFallback className="text-xs font-semibold">
                                                             {memberEmail.substring(0, 2).toUpperCase()}
                                                         </AvatarFallback>
                                                     </Avatar>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="text-sm font-medium truncate">{memberEmail}</p>
+                                                        <p className="text-sm font-medium truncate" title={memberEmail}>{memberEmail}</p>
                                                         <p className="text-xs text-muted-foreground capitalize">{roleLabel}</p>
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40">
                                                     <Badge variant="secondary" className={`text-xs gap-1 ${getRoleBadgeColor(roleLabel)}`}>
                                                         {getRoleIcon(roleLabel)}
                                                         {roleLabel.charAt(0).toUpperCase() + roleLabel.slice(1)}
