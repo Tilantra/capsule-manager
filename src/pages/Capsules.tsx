@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, Trash2, Calendar, Filter, History, Lock, Grid3x3, Table2, HelpCircle, GitMerge, Check, Plus, GitBranch, Sparkles } from "lucide-react";
+import { Loader2, Search, Trash2, Calendar, Filter, History, Lock, Grid3x3, Table2, HelpCircle, GitMerge, Check, Plus, GitBranch, Sparkles, ScrollText, GripVertical, Scissors, X } from "lucide-react";
 import { format } from "date-fns";
 import {
     Dialog,
@@ -39,6 +39,14 @@ import {
 import { GitBranchView } from "@/components/GitBranchView";
 import { motion, AnimatePresence } from "framer-motion";
 
+
+interface EnrichedMessage {
+  flatIdx: number;
+  versionNumber: number;
+  versionId: string;
+  isCurrentVersion: boolean;
+  msg: any;
+}
 
 type Capsule = CapsuleMetadata;
 
@@ -81,6 +89,94 @@ const getYouTubeEmbedUrl = (url: string): string => {
     return `https://www.youtube.com/embed/${match[1]}`;
 };
 
+function parseBlockFields(body: string): { label: string | null; body: string; bullets: string[] }[] {
+    // Detect format: "• **Label**: content" vs "- Label: content"
+    const isBoldBulletFormat = /•\s*\*\*[^*]+\*\*\s*:/.test(body);
+
+    if (isBoldBulletFormat) {
+        // Split on boundaries where a "•" is followed by "**"
+        const chunks = body.split(/(?=•\s*\*\*)/).filter(Boolean);
+        return chunks.map(chunk => {
+            const m = chunk.match(/^•\s*\*\*([^*]+)\*\*\s*:\s*([\s\S]*)/);
+            if (!m) return { label: null, body: chunk.replace(/^•\s*/, '').trim(), bullets: [] };
+            const fieldBody = m[2].trim();
+            // Nested sub-bullets are "•" NOT followed by "**"
+            const subBullets = fieldBody.split(/\s*•\s+(?!\*\*)/).map(s => s.trim()).filter(Boolean);
+            return { label: m[1].trim(), body: fieldBody, bullets: subBullets.length > 1 ? subBullets : [] };
+        }).filter(f => f.label || f.body);
+    }
+
+    // "- Label: content • bullet • bullet" format
+    const chunks = body.split(/(?=\s*-\s+[A-Za-z][^:•\n]{1,60}:\s)/);
+    return chunks.map(chunk => {
+        const m = chunk.match(/^\s*-\s+([^:•\n]{1,60}):\s*([\s\S]*)/);
+        if (!m) return { label: null, body: chunk.trim(), bullets: [] as string[] };
+        const fieldBody = m[2].trim();
+        const bullets = fieldBody.split(/\s*•\s*/).map(s => s.trim()).filter(Boolean);
+        return { label: m[1].trim(), body: fieldBody, bullets: bullets.length > 1 ? bullets : [] };
+    }).filter(f => f.label || f.body);
+}
+
+function renderStructuredSummary(text: string) {
+    const cleaned = text.replace(/^\*\*ACTIVE CAPSULE CONTEXT\*\*\s*/i, '').trim();
+
+    if (!cleaned.includes('--- From:')) {
+        return <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{cleaned}</p>;
+    }
+
+    const segments = cleaned.split(/(---\s*From:[^-]*---)/);
+    const blocks: { title: string; body: string }[] = [];
+    for (let i = 0; i < segments.length; i++) {
+        const m = segments[i].match(/---\s*From:\s*(.*?)\s*---/);
+        if (m && i + 1 < segments.length) {
+            blocks.push({ title: m[1].trim(), body: segments[i + 1].trim() });
+            i++;
+        }
+    }
+
+    if (blocks.length === 0) {
+        return <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{cleaned}</p>;
+    }
+
+    return (
+        <div className="space-y-5">
+            {blocks.map((block, bi) => {
+                const fields = parseBlockFields(block.body);
+                return (
+                    <div key={bi} className="rounded-xl border border-border/50 overflow-hidden">
+                        <div className="px-4 py-2.5 bg-primary/10 border-b border-border/50">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-primary/80">From: {block.title}</p>
+                        </div>
+                        <div className="p-4 space-y-4">
+                            {fields.map((field, fi) =>
+                                field.label ? (
+                                    <div key={fi} className="space-y-1.5">
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">{field.label}</p>
+                                        {field.bullets.length > 0 ? (
+                                            <ul className="space-y-1.5">
+                                                {field.bullets.map((b, bj) => (
+                                                    <li key={bj} className="flex gap-2 text-sm text-muted-foreground leading-relaxed">
+                                                        <span className="text-primary shrink-0 mt-0.5 font-bold">•</span>
+                                                        <span>{b}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground leading-relaxed">{field.body}</p>
+                                        )}
+                                    </div>
+                                ) : field.body ? (
+                                    <p key={fi} className="text-sm text-muted-foreground">{field.body}</p>
+                                ) : null
+                            )}
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
+
 export default function CapsulesPage() {
 
 
@@ -107,6 +203,18 @@ export default function CapsulesPage() {
     const [mergeTeam, setMergeTeam] = useState<string | undefined>(undefined);
     const [merging, setMerging] = useState(false);
     const [includeAttachments, setIncludeAttachments] = useState(false);
+    const [showContentView, setShowContentView] = useState(false);
+    const [capsuleContent, setCapsuleContent] = useState<EnrichedMessage[]>([]);
+    const [capsuleSummary, setCapsuleSummary] = useState<string>('');
+    const [loadingContent, setLoadingContent] = useState(false);
+    const [contentTab, setContentTab] = useState<'summary' | 'messages'>('summary');
+    const [splitDropMessages, setSplitDropMessages] = useState<{ idx: number; enriched: EnrichedMessage }[]>([]);
+    const [splitModalOpen, setSplitModalOpen] = useState(false);
+    const [splitTag, setSplitTag] = useState('');
+    const [splitting, setSplitting] = useState(false);
+    const [dragOverDrop, setDragOverDrop] = useState(false);
+    const [splitModeActive, setSplitModeActive] = useState(false);
+    const [splitIncludeAttachments, setSplitIncludeAttachments] = useState(false);
 
     const client = useMemo(() => new BrowserGuideraClient(), []);
 
@@ -122,6 +230,15 @@ export default function CapsulesPage() {
             ((c as any).attachment_ids && (c as any).attachment_ids.length > 0)
         );
     }, [selectedCapsuleObjects]);
+
+    const splitHasAttachments = useMemo(() => {
+        const c = selectedCapsule as any;
+        return !!(
+            (c?.attachment_count && c.attachment_count > 0) ||
+            (c?.attachments && c.attachments.length > 0) ||
+            (c?.attachment_ids && c.attachment_ids.length > 0)
+        );
+    }, [selectedCapsule]);
 
     const mergeVisibility = useMemo(() => {
         const allPrivate = selectedCapsuleObjects.every(c => !c.team || c.team === '');
@@ -218,6 +335,159 @@ export default function CapsulesPage() {
             toast.error("Failed to load version history");
         } finally {
             setLoadingVersions(false);
+        }
+    };
+
+    const loadCapsuleContent = async (capsule: Capsule) => {
+        setLoadingContent(true);
+        setShowContentView(true);
+        setContentTab('summary');
+        try {
+            let enriched: EnrichedMessage[] = [];
+            let summary = capsule.summary || '';
+            const versionCount = capsule.version_count || 1;
+
+            if (versionCount > 1) {
+                const versionListResp = await client.getCapsuleVersions(capsule.capsule_id);
+                const sortedVersions = (versionListResp.versions || []).sort(
+                    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+                );
+                const fullVersions = await Promise.all(
+                    sortedVersions.map(v => client.getCapsuleVersion(capsule.capsule_id, v.version_id))
+                );
+                const seenContent = new Set<string>();
+                let flatIdx = 0;
+                fullVersions.forEach(version => {
+                    const msgs: any[] = version.content?.messages || [];
+                    const isCurrent = version.version_id === capsule.latest_version_id;
+                    msgs.forEach(msg => {
+                        const contentStr = typeof msg.content === 'string'
+                            ? msg.content
+                            : Array.isArray(msg.content)
+                                ? msg.content.map((c: any) => typeof c === 'string' ? c : c?.text || '').join(' ')
+                                : JSON.stringify(msg.content);
+                        const key = `${msg.role ?? ''}::${contentStr.trim()}`;
+                        if (!seenContent.has(key)) {
+                            seenContent.add(key);
+                            enriched.push({ flatIdx: flatIdx++, versionNumber: version.version_number || 1, versionId: version.version_id, isCurrentVersion: isCurrent, msg });
+                        }
+                    });
+                    if (isCurrent && version.summary) summary = version.summary;
+                });
+            } else {
+                if (!capsule.latest_version_id) {
+                    toast.error("No version found for this capsule");
+                    setShowContentView(false);
+                    return;
+                }
+                const version = await client.getCapsuleVersion(capsule.capsule_id, capsule.latest_version_id);
+                (version.content?.messages || []).forEach((msg, i) => {
+                    enriched.push({ flatIdx: i, versionNumber: version.version_number || 1, versionId: capsule.latest_version_id!, isCurrentVersion: true, msg });
+                });
+                summary = version.summary || capsule.summary || '';
+            }
+
+            setCapsuleContent(enriched);
+            setCapsuleSummary(summary);
+        } catch (error) {
+            console.error("Failed to load capsule content:", error);
+            toast.error("Failed to load capsule content");
+            setShowContentView(false);
+        } finally {
+            setLoadingContent(false);
+        }
+    };
+
+    const handleSplit = async () => {
+        if (!selectedCapsule || splitDropMessages.length === 0) return;
+        setSplitting(true);
+        try {
+            const orderedDropped = [...splitDropMessages].sort((a, b) => a.idx - b.idx);
+            const splitMsgs = orderedDropped.map(m => m.enriched.msg);
+            const droppedFlatIndices = new Set(orderedDropped.map(m => m.idx));
+
+            const attachmentIds: string[] = splitIncludeAttachments
+                ? ((selectedCapsule as any).attachment_ids || [])
+                : [];
+
+            // Step 1: create the new capsule (required — throws on failure)
+            const newCapsuleResult = await client.createCapsule({
+                content: { messages: splitMsgs },
+                tag: splitTag.trim() || `${selectedCapsule.tag} (Split)`,
+                team: selectedCapsule.team || undefined,
+                extracted_from: Array.isArray(selectedCapsule.extracted_from)
+                    ? selectedCapsule.extracted_from[0]
+                    : selectedCapsule.extracted_from,
+                ...(attachmentIds.length > 0 && { attachment_ids: attachmentIds }),
+            });
+
+            // Step 2: update original capsule with remaining messages (best-effort)
+            const remainingMsgs = capsuleContent
+                .filter(m => m.isCurrentVersion && !droppedFlatIndices.has(m.flatIdx))
+                .map(m => m.msg);
+
+            let versionUpdateFailed = false;
+            if (remainingMsgs.length > 0 && selectedCapsule.latest_version_id) {
+                try {
+                    await client.createCapsuleVersion(selectedCapsule.capsule_id, {
+                        content: { messages: remainingMsgs },
+                        parent_version_id: selectedCapsule.latest_version_id,
+                        extracted_from: Array.isArray(selectedCapsule.extracted_from)
+                            ? selectedCapsule.extracted_from[0]
+                            : selectedCapsule.extracted_from,
+                    });
+                } catch (versionErr) {
+                    console.error('Failed to update original capsule version:', versionErr);
+                    versionUpdateFailed = true;
+                }
+            }
+
+            // Optimistic UI update — guard every field with a fallback to prevent render crashes
+            const newCapsule: CapsuleMetadata = {
+                capsule_id: newCapsuleResult.capsule_id,
+                tag: newCapsuleResult.tag || splitTag.trim() || `${selectedCapsule.tag} (Split)`,
+                created_at: newCapsuleResult.created_at || new Date().toISOString(),
+                created_by: newCapsuleResult.created_by || selectedCapsule.created_by,
+                summary: newCapsuleResult.summary,
+                team: newCapsuleResult.team || selectedCapsule.team,
+                current_version_number: 1,
+                version_count: 1,
+            };
+            setCapsules(prev => [
+                newCapsule,
+                ...prev.map(c =>
+                    c.capsule_id === selectedCapsule.capsule_id && !versionUpdateFailed
+                        ? { ...c, current_version_number: (c.current_version_number || 1) + 1, version_count: (c.version_count || 1) + 1 }
+                        : c
+                ),
+            ]);
+
+            // Close all dialogs and return to capsule list
+            setSplitModalOpen(false);
+            setSplitDropMessages([]);
+            setSplitModeActive(false);
+            setSplitIncludeAttachments(false);
+            setShowContentView(false);
+            setDetailsOpen(false);
+            setSelectedCapsule(null);
+            setVersions([]);
+
+            // Refresh list silently in background to get accurate server data
+            fetchCapsules({ silent: true });
+
+            if (versionUpdateFailed) {
+                toast.success(`"${newCapsule.tag}" created`, {
+                    description: `New capsule ready. Original capsule version update failed — it still has the full message history.`,
+                });
+            } else {
+                toast.success('Capsule split successfully', {
+                    description: `"${newCapsule.tag}" created. Original updated with ${remainingMsgs.length} remaining message${remainingMsgs.length !== 1 ? 's' : ''}.`,
+                });
+            }
+        } catch (err) {
+            toast.error('Split failed', { description: (err as Error).message });
+        } finally {
+            setSplitting(false);
         }
     };
 
@@ -1165,15 +1435,26 @@ export default function CapsulesPage() {
                                     Created on {selectedCapsule && format(new Date(selectedCapsule.created_at), "PPP")} by {selectedCapsule?.created_by}
                                 </DialogDescription>
                             </div>
-                            <Button
-                                variant={showBranchView ? "outline" : "default"}
-                                size="sm"
-                                className={`gap-2 mr-6 transition-all ${!showBranchView ? 'shadow-md hover:shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground' : ''}`}
-                                onClick={() => setShowBranchView(!showBranchView)}
-                            >
-                                {showBranchView ? <History className="h-4 w-4" /> : <GitBranch className="h-4 w-4" />}
-                                {showBranchView ? "List View" : "Graph View"}
-                            </Button>
+                            <div className="flex items-center gap-2 mr-6">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="gap-2 border-primary/30 hover:border-primary/60 hover:bg-primary/5"
+                                    onClick={() => selectedCapsule && loadCapsuleContent(selectedCapsule)}
+                                >
+                                    <ScrollText className="h-4 w-4" />
+                                    Inspect
+                                </Button>
+                                <Button
+                                    variant={showBranchView ? "outline" : "default"}
+                                    size="sm"
+                                    className={`gap-2 transition-all ${!showBranchView ? 'shadow-md hover:shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground' : ''}`}
+                                    onClick={() => setShowBranchView(!showBranchView)}
+                                >
+                                    {showBranchView ? <History className="h-4 w-4" /> : <GitBranch className="h-4 w-4" />}
+                                    {showBranchView ? "List View" : "Graph View"}
+                                </Button>
+                            </div>
                         </div>
                     </DialogHeader>
 
@@ -1298,6 +1579,370 @@ export default function CapsulesPage() {
                                 )}
                             </div>
                         ) : null}
+                    </div>
+                </DialogContent>
+            </Dialog>
+            <Dialog
+                open={showContentView}
+                onOpenChange={(open) => {
+                    setShowContentView(open);
+                    if (!open) { setSplitDropMessages([]); setSplitModeActive(false); }
+                }}
+            >
+                <DialogContent className="max-w-6xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
+                    <DialogHeader className="px-6 py-4 border-b bg-muted/30 shrink-0">
+                        <DialogTitle className="text-xl bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                            {selectedCapsule?.tag}
+                        </DialogTitle>
+                        <DialogDescription className="mt-0.5">
+                            {capsuleContent.filter(m => m.isCurrentVersion).length} messages in current version
+                            {(selectedCapsule?.version_count || 1) > 1 && ` · ${capsuleContent.length} total across all versions`}
+                            {contentTab === 'messages' && splitModeActive && ' · drag messages to the split zone →'}
+                        </DialogDescription>
+                        <div className="flex items-center justify-between mt-3">
+                            <div className="flex gap-1 p-1 bg-muted/50 rounded-lg w-fit">
+                                <button
+                                    onClick={() => { setContentTab('summary'); setSplitModeActive(false); setSplitDropMessages([]); }}
+                                    className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${
+                                        contentTab === 'summary'
+                                            ? 'bg-background text-foreground shadow-sm'
+                                            : 'text-muted-foreground hover:text-foreground'
+                                    }`}
+                                >
+                                    Summary
+                                </button>
+                                <button
+                                    onClick={() => setContentTab('messages')}
+                                    className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${
+                                        contentTab === 'messages'
+                                            ? 'bg-background text-foreground shadow-sm'
+                                            : 'text-muted-foreground hover:text-foreground'
+                                    }`}
+                                >
+                                    Messages
+                                </button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {contentTab === 'messages' && (
+                                    <Button
+                                        size="sm"
+                                        onClick={() => { setSplitModeActive(v => !v); setSplitDropMessages([]); }}
+                                        className={splitModeActive
+                                            ? 'h-9 px-4 gap-2 font-semibold border border-border/60 bg-muted/40 text-muted-foreground hover:text-foreground shadow-none'
+                                            : 'h-9 px-4 gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-semibold shadow-lg shadow-purple-500/30 border-0'
+                                        }
+                                    >
+                                        <Scissors className="h-4 w-4" />
+                                        {splitModeActive ? 'Exit Split' : 'Split'}
+                                    </Button>
+                                )}
+                                {splitDropMessages.length > 0 && contentTab === 'messages' && splitModeActive && (
+                                    <Button
+                                        size="sm"
+                                        className="h-9 px-4 gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-semibold shadow-lg shadow-purple-500/30 border-0"
+                                        onClick={() => {
+                                            setSplitTag(`${selectedCapsule?.tag || 'Capsule'} (Split)`);
+                                            setSplitModalOpen(true);
+                                        }}
+                                    >
+                                        <Scissors className="h-4 w-4" />
+                                        Split ({splitDropMessages.length} msg{splitDropMessages.length !== 1 ? 's' : ''})
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+                    </DialogHeader>
+
+                    <div className="flex-1 overflow-hidden flex min-h-0">
+                        {/* Main content panel */}
+                        <div className="flex-1 overflow-y-auto p-6 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full">
+                            {loadingContent ? (
+                                <div className="flex flex-col items-center justify-center py-16 gap-3">
+                                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                                    <p className="text-sm text-muted-foreground">Loading{(selectedCapsule?.version_count || 1) > 1 ? ' across all versions' : ''}…</p>
+                                </div>
+                            ) : contentTab === 'summary' ? (
+                                capsuleSummary
+                                    ? renderStructuredSummary(capsuleSummary)
+                                    : <p className="text-muted-foreground text-sm text-center py-12">No summary available.</p>
+                            ) : capsuleContent.length === 0 ? (
+                                <p className="text-muted-foreground text-sm text-center py-12">No messages found.</p>
+                            ) : (() => {
+                                const groups: { versionNumber: number; versionId: string; isCurrent: boolean; items: EnrichedMessage[] }[] = [];
+                                capsuleContent.forEach(item => {
+                                    const last = groups[groups.length - 1];
+                                    if (last && last.versionId === item.versionId) {
+                                        last.items.push(item);
+                                    } else {
+                                        groups.push({ versionNumber: item.versionNumber, versionId: item.versionId, isCurrent: item.isCurrentVersion, items: [item] });
+                                    }
+                                });
+
+                                return (
+                                    <div className="space-y-8">
+                                        {groups.map(group => (
+                                            <div key={group.versionId}>
+                                                <div className="flex items-center gap-3 mb-4">
+                                                    <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
+                                                        group.isCurrent
+                                                            ? 'bg-green-500/10 text-green-600 border-green-500/30'
+                                                            : 'bg-muted/50 text-muted-foreground border-border/50'
+                                                    }`}>
+                                                        <History className="h-3 w-3" />
+                                                        Version {group.versionNumber}
+                                                        {group.isCurrent && <span className="ml-1">· Current</span>}
+                                                    </div>
+                                                    <div className="flex-1 h-px bg-border/40" />
+                                                    <span className="text-[10px] text-muted-foreground/50">{group.items.length} message{group.items.length !== 1 ? 's' : ''}</span>
+                                                </div>
+
+                                                <div className="space-y-3">
+                                                    {group.items.map(item => {
+                                                        const alreadyDropped = splitDropMessages.some(m => m.idx === item.flatIdx);
+                                                        const msgText = typeof item.msg.content === 'string'
+                                                            ? item.msg.content
+                                                            : Array.isArray(item.msg.content)
+                                                                ? item.msg.content.map((c: any) => typeof c === 'string' ? c : c?.text || '').join(' ')
+                                                                : JSON.stringify(item.msg.content);
+
+                                                        return (
+                                                            <div
+                                                                key={item.flatIdx}
+                                                                draggable={splitModeActive && !alreadyDropped}
+                                                                onDragStart={(e) => {
+                                                                    e.dataTransfer.setData('flatIdx', item.flatIdx.toString());
+                                                                    e.dataTransfer.effectAllowed = 'copy';
+                                                                }}
+                                                                className={`flex items-start gap-2 p-4 rounded-xl border transition-all ${
+                                                                    alreadyDropped
+                                                                        ? 'opacity-35 border-dashed border-border/30 cursor-not-allowed bg-transparent'
+                                                                        : item.msg.role === 'user'
+                                                                            ? `bg-primary/5 border-primary/15 mr-8 ${splitModeActive ? 'cursor-grab active:cursor-grabbing hover:border-primary/30 hover:shadow-sm' : ''}`
+                                                                            : `bg-muted/30 border-border/40 ml-8 ${splitModeActive ? 'cursor-grab active:cursor-grabbing hover:border-border/60 hover:shadow-sm' : ''}`
+                                                                }`}
+                                                            >
+                                                                {splitModeActive && !alreadyDropped && (
+                                                                    <GripVertical className="h-4 w-4 text-muted-foreground/25 mt-0.5 shrink-0" />
+                                                                )}
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                                                        <Badge
+                                                                            variant={item.msg.role === 'user' ? 'default' : 'secondary'}
+                                                                            className="text-[10px] capitalize px-2 py-0"
+                                                                        >
+                                                                            {item.msg.role || 'unknown'}
+                                                                        </Badge>
+                                                                        {!group.isCurrent && (
+                                                                            <span className="text-[9px] text-muted-foreground/40 font-medium uppercase tracking-wider">Historical</span>
+                                                                        )}
+                                                                        {alreadyDropped && (
+                                                                            <span className="text-[9px] text-violet-500 font-medium">→ In split zone</span>
+                                                                        )}
+                                                                    </div>
+                                                                    <p className="text-sm text-foreground/80 whitespace-pre-wrap break-words leading-relaxed">
+                                                                        {msgText}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                );
+                            })()}
+                        </div>
+
+                        {/* Split drop zone — only visible when split mode is active */}
+                        {contentTab === 'messages' && splitModeActive && (
+                            <div
+                                className={`w-72 shrink-0 border-l flex flex-col transition-colors duration-200 ${
+                                    dragOverDrop ? 'bg-violet-500/10' : 'bg-muted/10'
+                                }`}
+                                onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; setDragOverDrop(true); }}
+                                onDragLeave={(e) => {
+                                    if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverDrop(false);
+                                }}
+                                onDrop={(e) => {
+                                    e.preventDefault();
+                                    setDragOverDrop(false);
+                                    const flatIdx = parseInt(e.dataTransfer.getData('flatIdx'), 10);
+                                    if (!isNaN(flatIdx) && !splitDropMessages.some(m => m.idx === flatIdx)) {
+                                        const target = capsuleContent.find(m => m.flatIdx === flatIdx);
+                                        if (target) setSplitDropMessages(prev => [...prev, { idx: flatIdx, enriched: target }]);
+                                    }
+                                }}
+                            >
+                                <div className={`p-4 border-b shrink-0 transition-colors ${dragOverDrop ? 'border-violet-500/30' : ''}`}>
+                                    <div className="flex items-center gap-2">
+                                        <div className={`p-1.5 rounded-lg transition-colors ${dragOverDrop ? 'bg-violet-500/20' : 'bg-muted/50'}`}>
+                                            <Scissors className={`h-4 w-4 transition-colors ${dragOverDrop ? 'text-violet-500' : 'text-muted-foreground'}`} />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-semibold">New Capsule Zone</p>
+                                            <p className="text-[11px] text-muted-foreground">
+                                                {splitDropMessages.length > 0
+                                                    ? `${splitDropMessages.length} message${splitDropMessages.length !== 1 ? 's' : ''} selected`
+                                                    : 'Drop messages here'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex-1 overflow-y-auto p-3 space-y-2 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full">
+                                    {splitDropMessages.length === 0 ? (
+                                        <div className={`min-h-[180px] h-full flex flex-col items-center justify-center text-center rounded-xl border-2 border-dashed transition-all ${
+                                            dragOverDrop ? 'border-violet-500/60 bg-violet-500/5 scale-[1.02]' : 'border-border/30'
+                                        }`}>
+                                            <Scissors className={`h-8 w-8 mb-2 transition-colors ${dragOverDrop ? 'text-violet-500' : 'text-muted-foreground/30'}`} />
+                                            <p className={`text-xs font-medium transition-colors ${dragOverDrop ? 'text-violet-500' : 'text-muted-foreground/50'}`}>
+                                                {dragOverDrop ? 'Release to add' : 'Drag messages here'}
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        splitDropMessages.map(({ idx, enriched }, i) => {
+                                            const msgText = typeof enriched.msg.content === 'string'
+                                                ? enriched.msg.content
+                                                : Array.isArray(enriched.msg.content)
+                                                    ? enriched.msg.content.map((c: any) => typeof c === 'string' ? c : c?.text || '').join(' ')
+                                                    : JSON.stringify(enriched.msg.content);
+                                            return (
+                                                <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg bg-violet-500/5 border border-violet-500/20 group">
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                                                            <Badge variant={enriched.msg.role === 'user' ? 'default' : 'secondary'} className="text-[9px] capitalize px-1.5 py-0">
+                                                                {enriched.msg.role || 'unknown'}
+                                                            </Badge>
+                                                            <span className="text-[9px] text-violet-400/70 font-medium">v{enriched.versionNumber}</span>
+                                                        </div>
+                                                        <p className="text-xs text-muted-foreground line-clamp-2 break-words">{msgText}</p>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => setSplitDropMessages(prev => prev.filter((_, j) => j !== i))}
+                                                        className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-destructive/10 hover:text-destructive mt-0.5"
+                                                    >
+                                                        <X className="h-3 w-3" />
+                                                    </button>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+
+                                {splitDropMessages.length > 0 && (
+                                    <div className="p-3 border-t shrink-0">
+                                        <Button
+                                            className="w-full gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white border-0 shadow-lg shadow-purple-500/30 font-semibold"
+                                            size="sm"
+                                            onClick={() => {
+                                                setSplitTag(`${selectedCapsule?.tag || 'Capsule'} (Split)`);
+                                                setSplitModalOpen(true);
+                                            }}
+                                        >
+                                            <Scissors className="h-4 w-4" />
+                                            Split into New Capsule
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={splitModalOpen} onOpenChange={(open) => { setSplitModalOpen(open); if (!open) setSplitIncludeAttachments(false); }}>
+                <DialogContent className="max-w-md p-0 gap-0 overflow-hidden">
+                    <div className="bg-gradient-to-br from-primary/20 via-purple-500/10 to-blue-500/5 px-6 pt-6 pb-5 border-b border-border/50">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2.5 rounded-xl bg-primary/20 border border-primary/30 shadow-inner shrink-0">
+                                <Scissors className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                                <DialogTitle className="text-xl font-bold text-left">Split Capsule</DialogTitle>
+                                <DialogDescription className="text-sm text-left mt-0.5">
+                                    {splitDropMessages.length} message{splitDropMessages.length !== 1 ? 's' : ''} will be extracted into a new capsule
+                                </DialogDescription>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="px-6 py-5 space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="split-tag" className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                                New Capsule Name
+                            </Label>
+                            <Input
+                                id="split-tag"
+                                value={splitTag}
+                                onChange={e => setSplitTag(e.target.value)}
+                                placeholder="e.g. Split context"
+                                className="bg-muted/20 border-border/60 focus:border-primary/50"
+                            />
+                        </div>
+
+                        {splitHasAttachments && (
+                            <>
+                                <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+                                <div className="space-y-2">
+                                    <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60">Attachments</p>
+                                    <label className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-muted/30 transition-colors">
+                                        <div className="relative flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={splitIncludeAttachments}
+                                                onChange={e => setSplitIncludeAttachments(e.target.checked)}
+                                                className="peer sr-only"
+                                            />
+                                            <div className="h-5 w-5 rounded border-2 border-border/60 bg-background peer-checked:bg-primary peer-checked:border-primary transition-all flex items-center justify-center">
+                                                <Check className={`h-3.5 w-3.5 text-primary-foreground ${splitIncludeAttachments ? 'opacity-100' : 'opacity-0'} transition-opacity`} />
+                                            </div>
+                                        </div>
+                                        <span className="text-sm text-foreground">Include attachments in the new capsule</span>
+                                    </label>
+                                </div>
+                            </>
+                        )}
+
+                        <div className="rounded-xl bg-gradient-to-br from-primary/10 to-purple-500/5 border border-primary/20 p-4 space-y-2.5">
+                            <div className="flex items-center gap-2">
+                                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                                <span className="text-[11px] font-bold uppercase tracking-widest text-primary/80">What will happen</span>
+                            </div>
+                            <div className="space-y-2 text-sm text-muted-foreground">
+                                <div className="flex items-start gap-2">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
+                                    <span>
+                                        A new capsule <span className="font-semibold text-foreground">"{splitTag || 'Split'}"</span> will be created with{' '}
+                                        <span className="font-semibold text-foreground">{splitDropMessages.length} message{splitDropMessages.length !== 1 ? 's' : ''}</span>.
+                                    </span>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
+                                    <span>
+                                        <span className="font-semibold text-foreground">"{selectedCapsule?.tag}"</span> will get a new version with the remaining{' '}
+                                        <span className="font-semibold text-foreground">
+                                            {capsuleContent.filter(m => m.isCurrentVersion).length - splitDropMessages.filter(m => m.enriched.isCurrentVersion).length} message
+                                            {(capsuleContent.filter(m => m.isCurrentVersion).length - splitDropMessages.filter(m => m.enriched.isCurrentVersion).length) !== 1 ? 's' : ''}
+                                        </span>.
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border/50 bg-muted/10">
+                        <Button variant="ghost" onClick={() => setSplitModalOpen(false)} disabled={splitting}>
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleSplit}
+                            disabled={splitting || !splitTag.trim()}
+                            className="gap-2 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white border-0 shadow-md shadow-primary/25 px-6 font-semibold"
+                        >
+                            {splitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Scissors className="h-4 w-4" />}
+                            {splitting ? 'Splitting...' : 'Confirm Split'}
+                        </Button>
                     </div>
                 </DialogContent>
             </Dialog>
