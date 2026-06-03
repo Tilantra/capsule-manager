@@ -50,6 +50,26 @@ interface EnrichedMessage {
 
 type Capsule = CapsuleMetadata;
 
+function cleanAndFormatText(rawText: string): string {
+    if (!rawText) return '';
+    let s = rawText.replace(/\\n/g, '\n');
+    
+    // Only apply aggressive deduplication and formatting if the text looks like a flattened DOM (no newlines, very long)
+    if (s.split('\n').length <= 3 && s.length > 100) {
+        let prev = '';
+        let iterations = 0;
+        while (s !== prev && iterations < 5) {
+            prev = s;
+            s = s.replace(/(.{10,200}?)\s+\1/g, "$1");
+            iterations++;
+        }
+        // Add newlines after punctuation followed by space and capital letter
+        s = s.replace(/([.?!])\s+(?=[A-Z])/g, "$1\n\n");
+    }
+    
+    return s;
+}
+
 // Model logo mapping
 const modelLogos: Record<string, string> = {
     chatgpt: ChatGPTLogo,
@@ -207,7 +227,7 @@ export default function CapsulesPage() {
     const [capsuleContent, setCapsuleContent] = useState<EnrichedMessage[]>([]);
     const [capsuleSummary, setCapsuleSummary] = useState<string>('');
     const [loadingContent, setLoadingContent] = useState(false);
-    const [contentTab, setContentTab] = useState<'summary' | 'messages'>('summary');
+    const [contentTab, setContentTab] = useState<'summary' | 'messages'>('messages');
     const [splitDropMessages, setSplitDropMessages] = useState<{ idx: number; enriched: EnrichedMessage }[]>([]);
     const [splitModalOpen, setSplitModalOpen] = useState(false);
     const [splitTag, setSplitTag] = useState('');
@@ -341,7 +361,7 @@ export default function CapsulesPage() {
     const loadCapsuleContent = async (capsule: Capsule) => {
         setLoadingContent(true);
         setShowContentView(true);
-        setContentTab('summary');
+        setContentTab('messages');
         try {
             let enriched: EnrichedMessage[] = [];
             let summary = capsule.summary || '';
@@ -361,11 +381,12 @@ export default function CapsulesPage() {
                     const msgs: any[] = version.content?.messages || [];
                     const isCurrent = version.version_id === capsule.latest_version_id;
                     msgs.forEach(msg => {
-                        const contentStr = typeof msg.content === 'string'
+                        const contentStrRaw = typeof msg.content === 'string'
                             ? msg.content
                             : Array.isArray(msg.content)
-                                ? msg.content.map((c: any) => typeof c === 'string' ? c : c?.text || '').join(' ')
+                                ? msg.content.map((c: any) => typeof c === 'string' ? c : c?.text || '').join('\n\n')
                                 : JSON.stringify(msg.content);
+                        const contentStr = cleanAndFormatText(contentStrRaw);
                         const key = `${msg.role ?? ''}::${contentStr.trim()}`;
                         if (!seenContent.has(key)) {
                             seenContent.add(key);
@@ -524,9 +545,8 @@ export default function CapsulesPage() {
     const openDetails = (capsule: Capsule) => {
         setSelectedCapsule(capsule);
         setDetailsOpen(true);
-        if ((capsule.version_count || 1) > 1) {
-            loadVersions(capsule);
-        }
+        setShowBranchView(false);
+        loadVersions(capsule);
     };
 
     const handleOpenMergeModal = () => {
@@ -1474,7 +1494,7 @@ export default function CapsulesPage() {
                                     )}
                                 </div>
 
-                                {loadingVersions && (selectedCapsule?.version_count || 1) > 1 ? (
+                                {loadingVersions ? (
                                     <div className="flex justify-center py-12">
                                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
                                     </div>
@@ -1599,29 +1619,7 @@ export default function CapsulesPage() {
                             {(selectedCapsule?.version_count || 1) > 1 && ` · ${capsuleContent.length} total across all versions`}
                             {contentTab === 'messages' && splitModeActive && ' · drag messages to the split zone →'}
                         </DialogDescription>
-                        <div className="flex items-center justify-between mt-3">
-                            <div className="flex gap-1 p-1 bg-muted/50 rounded-lg w-fit">
-                                <button
-                                    onClick={() => { setContentTab('summary'); setSplitModeActive(false); setSplitDropMessages([]); }}
-                                    className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${
-                                        contentTab === 'summary'
-                                            ? 'bg-background text-foreground shadow-sm'
-                                            : 'text-muted-foreground hover:text-foreground'
-                                    }`}
-                                >
-                                    Summary
-                                </button>
-                                <button
-                                    onClick={() => setContentTab('messages')}
-                                    className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${
-                                        contentTab === 'messages'
-                                            ? 'bg-background text-foreground shadow-sm'
-                                            : 'text-muted-foreground hover:text-foreground'
-                                    }`}
-                                >
-                                    Messages
-                                </button>
-                            </div>
+                        <div className="flex items-center justify-end mt-3">
                             <div className="flex items-center gap-2">
                                 {contentTab === 'messages' && (
                                     <Button
@@ -1661,10 +1659,6 @@ export default function CapsulesPage() {
                                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
                                     <p className="text-sm text-muted-foreground">Loading{(selectedCapsule?.version_count || 1) > 1 ? ' across all versions' : ''}…</p>
                                 </div>
-                            ) : contentTab === 'summary' ? (
-                                capsuleSummary
-                                    ? renderStructuredSummary(capsuleSummary)
-                                    : <p className="text-muted-foreground text-sm text-center py-12">No summary available.</p>
                             ) : capsuleContent.length === 0 ? (
                                 <p className="text-muted-foreground text-sm text-center py-12">No messages found.</p>
                             ) : (() => {
@@ -1699,11 +1693,12 @@ export default function CapsulesPage() {
                                                 <div className="space-y-3">
                                                     {group.items.map(item => {
                                                         const alreadyDropped = splitDropMessages.some(m => m.idx === item.flatIdx);
-                                                        const msgText = typeof item.msg.content === 'string'
+                                                        const rawText = typeof item.msg.content === 'string'
                                                             ? item.msg.content
                                                             : Array.isArray(item.msg.content)
-                                                                ? item.msg.content.map((c: any) => typeof c === 'string' ? c : c?.text || '').join(' ')
+                                                                ? item.msg.content.map((c: any) => typeof c === 'string' ? c : c?.text || '').join('\n\n')
                                                                 : JSON.stringify(item.msg.content);
+                                                        const msgText = cleanAndFormatText(rawText);
 
                                                         return (
                                                             <div
@@ -1802,11 +1797,12 @@ export default function CapsulesPage() {
                                         </div>
                                     ) : (
                                         splitDropMessages.map(({ idx, enriched }, i) => {
-                                            const msgText = typeof enriched.msg.content === 'string'
+                                            const rawText = typeof enriched.msg.content === 'string'
                                                 ? enriched.msg.content
                                                 : Array.isArray(enriched.msg.content)
-                                                    ? enriched.msg.content.map((c: any) => typeof c === 'string' ? c : c?.text || '').join(' ')
+                                                    ? enriched.msg.content.map((c: any) => typeof c === 'string' ? c : c?.text || '').join('\n\n')
                                                     : JSON.stringify(enriched.msg.content);
+                                            const msgText = cleanAndFormatText(rawText);
                                             return (
                                                 <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg bg-violet-500/5 border border-violet-500/20 group">
                                                     <div className="flex-1 min-w-0">
