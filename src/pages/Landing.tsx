@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowDown, ArrowRight, Bot, BrainCircuit, Chrome, Globe, MessageSquarePlus, Paperclip, Sparkles, Upload, Zap, Shield, Layers, RefreshCw, ServerCog, XCircle } from "lucide-react";
@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CapsuleGraph } from "@/components/CapsuleGraph";
-import { TilantraLogo } from "@/components/Logo";
 
 import ChatgptLogo from "@/components/assets/ChatgptLogo.png";
 import ClaudeLogo from "@/components/assets/ClaudeLogo.png";
@@ -64,6 +63,7 @@ const USE_CASES = [
         href: "/docs/mcp",
         external: false,
         icon: ServerCog,
+        highlight: false,
     },
     {
         title: "Personal Chatbot Integration",
@@ -71,6 +71,7 @@ const USE_CASES = [
         href: "/docs/personal-chatbot",
         external: false,
         icon: Bot,
+        highlight: false,
     },
     {
         title: "Capsules as Anthropic Skills",
@@ -78,6 +79,7 @@ const USE_CASES = [
         href: "/docs/anthropic-skills",
         external: false,
         icon: BrainCircuit,
+        highlight: false,
     },
     {
         title: "Custom Capsules Through Websites",
@@ -85,6 +87,7 @@ const USE_CASES = [
         href: "#studio",
         external: false,
         icon: Globe,
+        highlight: false,
     },
 ] as const;
 
@@ -131,6 +134,18 @@ export default function LandingPage() {
     const [logosActivated, setLogosActivated] = useState(false);
     const showExtensionDownBanner = EXTENSION_SERVICE_STATUS === "down";
     const ExtensionServiceIcon = EXTENSION_DOWN_BANNER.icon;
+
+    const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 640 : false);
+    const [paddingOffset, setPaddingOffset] = useState(() => typeof window !== 'undefined' ? (window.innerWidth < 640 ? 32 : 80) : 80);
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 640);
+            setPaddingOffset(window.innerWidth < 640 ? 32 : 80);
+        };
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const smoothScrollToSection = (section: HTMLElement | null) => {
         if (!section) return;
@@ -260,7 +275,7 @@ export default function LandingPage() {
     };
 
     return (
-        <div className="relative min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/55 to-purple-50/45 text-foreground dark:from-[#040816] dark:via-[#060a1a] dark:to-[#040816]">
+        <div className="relative min-h-screen max-w-[100vw] overflow-x-clip bg-gradient-to-br from-gray-50 via-blue-50/55 to-purple-50/45 text-foreground dark:from-[#040816] dark:via-[#060a1a] dark:to-[#040816]">
             {/* Restored soft background (no harsh navy / white spotlight) */}
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(900px_500px_at_0%_0%,rgba(124,58,237,0.14),transparent_60%),radial-gradient(900px_500px_at_100%_10%,rgba(37,99,235,0.14),transparent_60%)] dark:bg-[radial-gradient(1100px_600px_at_0%_0%,rgba(124,58,237,0.26),transparent_60%),radial-gradient(1100px_600px_at_100%_10%,rgba(37,99,235,0.24),transparent_60%)]" />
             <div className="pointer-events-none absolute inset-0 opacity-[0.10] dark:opacity-[0.18] [background-image:linear-gradient(rgba(15,23,42,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.10)_1px,transparent_1px)] dark:[background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:44px_44px]" />
@@ -325,7 +340,7 @@ export default function LandingPage() {
             <div
                 className="relative z-10 mx-auto max-w-7xl px-5 pb-14 sm:px-8"
                 style={{
-                    paddingTop: `${CELEBRATION_BANNER_HEIGHT + (showExtensionDownBanner ? EXTENSION_DOWN_BANNER_HEIGHT : 0) + 80}px`,
+                    paddingTop: `${CELEBRATION_BANNER_HEIGHT + (showExtensionDownBanner ? EXTENSION_DOWN_BANNER_HEIGHT : 0) + paddingOffset}px`,
                 }}
             >
                 {/* Centered Hero Section */}
@@ -334,10 +349,10 @@ export default function LandingPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                        className="space-y-4 sm:space-y-6 -mt-10 sm:-mt-16"
+                        className="space-y-4 sm:space-y-6 mt-6 sm:-mt-10 lg:-mt-16"
                     >
                         {/* Main Heading - Single Line */}
-                        <h1 className="text-5xl sm:text-6xl lg:text-[5.5rem] font-extrabold tracking-tight leading-tight text-center">
+                        <h1 className="text-4xl sm:text-6xl lg:text-[5.5rem] font-extrabold tracking-tight leading-tight text-center">
                             <span className="inline-block bg-gradient-to-r from-slate-900 via-indigo-600 to-violet-600 bg-clip-text text-transparent dark:from-white dark:via-indigo-400 dark:to-violet-400">
                                 Capture your Context
                             </span>
@@ -353,7 +368,7 @@ export default function LandingPage() {
                             <div className="relative py-1 px-1">
                                 <TrueFocusText
                                     texts={["Using Capsules", "within 10 seconds"]}
-                                    className="text-2xl sm:text-3xl font-extrabold text-slate-800 dark:text-slate-100"
+                                    className="text-xl sm:text-3xl font-extrabold text-slate-800 dark:text-slate-100"
                                     duration={2.6}
                                 />
                             </div>
@@ -372,8 +387,8 @@ export default function LandingPage() {
                         <motion.div
                             initial={{ opacity: 0, y: 16 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.66, duration: 0.45 }}
-                            className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 max-w-5xl mx-auto"
+                            transition={{ delay: 0.6, duration: 0.45 }}
+                            className="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-3 sm:gap-4 max-w-5xl mx-auto px-2.5 sm:px-0 w-full"
                         >
                             {FEATURES.map((feature, index) => {
                                 const Icon = feature.icon;
@@ -382,14 +397,14 @@ export default function LandingPage() {
                                         key={feature.text}
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.74 + index * 0.08 }}
+                                        transition={{ delay: 0.65 + index * 0.08 }}
                                         whileHover={{ y: -3, scale: 1.02 }}
-                                        className="group relative px-4 py-2.5 rounded-full bg-white/45 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200/60 dark:border-white/10 hover:border-indigo-500/40 hover:bg-white/80 dark:hover:bg-slate-900/60 hover:shadow-[0_0_25px_rgba(99,102,241,0.12)] transition-all cursor-pointer flex items-center gap-3"
+                                        className={`group relative px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-full bg-white/45 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200/60 dark:border-white/10 hover:border-indigo-500/40 hover:bg-white/80 dark:hover:bg-slate-900/60 hover:shadow-[0_0_25px_rgba(99,102,241,0.12)] transition-all cursor-pointer flex items-center gap-2.5 sm:gap-3 ${index === 4 ? "col-span-2 mx-auto max-w-[240px] w-full" : "w-full sm:w-auto"}`}
                                     >
-                                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-500/10 group-hover:bg-indigo-500/20 transition-colors">
-                                            <Icon className="h-4 w-4 text-indigo-600 dark:text-indigo-400" strokeWidth={2.5} />
+                                        <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-indigo-500/10 group-hover:bg-indigo-500/20 transition-colors">
+                                            <Icon className="h-3.5 w-3.5 sm:h-4 w-4 text-indigo-600 dark:text-indigo-400" strokeWidth={2.5} />
                                         </div>
-                                        <span className="text-[13px] font-semibold text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors whitespace-nowrap">
+                                        <span className="text-xs sm:text-[13px] font-semibold text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors whitespace-normal sm:whitespace-nowrap text-left leading-tight">
                                             {feature.text}
                                         </span>
                                         {/* Subtle accent glow */}
@@ -402,12 +417,12 @@ export default function LandingPage() {
                         <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.8, duration: 0.4 }}
-                            className="pt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
+                            transition={{ delay: 0.85, duration: 0.4 }}
+                            className="pt-8 sm:pt-10 flex flex-col sm:flex-row items-center justify-center gap-4 px-4 sm:px-0 w-full"
                         >
                             <Button
                                 onClick={smoothScrollToStudio}
-                                className="group relative inline-flex h-14 items-center gap-2.5 overflow-hidden bg-violet-600 px-8 text-lg font-bold text-white transition-all hover:bg-violet-700 hover:shadow-[0_10px_30px_rgba(124,58,237,0.4)] active:scale-95"
+                                className="group relative inline-flex h-14 items-center gap-2.5 overflow-hidden bg-violet-600 px-8 text-lg font-bold text-white transition-all hover:bg-violet-700 hover:shadow-[0_10px_30px_rgba(124,58,237,0.4)] active:scale-95 w-full sm:w-auto justify-center"
                             >
                                 <span className="relative z-10 flex items-center gap-2.5">
                                     Try it now
@@ -419,7 +434,7 @@ export default function LandingPage() {
                             <Button
                                 onClick={smoothScrollToUseCases}
                                 variant="outline"
-                                className="inline-flex h-14 items-center gap-2.5 border-indigo-200/60 bg-white/60 px-8 text-lg font-semibold text-indigo-700 backdrop-blur-sm transition-all hover:bg-indigo-50 hover:border-indigo-300 dark:border-indigo-500/30 dark:bg-slate-900/40 dark:text-indigo-200 dark:hover:bg-slate-900"
+                                className="inline-flex h-14 items-center gap-2.5 border-indigo-200/60 bg-white/60 px-8 text-lg font-semibold text-indigo-700 backdrop-blur-sm transition-all hover:bg-indigo-50 hover:border-indigo-300 dark:border-indigo-500/30 dark:bg-slate-900/40 dark:text-indigo-200 dark:hover:bg-slate-900 w-full sm:w-auto justify-center"
                             >
                                 Explore Features
                                 <ArrowDown className="h-5 w-5" />
@@ -561,7 +576,7 @@ export default function LandingPage() {
                             onDragLeave={handleDragLeave}
                             onDrop={handleDrop}
                         >
-                            <div className="pointer-events-none absolute inset-0 block" aria-hidden>
+                            <div className="pointer-events-none absolute inset-0" aria-hidden>
                                 {ORBITING_LOGOS.map((logo) => (
                                     <motion.div
                                         key={logo.alt}
@@ -574,7 +589,13 @@ export default function LandingPage() {
                                         }}
                                         animate={
                                             logosActivated
-                                                ? { opacity: 1, x: logo.x, y: logo.y, scale: 1, filter: "blur(0px)" }
+                                                ? {
+                                                      opacity: 1,
+                                                      x: isMobile ? (logo.side === "left" ? -20 : 20) : logo.x,
+                                                      y: isMobile ? logo.y * 0.85 : logo.y,
+                                                      scale: 1,
+                                                      filter: "blur(0px)"
+                                                  }
                                                 : { opacity: 0, x: 0, y: 0, scale: 0.3, filter: "blur(10px)" }
                                         }
                                         transition={{
@@ -584,24 +605,88 @@ export default function LandingPage() {
                                         }}
                                         className={`absolute top-1/2 z-[20] pointer-events-auto ${logo.side === "left" ? "left-0" : "right-0"}`}
                                     >
-                                        <motion.img
-                                            src={logo.src}
-                                            alt={logo.alt}
-                                            className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl border border-white/40 bg-white/85 p-1.5 shadow-lg backdrop-blur-sm"
-                                            animate={{
-                                                x: [0, logo.fx1, logo.fx2, 0],
-                                                y: [0, logo.fy1, logo.fy2, 0],
-                                                rotate: [0, logo.r1, logo.r2, 0],
-                                                scale: [1, 1.1, 1],
+                                        <motion.div
+                                            drag
+                                            dragSnapToOrigin
+                                            dragElastic={0.1}
+                                            onDragStart={() => setIsDragging(true)}
+                                            onDragEnd={(_, info) => {
+                                                setIsDragging(false);
+                                                const canvas = document.getElementById("studio-canvas");
+                                                if (canvas) {
+                                                    const rect = canvas.getBoundingClientRect();
+                                                    const clientX = info.point.x - window.scrollX;
+                                                    const clientY = info.point.y - window.scrollY;
+                                                    
+                                                    // Bounding rect check
+                                                    const isInsideRect = (
+                                                        clientX >= rect.left &&
+                                                        clientX <= rect.right &&
+                                                        clientY >= rect.top &&
+                                                        clientY <= rect.bottom
+                                                    );
+                                                    
+                                                    // DOM hit check as a fallback (robust for mobile scrolling/zoom)
+                                                    const elementAtPoint = document.elementFromPoint(clientX, clientY);
+                                                    const isInsideDOM = elementAtPoint && (
+                                                        elementAtPoint.id === "studio-canvas" ||
+                                                        elementAtPoint.closest("#studio-canvas") !== null
+                                                    );
+
+                                                    if (isInsideRect || isInsideDOM) {
+                                                        const logoNames: Record<string, string> = {
+                                                            ChatGPT: "chatgpt_context.json",
+                                                            Claude: "claude_artifact.md",
+                                                            Gmail: "gmail_thread.eml",
+                                                            Figma: "figma_design.png",
+                                                            Perplexity: "perplexity_search.json",
+                                                            Gemini: "gemini_prompt.txt",
+                                                            DeepSeek: "deepseek_chat.json",
+                                                            Windsurf: "windsurf_workspace.zip",
+                                                            Slack: "slack_history.txt",
+                                                            Outlook: "outlook_email.msg"
+                                                        };
+                                                        const fileName = logoNames[logo.alt] || "context_source.txt";
+                                                        const nextId = Math.random().toString(36).slice(2);
+                                                        setFiles((prev) => [
+                                                            ...prev,
+                                                            {
+                                                                id: nextId,
+                                                                file: new File([""], fileName),
+                                                                name: fileName,
+                                                                type: fileName.endsWith(".json")
+                                                                    ? "application/json"
+                                                                    : fileName.endsWith(".md")
+                                                                    ? "text/markdown"
+                                                                    : "text/plain",
+                                                                size: Math.floor(Math.random() * 12000) + 4000
+                                                            }
+                                                        ]);
+                                                        toast.success(`Absorbed ${logo.alt} context!`);
+                                                    }
+                                                }
                                             }}
-                                            transition={{ duration: logo.drift, repeat: Infinity, ease: "easeInOut" }}
-                                            whileHover={{ scale: 1.2 }}
-                                        />
+                                            className="cursor-grab active:cursor-grabbing touch-none"
+                                        >
+                                            <motion.img
+                                                src={logo.src}
+                                                alt={logo.alt}
+                                                className="h-8 w-8 sm:h-14 sm:w-14 rounded-lg sm:rounded-xl border border-white/40 bg-white/85 p-1 sm:p-1.5 shadow-md sm:shadow-lg backdrop-blur-sm select-none"
+                                                animate={{
+                                                    x: [0, logo.fx1, logo.fx2, 0],
+                                                    y: [0, logo.fy1, logo.fy2, 0],
+                                                    rotate: [0, logo.r1, logo.r2, 0],
+                                                    scale: [1, 1.1, 1],
+                                                }}
+                                                transition={{ duration: logo.drift, repeat: Infinity, ease: "easeInOut" }}
+                                                whileHover={{ scale: 1.2 }}
+                                            />
+                                        </motion.div>
                                     </motion.div>
                                 ))}
                             </div>
 
-                            <Card className="relative z-10 p-5 sm:p-6 bg-white/90 dark:bg-slate-950/40 backdrop-blur-sm border border-slate-200/90 dark:border-white/12 shadow-lg shadow-slate-900/5 dark:shadow-black/40 hover:shadow-xl hover:shadow-slate-900/10 dark:hover:shadow-black/60 transition-all duration-300">
+                            <Card className="relative z-10 p-5 sm:p-6 bg-transparent sm:bg-white/90 sm:dark:bg-slate-950/40 backdrop-blur-none sm:backdrop-blur-sm border-0 sm:border border-slate-200/90 dark:border-white/12 shadow-none sm:shadow-lg shadow-slate-900/5 dark:shadow-black/40 hover:shadow-xl hover:shadow-slate-900/10 dark:hover:shadow-black/60 transition-all duration-300">
                                 {/* Drag overlay */}
                                 {isDragging && (
                                     <motion.div
@@ -623,6 +708,7 @@ export default function LandingPage() {
                                 )}
                                 {/* Canvas: grid only — no colored radial overlay so the graph reads clearly */}
                                 <motion.div
+                                    id="studio-canvas"
                                     className="relative rounded-xl overflow-hidden border border-slate-200/80 bg-slate-50 dark:bg-slate-900/50"
                                     whileHover={{ borderColor: "rgba(99, 102, 241, 0.3)" }}
                                     transition={{ duration: 0.3 }}
@@ -673,49 +759,54 @@ export default function LandingPage() {
                                 transition={{ delay: 0.5, duration: 0.6 }}
                                 className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto"
                             >
-                                <motion.div
-                                    whileHover={{ scale: 1.08, y: -2 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                                >
-                                    <Button
-                                        size="lg"
-                                        variant="outline"
-                                        className="group gap-2 w-full sm:w-auto border-slate-300 dark:border-white/20 bg-white/90 dark:bg-white/5 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10 hover:border-indigo-400 dark:hover:border-indigo-500 transition-all shadow-sm hover:shadow-md"
-                                        onClick={() => fileInputRef.current?.click()}
+                                <div className="flex flex-row items-center justify-center gap-3 w-full sm:w-auto">
+                                    <motion.div
+                                        whileHover={{ scale: 1.08, y: -2 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                                        className="flex-1 sm:flex-none"
                                     >
-                                        <motion.div
-                                            animate={{ rotate: [0, -10, 10, 0] }}
-                                            transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                                        <Button
+                                            size="lg"
+                                            variant="outline"
+                                            className="group gap-2 w-full sm:w-auto border-slate-300 dark:border-white/20 bg-white/90 dark:bg-white/5 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10 hover:border-indigo-400 dark:hover:border-indigo-500 transition-all shadow-sm hover:shadow-md"
+                                            onClick={() => fileInputRef.current?.click()}
                                         >
-                                            <Paperclip className="h-4 w-4 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
-                                        </motion.div>
-                                        Add Attachment
-                                    </Button>
-                                </motion.div>
-                                <motion.div
-                                    whileHover={{ scale: 1.08, y: -2 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                                >
-                                    <Button
-                                        size="lg"
-                                        className="group gap-2 w-full sm:w-auto bg-slate-900/10 hover:bg-slate-900/20 dark:bg-white/10 dark:hover:bg-white/20 text-slate-900 dark:text-white border border-slate-300 dark:border-white/20 hover:border-violet-400 dark:hover:border-violet-500 transition-all shadow-sm hover:shadow-md"
-                                        onClick={() => setTextDialogOpen(true)}
+                                            <motion.div
+                                                animate={{ rotate: [0, -10, 10, 0] }}
+                                                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                                            >
+                                                <Paperclip className="h-4 w-4 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
+                                            </motion.div>
+                                            Add Attachment
+                                        </Button>
+                                    </motion.div>
+                                    <motion.div
+                                        whileHover={{ scale: 1.08, y: -2 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                                        className="flex-1 sm:flex-none"
                                     >
-                                        <motion.div
-                                            whileHover={{ scale: 1.2, rotate: 90 }}
-                                            transition={{ type: "spring", stiffness: 300 }}
+                                        <Button
+                                            size="lg"
+                                            className="group gap-2 w-full sm:w-auto bg-slate-900/10 hover:bg-slate-900/20 dark:bg-white/10 dark:hover:bg-white/20 text-slate-900 dark:text-white border border-slate-300 dark:border-white/20 hover:border-violet-400 dark:hover:border-violet-500 transition-all shadow-sm hover:shadow-md"
+                                            onClick={() => setTextDialogOpen(true)}
                                         >
-                                            <MessageSquarePlus className="h-4 w-4 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors" />
-                                        </motion.div>
-                                        Add Text
-                                    </Button>
-                                </motion.div>
+                                            <motion.div
+                                                whileHover={{ scale: 1.2, rotate: 90 }}
+                                                transition={{ type: "spring", stiffness: 300 }}
+                                            >
+                                                <MessageSquarePlus className="h-4 w-4 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors" />
+                                            </motion.div>
+                                            Add Text
+                                        </Button>
+                                    </motion.div>
+                                </div>
                                 <motion.div
                                     whileHover={{ scale: 1.08, y: -2 }}
                                     whileTap={{ scale: 0.95 }}
                                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                                    className="w-full sm:w-auto"
                                 >
                                     <Button
                                         size="lg"

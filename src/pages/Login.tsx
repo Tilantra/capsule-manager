@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { BrowserGuideraClient } from "@/lib/guidera-browser-client";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +19,7 @@ function LoginContent() {
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const navigate = useNavigate();
+
     const [searchParams] = useSearchParams();
     const nextPath = searchParams.get("next") || "/capsules";
     const sdkMode = searchParams.get("mode") === "sdk";

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, MinusCircle, Sparkles, CreditCard, Crown, Zap, Star } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { Switch } from "@/components/ui/switch";
+
 
 export default function BillingPage() {
     const [user, setUser] = useState<any>(null);
@@ -241,7 +241,7 @@ export default function BillingPage() {
                     y: [0, -4, 0],
                 }}
                 transition={{
-                    initial: { duration: 0.6, delay: 0.1 },
+                    opacity: { duration: 0.6, delay: 0.1 },
                     y: { duration: 4, repeat: Infinity, ease: "easeInOut" }
                 }}
                 className="relative group"
@@ -289,7 +289,7 @@ export default function BillingPage() {
                             transition={{ duration: 0.5, delay: 0.1 * pricingTiers.indexOf(tier) }}
                             whileHover={{ y: -8, transition: { duration: 0.2 } }}
                             className={`relative flex flex-col rounded-2xl border ${tier.borderColor} ${tier.isPopular
-                                ? "border-blue-500/50 shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)] scale-[1.05] z-10"
+                                ? "border-blue-500/50 shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)] md:scale-[1.05] z-10 mt-4 md:mt-0"
                                 : "shadow-sm"
                                 } bg-gradient-to-b ${tier.color} backdrop-blur-sm overflow-visible transition-all`}
                         >

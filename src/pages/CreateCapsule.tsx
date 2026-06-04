@@ -3,7 +3,7 @@ import { BrowserGuideraClient } from "@/lib/guidera-browser-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
@@ -44,7 +44,6 @@ export default function CreateCapsule() {
 
     // Metadata State
     const [name, setName] = useState("");
-    const [summary, setSummary] = useState("");
     const [team, setTeam] = useState<string>("private");
     const [userTeams, setUserTeams] = useState<any[]>([]);
     const [currentUser, setCurrentUser] = useState<any>(null);
@@ -284,7 +283,7 @@ export default function CreateCapsule() {
             const request = {
                 content: {
                     messages,
-                    metadata: { summary: summary.trim() }
+                    metadata: {}
                 },
                 tag: name.trim(),
                 team: team || "private",
@@ -328,7 +327,7 @@ export default function CreateCapsule() {
                     <Settings className="h-4 w-4 text-primary" />
                     <h2 className="text-base font-semibold">Configuration</h2>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                         <Label htmlFor="capsule-name" className="text-xs">Capsule Name <span className="text-destructive">*</span></Label>
                         <Input
@@ -359,16 +358,6 @@ export default function CreateCapsule() {
                             </SelectContent>
                         </Select>
                     </div>
-                    <div className="space-y-1.5">
-                        <Label htmlFor="capsule-summary" className="text-xs">Summary (Optional)</Label>
-                        <Input
-                            id="capsule-summary"
-                            placeholder="Brief description..."
-                            value={summary}
-                            onChange={(e) => setSummary(e.target.value)}
-                            className="bg-background/50 h-9"
-                        />
-                    </div>
                 </div>
             </Card>
 
@@ -387,17 +376,17 @@ export default function CreateCapsule() {
                         <h3 className="font-semibold text-lg">Capsule Graph</h3>
                         <p className="text-[11px] text-muted-foreground">Hover nodes to inspect content. Use x on a node to remove it.</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <Button variant="outline" className="gap-2" onClick={() => fileInputRef.current?.click()}>
+                    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                        <Button variant="outline" className="gap-2 flex-1 sm:flex-none justify-center" onClick={() => fileInputRef.current?.click()}>
                             <Paperclip className="h-4 w-4" />
-                            Add Attachment
+                            <span className="hidden sm:inline">Add Attachment</span>
                         </Button>
-                        <Button className="gap-2" onClick={() => setTextDialogOpen(true)}>
+                        <Button className="gap-2 flex-1 sm:flex-none justify-center" onClick={() => setTextDialogOpen(true)}>
                             <MessageSquarePlus className="h-4 w-4" />
-                            Add Text
+                            <span className="hidden sm:inline">Add Text</span>
                         </Button>
                         <Button
-                            className="gap-2 bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-[0_10px_30px_rgba(79,70,229,0.35)]"
+                            className="gap-2 w-full sm:w-auto justify-center bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-[0_10px_30px_rgba(79,70,229,0.35)]"
                             onClick={handleCreateCapsule}
                             disabled={isSubmitting || (chunks.length === 0 && globalFiles.length === 0)}
                         >
@@ -434,7 +423,7 @@ export default function CreateCapsule() {
                     </div>
                 )}
 
-                <div className="absolute bottom-4 left-4 flex items-center gap-4 text-xs text-muted-foreground z-20 bg-background/70 backdrop-blur-sm border border-border/60 rounded-lg px-3 py-2">
+                <div className="hidden sm:flex absolute bottom-4 left-4 items-center gap-4 text-xs text-muted-foreground z-20 bg-background/70 backdrop-blur-sm border border-border/60 rounded-lg px-3 py-2">
                     <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-lg border border-primary/30 bg-card flex items-center justify-center">📄</div>
                         <span>{globalFiles.length} Files</span>
@@ -446,8 +435,20 @@ export default function CreateCapsule() {
                 </div>
             </Card>
 
+            {/* Mobile Status Info */}
+            <div className="sm:hidden flex items-center justify-around gap-4 text-xs text-muted-foreground bg-muted/20 border border-border/60 rounded-lg p-3">
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg border border-primary/30 bg-card flex items-center justify-center">📄</div>
+                    <span>{globalFiles.length} Files</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg border border-purple-500/30 bg-card flex items-center justify-center">📝</div>
+                    <span>{chunks.length} Text Chunks</span>
+                </div>
+            </div>
+
             <Dialog open={textDialogOpen} onOpenChange={setTextDialogOpen}>
-                <DialogContent className="sm:max-w-xl">
+                <DialogContent className="sm:max-w-xl w-[calc(100vw-2rem)]">
                     <DialogHeader>
                         <DialogTitle>Add Text Chunk</DialogTitle>
                         <DialogDescription className="text-xs">Paste or type the content you want inside this capsule.</DialogDescription>

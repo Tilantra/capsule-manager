@@ -169,7 +169,7 @@ export default function SettingsPage() {
                     <CardContent className="pt-6 space-y-6">
                         <div className="space-y-4">
                             <div className="flex flex-col gap-6">
-                                <div className="flex items-center justify-between">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                     <div>
                                         <Label className="text-sm font-semibold">
                                             {hasApiKey ? "Manage API Key" : "Create API Key"}
@@ -182,7 +182,7 @@ export default function SettingsPage() {
                                         onClick={handleCreateApiKey}
                                         disabled={isGenerating}
                                         variant={hasApiKey ? "outline" : "default"}
-                                        className="gap-2 min-w-[140px]"
+                                        className="gap-2 w-full sm:w-auto sm:min-w-[140px] justify-center"
                                     >
                                         {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : (hasApiKey ? <RefreshCw className="h-4 w-4" /> : <Plus className="h-4 w-4" />)}
                                         {hasApiKey ? "Regenerate" : "Create API Key"}
