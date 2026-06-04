@@ -781,7 +781,7 @@ export default function CapsulesPage() {
                     {/* View Toggle + Merge Mode */}
                     <div className="flex flex-wrap items-center gap-2">
                         {/* View toggle — labeled & visually prominent */}
-                        <div className="flex items-center gap-1 p-1 rounded-xl bg-muted/50 border border-border shadow-sm">
+                        <div className="hidden md:flex items-center gap-1 p-1 rounded-xl bg-muted/50 border border-border shadow-sm">
                             <motion.button
                                 onClick={() => setViewMode('grid')}
                                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${viewMode === 'grid'
@@ -896,7 +896,7 @@ export default function CapsulesPage() {
             {/* Merge Mode Floating Action Bar */}
             <AnimatePresence>
                 {mergeMode && (
-                    <div className="fixed bottom-6 left-0 right-0 flex justify-center z-50 pointer-events-none">
+                    <div className="fixed bottom-[5.5rem] md:bottom-6 left-0 right-0 flex justify-center z-50 pointer-events-none">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -1148,35 +1148,35 @@ export default function CapsulesPage() {
             <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
                 <DialogContent className="sm:max-w-4xl w-[calc(100vw-2rem)] max-h-[85vh] flex flex-col p-0 overflow-visible">
                     <DialogHeader className="px-6 py-5 border-b bg-muted/30">
-                        <div className="flex items-start justify-between">
-                            <div className="space-y-2">
-                                <DialogTitle className="flex items-center gap-3 text-2xl">
-                                    <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                        <div className="flex flex-col md:flex-row items-start justify-between gap-4">
+                            <div className="space-y-2 w-full pr-6 md:pr-0">
+                                <DialogTitle className="flex flex-wrap items-center gap-3 text-xl md:text-2xl">
+                                    <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent break-all">
                                         {selectedCapsule?.tag || "Capsule Details"}
                                     </span>
                                     {selectedCapsule?.team ? (
-                                        <Badge variant="secondary" className="font-normal text-xs">
+                                        <Badge variant="secondary" className="font-normal text-xs shrink-0">
                                             {teamIdToName[selectedCapsule.team] || selectedCapsule.team}
                                         </Badge>
                                     ) : (
-                                        <Badge variant="secondary" className="font-normal text-xs gap-1">
+                                        <Badge variant="secondary" className="font-normal text-xs gap-1 shrink-0">
                                             <Lock className="h-3 w-3" />
                                             Private
                                         </Badge>
                                     )}
                                 </DialogTitle>
-                                <DialogDescription className="flex items-center gap-2 text-sm">
-                                    <Calendar className="h-3.5 w-3.5" />
-                                    Created on {selectedCapsule && format(new Date(selectedCapsule.created_at), "PPP")} by {selectedCapsule?.created_by}
+                                <DialogDescription className="flex flex-wrap items-center gap-1.5 text-xs md:text-sm">
+                                    <Calendar className="h-3.5 w-3.5 shrink-0" />
+                                    <span>Created on {selectedCapsule && format(new Date(selectedCapsule.created_at), "PPP")} by <span className="font-medium text-foreground/90">{selectedCapsule?.created_by}</span></span>
                                 </DialogDescription>
                             </div>
                             <Button
                                 variant={showBranchView ? "outline" : "default"}
                                 size="sm"
-                                className={`gap-2 mr-6 transition-all ${!showBranchView ? 'shadow-md hover:shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground' : ''}`}
+                                className={`gap-2 w-full md:w-auto md:mr-6 transition-all shrink-0 ${!showBranchView ? 'shadow-md hover:shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground' : ''}`}
                                 onClick={() => setShowBranchView(!showBranchView)}
                             >
-                                {showBranchView ? <History className="h-4 w-4" /> : <GitBranch className="h-4 w-4" />}
+                                {showBranchView ? <History className="h-4 w-4 shrink-0" /> : <GitBranch className="h-4 w-4 shrink-0" />}
                                 {showBranchView ? "List View" : "Graph View"}
                             </Button>
                         </div>
