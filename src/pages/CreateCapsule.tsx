@@ -44,7 +44,6 @@ export default function CreateCapsule() {
 
     // Metadata State
     const [name, setName] = useState("");
-    const [summary, setSummary] = useState("");
     const [team, setTeam] = useState<string>("private");
     const [userTeams, setUserTeams] = useState<any[]>([]);
     const [currentUser, setCurrentUser] = useState<any>(null);
@@ -284,7 +283,7 @@ export default function CreateCapsule() {
             const request = {
                 content: {
                     messages,
-                    metadata: { summary: summary.trim() }
+                    metadata: {}
                 },
                 tag: name.trim(),
                 team: team || "private",
@@ -328,7 +327,7 @@ export default function CreateCapsule() {
                     <Settings className="h-4 w-4 text-primary" />
                     <h2 className="text-base font-semibold">Configuration</h2>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                         <Label htmlFor="capsule-name" className="text-xs">Capsule Name <span className="text-destructive">*</span></Label>
                         <Input
@@ -358,16 +357,6 @@ export default function CreateCapsule() {
                                 })}
                             </SelectContent>
                         </Select>
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label htmlFor="capsule-summary" className="text-xs">Summary (Optional)</Label>
-                        <Input
-                            id="capsule-summary"
-                            placeholder="Brief description..."
-                            value={summary}
-                            onChange={(e) => setSummary(e.target.value)}
-                            className="bg-background/50 h-9"
-                        />
                     </div>
                 </div>
             </Card>
