@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { BrowserGuideraClient } from "@/lib/guidera-browser-client";
-import { CapsuleMetadata, CapsuleVersion, MergeStrategy } from "@/lib/capsule-types";
+import { CapsuleMetadata, CapsuleVersion, CreateCapsuleResponse, MergeStrategy } from "@/lib/capsule-types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -231,6 +231,8 @@ export default function CapsulesPage() {
     const [splitDropMessages, setSplitDropMessages] = useState<{ idx: number; enriched: EnrichedMessage }[]>([]);
     const [splitModalOpen, setSplitModalOpen] = useState(false);
     const [splitTag, setSplitTag] = useState('');
+    const [splitRemainingTag, setSplitRemainingTag] = useState('');
+    const [splitDeleteOriginal, setSplitDeleteOriginal] = useState(false);
     const [splitting, setSplitting] = useState(false);
     const [dragOverDrop, setDragOverDrop] = useState(false);
     const [splitModeActive, setSplitModeActive] = useState(false);
@@ -375,11 +377,37 @@ export default function CapsulesPage() {
                 const fullVersions = await Promise.all(
                     sortedVersions.map(v => client.getCapsuleVersion(capsule.capsule_id, v.version_id))
                 );
-                const seenContent = new Set<string>();
-                let flatIdx = 0;
+                // Build key set for the latest version to determine per-message isCurrentVersion
+                const currentVersionKeys = new Set<string>();
                 fullVersions.forEach(version => {
+                    if (version.version_id === capsule.latest_version_id) {
+                        (version.content?.messages || []).forEach(msg => {
+                            const contentStrRaw = typeof msg.content === 'string'
+                                ? msg.content
+                                : Array.isArray(msg.content)
+                                    ? msg.content.map((c: any) => typeof c === 'string' ? c : c?.text || '').join('\n\n')
+                                    : JSON.stringify(msg.content);
+                            const contentStr = cleanAndFormatText(contentStrRaw);
+                            currentVersionKeys.add(`${msg.role ?? ''}::${contentStr.trim()}`);
+                        });
+                    }
+                });
+
+                // Consecutive-version delta: each version group shows only messages it newly introduced
+                let flatIdx = 0;
+                fullVersions.forEach((version, i) => {
                     const msgs: any[] = version.content?.messages || [];
-                    const isCurrent = version.version_id === capsule.latest_version_id;
+                    const prevMsgKeys = new Set<string>();
+                    if (i > 0) {
+                        (fullVersions[i - 1].content?.messages || []).forEach((m: any) => {
+                            const raw = typeof m.content === 'string'
+                                ? m.content
+                                : Array.isArray(m.content)
+                                    ? m.content.map((c: any) => typeof c === 'string' ? c : c?.text || '').join('\n\n')
+                                    : JSON.stringify(m.content);
+                            prevMsgKeys.add(`${m.role ?? ''}::${cleanAndFormatText(raw).trim()}`);
+                        });
+                    }
                     msgs.forEach(msg => {
                         const contentStrRaw = typeof msg.content === 'string'
                             ? msg.content
@@ -388,12 +416,11 @@ export default function CapsulesPage() {
                                 : JSON.stringify(msg.content);
                         const contentStr = cleanAndFormatText(contentStrRaw);
                         const key = `${msg.role ?? ''}::${contentStr.trim()}`;
-                        if (!seenContent.has(key)) {
-                            seenContent.add(key);
-                            enriched.push({ flatIdx: flatIdx++, versionNumber: version.version_number || 1, versionId: version.version_id, isCurrentVersion: isCurrent, msg });
+                        if (!prevMsgKeys.has(key)) {
+                            enriched.push({ flatIdx: flatIdx++, versionNumber: version.version_number || 1, versionId: version.version_id, isCurrentVersion: currentVersionKeys.has(key), msg });
                         }
                     });
-                    if (isCurrent && version.summary) summary = version.summary;
+                    if (version.version_id === capsule.latest_version_id && version.summary) summary = version.summary;
                 });
             } else {
                 if (!capsule.latest_version_id) {
@@ -431,8 +458,8 @@ export default function CapsulesPage() {
                 ? ((selectedCapsule as any).attachment_ids || [])
                 : [];
 
-            // Step 1: create the new capsule (required — throws on failure)
-            const newCapsuleResult = await client.createCapsule({
+            // Step 1: create C2 — the split-messages capsule (required, throws on failure)
+            const splitCapsuleResult = await client.createCapsule({
                 content: { messages: splitMsgs },
                 tag: splitTag.trim() || `${selectedCapsule.tag} (Split)`,
                 team: selectedCapsule.team || undefined,
@@ -442,69 +469,94 @@ export default function CapsulesPage() {
                 ...(attachmentIds.length > 0 && { attachment_ids: attachmentIds }),
             });
 
-            // Step 2: update original capsule with remaining messages (best-effort)
+            // Step 2: create C3 — union of all unique messages across all versions minus split messages
+            // capsuleContent already contains the full unique message set (consecutive-version delta)
             const remainingMsgs = capsuleContent
-                .filter(m => m.isCurrentVersion && !droppedFlatIndices.has(m.flatIdx))
+                .filter(m => !droppedFlatIndices.has(m.flatIdx))
                 .map(m => m.msg);
 
-            let versionUpdateFailed = false;
-            if (remainingMsgs.length > 0 && selectedCapsule.latest_version_id) {
+            let remainingCapsuleResult: CreateCapsuleResponse | null = null;
+            if (remainingMsgs.length > 0) {
                 try {
-                    await client.createCapsuleVersion(selectedCapsule.capsule_id, {
+                    remainingCapsuleResult = await client.createCapsule({
                         content: { messages: remainingMsgs },
-                        parent_version_id: selectedCapsule.latest_version_id,
+                        tag: splitRemainingTag.trim() || `${selectedCapsule.tag} (Remaining)`,
+                        team: selectedCapsule.team || undefined,
                         extracted_from: Array.isArray(selectedCapsule.extracted_from)
                             ? selectedCapsule.extracted_from[0]
                             : selectedCapsule.extracted_from,
                     });
-                } catch (versionErr) {
-                    console.error('Failed to update original capsule version:', versionErr);
-                    versionUpdateFailed = true;
+                } catch (c3Err) {
+                    // C2 already landed — clean it up before surfacing the error
+                    try { await client.deleteCapsule(splitCapsuleResult.capsule_id); } catch {}
+                    throw c3Err;
                 }
             }
 
-            // Optimistic UI update — guard every field with a fallback to prevent render crashes
-            const newCapsule: CapsuleMetadata = {
-                capsule_id: newCapsuleResult.capsule_id,
-                tag: newCapsuleResult.tag || splitTag.trim() || `${selectedCapsule.tag} (Split)`,
-                created_at: newCapsuleResult.created_at || new Date().toISOString(),
-                created_by: newCapsuleResult.created_by || selectedCapsule.created_by,
-                summary: newCapsuleResult.summary,
-                team: newCapsuleResult.team || selectedCapsule.team,
+            // Step 3: optionally delete the original capsule C1
+            if (splitDeleteOriginal) {
+                try {
+                    await client.deleteCapsule(selectedCapsule.capsule_id);
+                } catch (deleteErr) {
+                    console.error('Failed to delete original capsule:', deleteErr);
+                    toast.error('Could not delete original capsule', { description: (deleteErr as Error).message });
+                }
+            }
+
+            // Optimistic UI update
+            const splitCapsule: CapsuleMetadata = {
+                capsule_id: splitCapsuleResult.capsule_id,
+                tag: splitCapsuleResult.tag || splitTag.trim() || `${selectedCapsule.tag} (Split)`,
+                created_at: splitCapsuleResult.created_at || new Date().toISOString(),
+                created_by: splitCapsuleResult.created_by || selectedCapsule.created_by,
+                summary: splitCapsuleResult.summary,
+                team: splitCapsuleResult.team || selectedCapsule.team,
                 current_version_number: 1,
                 version_count: 1,
             };
-            setCapsules(prev => [
-                newCapsule,
-                ...prev.map(c =>
-                    c.capsule_id === selectedCapsule.capsule_id && !versionUpdateFailed
-                        ? { ...c, current_version_number: (c.current_version_number || 1) + 1, version_count: (c.version_count || 1) + 1 }
-                        : c
-                ),
-            ]);
+            const remainingCapsule: CapsuleMetadata | null = remainingCapsuleResult ? {
+                capsule_id: remainingCapsuleResult.capsule_id,
+                tag: remainingCapsuleResult.tag || splitRemainingTag.trim() || `${selectedCapsule.tag} (Remaining)`,
+                created_at: remainingCapsuleResult.created_at || new Date().toISOString(),
+                created_by: remainingCapsuleResult.created_by || selectedCapsule.created_by,
+                summary: remainingCapsuleResult.summary,
+                team: remainingCapsuleResult.team || selectedCapsule.team,
+                current_version_number: 1,
+                version_count: 1,
+            } : null;
 
-            // Close all dialogs and return to capsule list
+            setCapsules(prev => {
+                const withoutOriginal = splitDeleteOriginal
+                    ? prev.filter(c => c.capsule_id !== selectedCapsule.capsule_id)
+                    : prev;
+                return [
+                    splitCapsule,
+                    ...(remainingCapsule ? [remainingCapsule] : []),
+                    ...withoutOriginal,
+                ];
+            });
+
+            // Close all dialogs and reset split state
             setSplitModalOpen(false);
             setSplitDropMessages([]);
             setSplitModeActive(false);
             setSplitIncludeAttachments(false);
+            setSplitRemainingTag('');
+            setSplitDeleteOriginal(false);
             setShowContentView(false);
             setDetailsOpen(false);
             setSelectedCapsule(null);
             setVersions([]);
 
-            // Refresh list silently in background to get accurate server data
             fetchCapsules({ silent: true });
 
-            if (versionUpdateFailed) {
-                toast.success(`"${newCapsule.tag}" created`, {
-                    description: `New capsule ready. Original capsule version update failed — it still has the full message history.`,
-                });
-            } else {
-                toast.success('Capsule split successfully', {
-                    description: `"${newCapsule.tag}" created. Original updated with ${remainingMsgs.length} remaining message${remainingMsgs.length !== 1 ? 's' : ''}.`,
-                });
-            }
+            toast.success('Capsule split successfully', {
+                description: [
+                    `"${splitCapsule.tag}" created with ${splitMsgs.length} message${splitMsgs.length !== 1 ? 's' : ''}.`,
+                    remainingCapsule ? `"${remainingCapsule.tag}" created with ${remainingMsgs.length} message${remainingMsgs.length !== 1 ? 's' : ''}.` : null,
+                    splitDeleteOriginal ? `"${selectedCapsule.tag}" deleted.` : null,
+                ].filter(Boolean).join(' '),
+            });
         } catch (err) {
             toast.error('Split failed', { description: (err as Error).message });
         } finally {
@@ -1668,9 +1720,21 @@ export default function CapsulesPage() {
                                     if (last && last.versionId === item.versionId) {
                                         last.items.push(item);
                                     } else {
-                                        groups.push({ versionNumber: item.versionNumber, versionId: item.versionId, isCurrent: item.isCurrentVersion, items: [item] });
+                                        groups.push({ versionNumber: item.versionNumber, versionId: item.versionId, isCurrent: item.versionId === selectedCapsule?.latest_version_id, items: [item] });
                                     }
                                 });
+
+                                // If the latest version has no new messages (e.g. a split that only removed),
+                                // still render its separator so it appears as Current
+                                const latestVid = selectedCapsule?.latest_version_id;
+                                if (latestVid && !groups.some(g => g.versionId === latestVid)) {
+                                    groups.push({
+                                        versionNumber: selectedCapsule?.current_version_number ?? groups.length + 1,
+                                        versionId: latestVid,
+                                        isCurrent: true,
+                                        items: [],
+                                    });
+                                }
 
                                 return (
                                     <div className="space-y-8">
@@ -1689,6 +1753,10 @@ export default function CapsulesPage() {
                                                     <div className="flex-1 h-px bg-border/40" />
                                                     <span className="text-[10px] text-muted-foreground/50">{group.items.length} message{group.items.length !== 1 ? 's' : ''}</span>
                                                 </div>
+
+                                                {group.items.length === 0 && (
+                                                    <p className="text-xs text-muted-foreground/50 italic px-1">No new messages in this version.</p>
+                                                )}
 
                                                 <div className="space-y-3">
                                                     {group.items.map(item => {
@@ -1847,7 +1915,7 @@ export default function CapsulesPage() {
                 </DialogContent>
             </Dialog>
 
-            <Dialog open={splitModalOpen} onOpenChange={(open) => { setSplitModalOpen(open); if (!open) setSplitIncludeAttachments(false); }}>
+            <Dialog open={splitModalOpen} onOpenChange={(open) => { setSplitModalOpen(open); if (!open) { setSplitIncludeAttachments(false); setSplitRemainingTag(''); setSplitDeleteOriginal(false); } }}>
                 <DialogContent className="max-w-md p-0 gap-0 overflow-hidden">
                     <div className="bg-gradient-to-br from-primary/20 via-purple-500/10 to-blue-500/5 px-6 pt-6 pb-5 border-b border-border/50">
                         <div className="flex items-center gap-3">
@@ -1866,13 +1934,26 @@ export default function CapsulesPage() {
                     <div className="px-6 py-5 space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="split-tag" className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60">
-                                New Capsule Name
+                                Split Capsule Name
                             </Label>
                             <Input
                                 id="split-tag"
                                 value={splitTag}
                                 onChange={e => setSplitTag(e.target.value)}
-                                placeholder="e.g. Split context"
+                                placeholder={`${selectedCapsule?.tag} (Split)`}
+                                className="bg-muted/20 border-border/60 focus:border-primary/50"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="split-remaining-tag" className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                                Remaining Capsule Name
+                            </Label>
+                            <Input
+                                id="split-remaining-tag"
+                                value={splitRemainingTag}
+                                onChange={e => setSplitRemainingTag(e.target.value)}
+                                placeholder={`${selectedCapsule?.tag} (Remaining)`}
                                 className="bg-muted/20 border-border/60 focus:border-primary/50"
                             />
                         </div>
@@ -1894,11 +1975,28 @@ export default function CapsulesPage() {
                                                 <Check className={`h-3.5 w-3.5 text-primary-foreground ${splitIncludeAttachments ? 'opacity-100' : 'opacity-0'} transition-opacity`} />
                                             </div>
                                         </div>
-                                        <span className="text-sm text-foreground">Include attachments in the new capsule</span>
+                                        <span className="text-sm text-foreground">Include attachments in the split capsule</span>
                                     </label>
                                 </div>
                             </>
                         )}
+
+                        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+
+                        <label className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-muted/30 transition-colors">
+                            <div className="relative flex items-center">
+                                <input
+                                    type="checkbox"
+                                    checked={splitDeleteOriginal}
+                                    onChange={e => setSplitDeleteOriginal(e.target.checked)}
+                                    className="peer sr-only"
+                                />
+                                <div className="h-5 w-5 rounded border-2 border-border/60 bg-background peer-checked:bg-red-500 peer-checked:border-red-500 transition-all flex items-center justify-center">
+                                    <Check className={`h-3.5 w-3.5 text-white ${splitDeleteOriginal ? 'opacity-100' : 'opacity-0'} transition-opacity`} />
+                                </div>
+                            </div>
+                            <span className="text-sm text-foreground">Delete original capsule after splitting</span>
+                        </label>
 
                         <div className="rounded-xl bg-gradient-to-br from-primary/10 to-purple-500/5 border border-primary/20 p-4 space-y-2.5">
                             <div className="flex items-center gap-2">
@@ -1909,18 +2007,30 @@ export default function CapsulesPage() {
                                 <div className="flex items-start gap-2">
                                     <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
                                     <span>
-                                        A new capsule <span className="font-semibold text-foreground">"{splitTag || 'Split'}"</span> will be created with{' '}
+                                        A new capsule <span className="font-semibold text-foreground">"{splitTag || `${selectedCapsule?.tag} (Split)`}"</span> will be created with{' '}
                                         <span className="font-semibold text-foreground">{splitDropMessages.length} message{splitDropMessages.length !== 1 ? 's' : ''}</span>.
                                     </span>
                                 </div>
                                 <div className="flex items-start gap-2">
                                     <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
                                     <span>
-                                        <span className="font-semibold text-foreground">"{selectedCapsule?.tag}"</span> will get a new version with the remaining{' '}
+                                        A new capsule <span className="font-semibold text-foreground">"{splitRemainingTag || `${selectedCapsule?.tag} (Remaining)`}"</span> will be created with{' '}
                                         <span className="font-semibold text-foreground">
-                                            {capsuleContent.filter(m => m.isCurrentVersion).length - splitDropMessages.filter(m => m.enriched.isCurrentVersion).length} message
-                                            {(capsuleContent.filter(m => m.isCurrentVersion).length - splitDropMessages.filter(m => m.enriched.isCurrentVersion).length) !== 1 ? 's' : ''}
-                                        </span>.
+                                            {capsuleContent.length - splitDropMessages.length} message{(capsuleContent.length - splitDropMessages.length) !== 1 ? 's' : ''}
+                                        </span> (all unique messages across all versions).
+                                    </span>
+                                </div>
+                                {capsuleContent.length - splitDropMessages.length === 0 && (
+                                    <div className="flex items-start gap-2 text-red-400">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-red-500 mt-1.5 shrink-0" />
+                                        <span>All messages are in the split zone — nothing left for the remaining capsule.</span>
+                                    </div>
+                                )}
+                                <div className="flex items-start gap-2">
+                                    <div className={`h-1.5 w-1.5 rounded-full mt-1.5 shrink-0 ${splitDeleteOriginal ? 'bg-red-500' : 'bg-muted-foreground/40'}`} />
+                                    <span className={splitDeleteOriginal ? 'text-red-400' : ''}>
+                                        <span className="font-semibold text-foreground">"{selectedCapsule?.tag}"</span>{' '}
+                                        {splitDeleteOriginal ? 'will be deleted.' : 'will be kept as-is.'}
                                     </span>
                                 </div>
                             </div>
@@ -1933,7 +2043,7 @@ export default function CapsulesPage() {
                         </Button>
                         <Button
                             onClick={handleSplit}
-                            disabled={splitting || !splitTag.trim()}
+                            disabled={splitting || !splitTag.trim() || !splitRemainingTag.trim() || capsuleContent.length - splitDropMessages.length === 0}
                             className="gap-2 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white border-0 shadow-md shadow-primary/25 px-6 font-semibold"
                         >
                             {splitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Scissors className="h-4 w-4" />}
