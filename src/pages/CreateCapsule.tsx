@@ -49,6 +49,7 @@ export default function CreateCapsule() {
     const [userTeams, setUserTeams] = useState<any[]>([]);
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [capsuleCount, setCapsuleCount] = useState<number>(0);
+    const [limitModalOpen, setLimitModalOpen] = useState(false);
 
     // Canvas State
     const [chunks, setChunks] = useState<Chunk[]>([]);
@@ -241,10 +242,7 @@ export default function CreateCapsule() {
             else if (tier === "pro") limit = 15;
 
             if (capsuleCount >= limit) {
-                toast.error(`Capsule limit reached!`, {
-                    description: `You have reached your limit of ${limit} capsules for the ${tier} tier. Please upgrade to continue.`,
-                    duration: 5000,
-                });
+                setLimitModalOpen(true);
                 return;
             }
         }
@@ -463,6 +461,32 @@ export default function CreateCapsule() {
                         <Button onClick={handleAddChunkFromDialog} disabled={!textDraft.trim()}>
                             <Plus className="h-4 w-4 mr-1" />
                             Add Chunk
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Limit Reached Modal */}
+            <Dialog open={limitModalOpen} onOpenChange={setLimitModalOpen}>
+                <DialogContent className="sm:max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle className="text-amber-400 text-xl font-bold">Limit Reached</DialogTitle>
+                    </DialogHeader>
+                    <DialogDescription className="text-sm leading-relaxed pt-1">
+                        Capsule creation limit reached. Please upgrade your tier to proceed.
+                    </DialogDescription>
+                    <DialogFooter className="flex gap-2 sm:justify-end pt-2">
+                        <Button variant="outline" onClick={() => setLimitModalOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                window.open('https://capsulehub.tilantra.com/billing', '_blank');
+                                setLimitModalOpen(false);
+                            }}
+                            className="bg-amber-400 hover:bg-amber-500 text-black font-semibold"
+                        >
+                            Upgrade Now
                         </Button>
                     </DialogFooter>
                 </DialogContent>

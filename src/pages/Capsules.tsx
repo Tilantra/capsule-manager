@@ -237,6 +237,8 @@ export default function CapsulesPage() {
     const [dragOverDrop, setDragOverDrop] = useState(false);
     const [splitModeActive, setSplitModeActive] = useState(false);
     const [splitIncludeAttachments, setSplitIncludeAttachments] = useState(false);
+    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [limitModalOpen, setLimitModalOpen] = useState(false);
 
     const client = useMemo(() => new BrowserGuideraClient(), []);
 
@@ -304,7 +306,8 @@ export default function CapsulesPage() {
 
     useEffect(() => {
         fetchCapsules();
-    }, [fetchCapsules]);
+        client.getSingleUser().then(setCurrentUser).catch(console.error);
+    }, [fetchCapsules, client]);
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -448,6 +451,24 @@ export default function CapsulesPage() {
 
     const handleSplit = async () => {
         if (!selectedCapsule || splitDropMessages.length === 0) return;
+
+        const droppedFlatIndices = new Set(splitDropMessages.map(m => m.idx));
+        const remainingMsgCount = capsuleContent.filter(m => !droppedFlatIndices.has(m.flatIdx)).length;
+        const newCapsulesCreated = 1 + (remainingMsgCount > 0 ? 1 : 0);
+        const netNewCapsules = newCapsulesCreated - (splitDeleteOriginal ? 1 : 0);
+
+        if (netNewCapsules > 0) {
+            const tier = (currentUser?.tier || 'basic').toLowerCase();
+            let limit = Infinity;
+            if (tier === 'basic') limit = 5;
+            else if (tier === 'pro') limit = 15;
+
+            if (capsules.length + netNewCapsules > limit) {
+                setLimitModalOpen(true);
+                return;
+            }
+        }
+
         setSplitting(true);
         try {
             const orderedDropped = [...splitDropMessages].sort((a, b) => a.idx - b.idx);
@@ -617,6 +638,17 @@ export default function CapsulesPage() {
     };
 
     const handleMerge = async () => {
+        if (mergeStrategy === 'new_capsule') {
+            const tier = (currentUser?.tier || 'basic').toLowerCase();
+            let limit = Infinity;
+            if (tier === 'basic') limit = 5;
+            else if (tier === 'pro') limit = 15;
+
+            if (capsules.length >= limit) {
+                setLimitModalOpen(true);
+                return;
+            }
+        }
         setMerging(true);
         try {
             const selectedObjects = capsules.filter(c => selectedForMerge.has(c.capsule_id));
@@ -2050,6 +2082,32 @@ export default function CapsulesPage() {
                             {splitting ? 'Splitting...' : 'Confirm Split'}
                         </Button>
                     </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Limit Reached Modal */}
+            <Dialog open={limitModalOpen} onOpenChange={setLimitModalOpen}>
+                <DialogContent className="sm:max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle className="text-amber-400 text-xl font-bold">Limit Reached</DialogTitle>
+                    </DialogHeader>
+                    <DialogDescription className="text-sm leading-relaxed pt-1">
+                        Capsule creation limit reached. Please upgrade your tier to proceed.
+                    </DialogDescription>
+                    <DialogFooter className="flex gap-2 sm:justify-end pt-2">
+                        <Button variant="outline" onClick={() => setLimitModalOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                window.open('https://capsulehub.tilantra.com/billing', '_blank');
+                                setLimitModalOpen(false);
+                            }}
+                            className="bg-amber-400 hover:bg-amber-500 text-black font-semibold"
+                        >
+                            Upgrade Now
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </motion.div>
