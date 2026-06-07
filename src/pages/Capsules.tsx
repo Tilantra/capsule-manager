@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Loader2, Search, Trash2, Calendar, Filter, History, Lock, Grid3x3, Table2, HelpCircle, GitMerge, Check, Plus, GitBranch, Sparkles, ScrollText, GripVertical, Scissors, X } from "lucide-react";
 import { format } from "date-fns";
 import {
@@ -13,6 +14,7 @@ import {
     DialogDescription,
     DialogHeader,
     DialogTitle,
+    DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import CapsuleImage from "@/components/assets/capsule.png";
@@ -36,6 +38,7 @@ import {
 } from "@/components/ui/select";
 import { GitBranchView } from "@/components/GitBranchView";
 import { motion, AnimatePresence } from "framer-motion";
+import { normalizeExtractedSources } from "@/lib/utils";
 
 
 interface EnrichedMessage {
@@ -482,9 +485,7 @@ export default function CapsulesPage() {
                 content: { messages: splitMsgs },
                 tag: splitTag.trim() || `${selectedCapsule.tag} (Split)`,
                 team: selectedCapsule.team || undefined,
-                extracted_from: Array.isArray(selectedCapsule.extracted_from)
-                    ? selectedCapsule.extracted_from[0]
-                    : selectedCapsule.extracted_from,
+                extracted_from: "tilantra",
                 ...(attachmentIds.length > 0 && { attachment_ids: attachmentIds }),
             });
 
@@ -501,9 +502,7 @@ export default function CapsulesPage() {
                         content: { messages: remainingMsgs },
                         tag: splitRemainingTag.trim() || `${selectedCapsule.tag} (Remaining)`,
                         team: selectedCapsule.team || undefined,
-                        extracted_from: Array.isArray(selectedCapsule.extracted_from)
-                            ? selectedCapsule.extracted_from[0]
-                            : selectedCapsule.extracted_from,
+                        extracted_from: "tilantra",
                     });
                 } catch (c3Err) {
                     // C2 already landed — clean it up before surfacing the error
@@ -680,7 +679,7 @@ export default function CapsulesPage() {
                     version_count: 1,
                     is_merged: true,
                     merged_from_capsule_ids: result.merged_from_capsule_ids,
-                    extracted_from: result.extracted_from.length > 0 ? result.extracted_from : undefined,
+                    extracted_from: normalizeExtractedSources(result.extracted_from),
                 };
                 setCapsules(prev => [newCapsule, ...prev]);
             } else {
@@ -826,17 +825,7 @@ export default function CapsulesPage() {
                                         Merged
                                     </Badge>
                                 )}
-                                {(() => {
-                                    const rawSources = capsule.extracted_from;
-                                    const sources = rawSources && rawSources.length > 0
-                                        ? (Array.isArray(rawSources)
-                                            ? rawSources
-                                            : rawSources.includes(',')
-                                                ? rawSources.split(',').map((s: string) => s.trim())
-                                                : [rawSources])
-                                        : ["tilantra"];
-
-                                    return sources.slice(0, 3).map((source, i) => {
+                                {normalizeExtractedSources(capsule.extracted_from).slice(0, 3).map((source, i) => {
                                         const logo = getModelLogo(source);
                                         return logo ? (
                                             <motion.div
@@ -857,8 +846,7 @@ export default function CapsulesPage() {
                                                 {source.substring(0, 3)}
                                             </Badge>
                                         );
-                                    });
-                                })()}
+                                })}
                             </div>
                         </div>
 
@@ -993,17 +981,7 @@ export default function CapsulesPage() {
                                                                 <GitMerge className="h-3 w-3" />
                                                             </Badge>
                                                         )}
-                                                        {(() => {
-                                                            const rawSources = capsule.extracted_from;
-                                                            const sources = rawSources && rawSources.length > 0
-                                                                ? (Array.isArray(rawSources)
-                                                                    ? rawSources
-                                                                    : rawSources.includes(',')
-                                                                        ? rawSources.split(',').map((s: string) => s.trim())
-                                                                        : [rawSources])
-                                                                : ["tilantra"];
-
-                                                            return sources.slice(0, 3).map((source, i) => {
+                                                        {normalizeExtractedSources(capsule.extracted_from).slice(0, 3).map((source, i) => {
                                                                 const logo = getModelLogo(source);
                                                                 return logo ? (
                                                                     <img
@@ -1018,8 +996,7 @@ export default function CapsulesPage() {
                                                                         {source.substring(0, 3)}
                                                                     </Badge>
                                                                 );
-                                                            });
-                                                        })()}
+                                                        })}
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-muted-foreground">
@@ -1211,14 +1188,19 @@ export default function CapsulesPage() {
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
                                 >
-                                    <Button
-                                        size="sm"
-                                        className="h-9 px-4 gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-semibold shadow-lg shadow-purple-500/30 border-0"
-                                        onClick={() => setMergeMode(true)}
-                                    >
-                                        <GitMerge className="h-4 w-4" />
-                                        Merge Capsules
-                                    </Button>
+                                    <div className="relative inline-block">
+                                        <Button
+                                            size="sm"
+                                            className="h-9 px-4 gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-semibold shadow-lg shadow-purple-500/30 border-0"
+                                            onClick={() => setMergeMode(true)}
+                                        >
+                                            <GitMerge className="h-4 w-4" />
+                                            Merge Capsules
+                                        </Button>
+                                        <span className="absolute -top-1.5 -right-1 px-1.5 py-0.5 bg-foreground text-[8px] font-bold text-background border border-foreground/10 rounded uppercase tracking-wider leading-none pointer-events-none select-none">
+                                            Beta
+                                        </span>
+                                    </div>
                                 </motion.div>
                             )}
                         </AnimatePresence>
@@ -1631,17 +1613,7 @@ export default function CapsulesPage() {
                                                             <div className="flex items-center gap-3">
                                                                 <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Source</span>
                                                                 <div className="flex flex-wrap gap-2">
-                                                                    {(() => {
-                                                                        const rawSources = version.extracted_from;
-                                                                        const sources = rawSources && rawSources.length > 0
-                                                                            ? (Array.isArray(rawSources)
-                                                                                ? rawSources
-                                                                                : rawSources.includes(',')
-                                                                                    ? rawSources.split(',').map((s: string) => s.trim())
-                                                                                    : [rawSources])
-                                                                            : ["tilantra"];
-
-                                                                        return sources.map((source: string, i: number) => {
+                                                                    {normalizeExtractedSources(version.extracted_from).map((source: string, i: number) => {
                                                                             const logo = getModelLogo(source);
                                                                             return logo ? (
                                                                                 <div key={i} className="flex items-center gap-2 bg-muted/50 px-2 py-1 rounded-md border border-border/50">
@@ -1658,8 +1630,7 @@ export default function CapsulesPage() {
                                                                                     {source}
                                                                                 </Badge>
                                                                             );
-                                                                        });
-                                                                    })()}
+                                                                    })}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1706,22 +1677,27 @@ export default function CapsulesPage() {
                         <DialogDescription className="mt-0.5">
                             {capsuleContent.filter(m => m.isCurrentVersion).length} messages in current version
                             {(selectedCapsule?.version_count || 1) > 1 && ` · ${capsuleContent.length} total across all versions`}
-                            {contentTab === 'messages' && splitModeActive && ' · drag messages to the split zone →'}
+                            {contentTab === 'messages' && splitModeActive && ' · select/drag messages to split zone'}
                         </DialogDescription>
                         <div className="flex items-center justify-end mt-3">
                             <div className="flex items-center gap-2">
                                 {contentTab === 'messages' && (
-                                    <Button
-                                        size="sm"
-                                        onClick={() => { setSplitModeActive(v => !v); setSplitDropMessages([]); }}
-                                        className={splitModeActive
-                                            ? 'h-9 px-4 gap-2 font-semibold border border-border/60 bg-muted/40 text-muted-foreground hover:text-foreground shadow-none'
-                                            : 'h-9 px-4 gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-semibold shadow-lg shadow-purple-500/30 border-0'
-                                        }
-                                    >
-                                        <Scissors className="h-4 w-4" />
-                                        {splitModeActive ? 'Exit Split' : 'Split'}
-                                    </Button>
+                                    <div className="relative inline-block">
+                                        <Button
+                                            size="sm"
+                                            onClick={() => { setSplitModeActive(v => !v); setSplitDropMessages([]); }}
+                                            className={splitModeActive
+                                                ? 'h-9 px-4 gap-2 font-semibold border border-border/60 bg-muted/40 text-muted-foreground hover:text-foreground shadow-none'
+                                                : 'h-9 px-4 gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-semibold shadow-lg shadow-purple-500/30 border-0'
+                                            }
+                                        >
+                                            <Scissors className="h-4 w-4" />
+                                            {splitModeActive ? 'Exit Split' : 'Split'}
+                                        </Button>
+                                        <span className="absolute -top-1.5 -right-1 px-1.5 py-0.5 bg-foreground text-[8px] font-bold text-background border border-foreground/10 rounded uppercase tracking-wider leading-none pointer-events-none select-none">
+                                            Beta
+                                        </span>
+                                    </div>
                                 )}
                                 {splitDropMessages.length > 0 && contentTab === 'messages' && splitModeActive && (
                                     <Button
@@ -1740,7 +1716,7 @@ export default function CapsulesPage() {
                         </div>
                     </DialogHeader>
 
-                    <div className="flex-1 overflow-hidden flex min-h-0">
+                    <div className="flex-1 overflow-hidden flex flex-col md:flex-row min-h-0">
                         {/* Main content panel */}
                         <div className="flex-1 overflow-y-auto p-6 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full">
                             {loadingContent ? (
@@ -1815,14 +1791,40 @@ export default function CapsulesPage() {
                                                                 }}
                                                                 className={`flex items-start gap-2 p-4 rounded-xl border transition-all ${
                                                                     alreadyDropped
-                                                                        ? 'opacity-35 border-dashed border-border/30 cursor-not-allowed bg-transparent'
+                                                                        ? 'opacity-60 border-dashed border-violet-500/40 bg-violet-500/5 cursor-pointer hover:border-violet-500/60'
                                                                         : item.msg.role === 'user'
-                                                                            ? `bg-primary/5 border-primary/15 mr-8 ${splitModeActive ? 'cursor-grab active:cursor-grabbing hover:border-primary/30 hover:shadow-sm' : ''}`
-                                                                            : `bg-muted/30 border-border/40 ml-8 ${splitModeActive ? 'cursor-grab active:cursor-grabbing hover:border-border/60 hover:shadow-sm' : ''}`
+                                                                            ? `bg-primary/5 border-primary/15 mr-8 ${splitModeActive ? 'cursor-pointer hover:border-primary/30 hover:shadow-sm' : ''}`
+                                                                            : `bg-muted/30 border-border/40 ml-8 ${splitModeActive ? 'cursor-pointer hover:border-border/60 hover:shadow-sm' : ''}`
                                                                 }`}
+                                                                onClick={() => {
+                                                                    if (splitModeActive) {
+                                                                        setSplitDropMessages(prev => {
+                                                                            const exists = prev.some(m => m.idx === item.flatIdx);
+                                                                            if (exists) {
+                                                                                return prev.filter(m => m.idx !== item.flatIdx);
+                                                                            } else {
+                                                                                return [...prev, { idx: item.flatIdx, enriched: item }];
+                                                                            }
+                                                                        });
+                                                                    }
+                                                                }}
                                                             >
-                                                                {splitModeActive && !alreadyDropped && (
-                                                                    <GripVertical className="h-4 w-4 text-muted-foreground/25 mt-0.5 shrink-0" />
+                                                                {splitModeActive && (
+                                                                    <div className="mr-2 mt-0.5 shrink-0">
+                                                                        <div className={`h-5 w-5 rounded border flex items-center justify-center transition-all ${
+                                                                            alreadyDropped
+                                                                                ? 'bg-violet-600 border-violet-600 text-white shadow-sm'
+                                                                                : 'border-muted-foreground/30 bg-background hover:border-violet-500'
+                                                                        }`}>
+                                                                            {alreadyDropped ? (
+                                                                                <Check className="h-3.5 w-3.5" />
+                                                                            ) : (
+                                                                                splitModeActive && !alreadyDropped && (
+                                                                                    <GripVertical className="h-3 w-3 text-muted-foreground/45" />
+                                                                                )
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
                                                                 )}
                                                                 <div className="flex-1 min-w-0">
                                                                     <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -1857,7 +1859,7 @@ export default function CapsulesPage() {
                         {/* Split drop zone — only visible when split mode is active */}
                         {contentTab === 'messages' && splitModeActive && (
                             <div
-                                className={`w-72 shrink-0 border-l flex flex-col transition-colors duration-200 ${
+                                className={`w-full md:w-72 h-64 md:h-auto shrink-0 border-t md:border-t-0 md:border-l flex flex-col transition-colors duration-200 ${
                                     dragOverDrop ? 'bg-violet-500/10' : 'bg-muted/10'
                                 }`}
                                 onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; setDragOverDrop(true); }}
@@ -1884,7 +1886,7 @@ export default function CapsulesPage() {
                                             <p className="text-[11px] text-muted-foreground">
                                                 {splitDropMessages.length > 0
                                                     ? `${splitDropMessages.length} message${splitDropMessages.length !== 1 ? 's' : ''} selected`
-                                                    : 'Drop messages here'}
+                                                    : 'Select or drop messages'}
                                             </p>
                                         </div>
                                     </div>
@@ -1892,12 +1894,12 @@ export default function CapsulesPage() {
 
                                 <div className="flex-1 overflow-y-auto p-3 space-y-2 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full">
                                     {splitDropMessages.length === 0 ? (
-                                        <div className={`min-h-[180px] h-full flex flex-col items-center justify-center text-center rounded-xl border-2 border-dashed transition-all ${
+                                        <div className={`min-h-[120px] md:min-h-[180px] h-full flex flex-col items-center justify-center text-center rounded-xl border-2 border-dashed transition-all ${
                                             dragOverDrop ? 'border-violet-500/60 bg-violet-500/5 scale-[1.02]' : 'border-border/30'
                                         }`}>
                                             <Scissors className={`h-8 w-8 mb-2 transition-colors ${dragOverDrop ? 'text-violet-500' : 'text-muted-foreground/30'}`} />
                                             <p className={`text-xs font-medium transition-colors ${dragOverDrop ? 'text-violet-500' : 'text-muted-foreground/50'}`}>
-                                                {dragOverDrop ? 'Release to add' : 'Drag messages here'}
+                                                {dragOverDrop ? 'Release to add' : 'Select or drag messages here'}
                                             </p>
                                         </div>
                                     ) : (

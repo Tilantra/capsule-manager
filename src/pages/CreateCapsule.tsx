@@ -271,22 +271,25 @@ export default function CreateCapsule() {
                 }
             }
 
-            // 2. Format Messages
+            // 2. Format Messages (backend requires at least one message)
             const messages = chunks.map(chunk => ({
                 role: "user",
                 content: chunk.text
             }));
+            if (messages.length === 0 && globalFiles.length > 0) {
+                messages.push({
+                    role: "user",
+                    content: `Attached files: ${globalFiles.map((f) => f.name).join(", ")}`,
+                });
+            }
 
             // 3. Create Capsule Request
             const request = {
-                content: {
-                    messages,
-                    metadata: {}
-                },
+                content: { messages },
                 tag: name.trim(),
-                team: team || "private",
                 extracted_from: "tilantra",
-                attachment_ids
+                ...(team && team !== "private" ? { team } : {}),
+                ...(attachment_ids.length > 0 ? { attachment_ids } : {}),
             };
 
             await client.createCapsule(request);
@@ -296,7 +299,13 @@ export default function CreateCapsule() {
             navigate("/capsules");
         } catch (error: any) {
             console.error("Failed to create capsule:", error);
-            toast.error(error.message || "Failed to create capsule");
+            const detail = error.response?.data?.detail;
+            const message = typeof detail === "string"
+                ? detail
+                : Array.isArray(detail)
+                    ? detail.map((d: { msg?: string }) => d.msg).filter(Boolean).join("; ")
+                    : error.message;
+            toast.error(message || "Failed to create capsule");
         } finally {
             setIsSubmitting(false);
         }

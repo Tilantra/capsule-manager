@@ -1,0 +1,158 @@
+# Capsule Hub by Tilantra
+# https://capsulehub.tilantra.com
+# Last updated: 2026-06-07
+
+> Capsule Hub is a context-transfer layer for modern AI work. It turns chats, email threads, and custom content into portable Capsules—structured bundles of goals, constraints, background, and attachments—so you can move work between models and tools without rebuilding context from scratch.
+
+## What is Capsule Hub?
+
+Capsule Hub by Tilantra is the bridge for your AI workflows. Most teams lose hours re-explaining the same situation to every new chat. Capsule Hub makes that knowledge capture-once, inject-anywhere: from research in Gemini to execution in ChatGPT, from a Gmail thread to requirements in GPT, from a capsule in Cursor (via MCP) back to review in Claude—with versioning along the way.
+
+A Capsule is a structured context packet containing conversation messages, metadata, and optional file attachments. Capsules can be captured via the Chrome extension, created manually in the web studio, managed through MCP in IDEs, or embedded via the Personal Chatbot SDK.
+
+## Core Features
+
+- Chrome Extension Capture: One-click capture from ChatGPT, Claude, Google Gemini, Perplexity, DeepSeek, Gmail, and more
+- Drag-and-Drop Injection: Drag capsules from your library into any supported AI chat input for instant context injection
+- Context Versioning: Preserve history, roll back, compare versions, and tag stable checkpoints
+- Merge & Split Capsules: Combine multiple capsules into one unified context, or split a capsule into focused sub-capsules for role-based sharing
+- Attachments: Rich file support (20+ types) including PDFs, Markdown, text, code, and images
+- Teams & Collaboration: Organize capsules by department, share with team members, and collaborate on evolving prompts
+- Dynamic Context (Elite): AI-powered semantic filtering to keep injected payloads relevant as conversations evolve
+- MCP Integration: Connect Capsule Hub to Cursor, Antigravity, and other MCP-compatible IDEs
+- Personal Chatbot SDK: Embed Capsule Hub context on your own website chatbot
+- Anthropic Skills: Use Claude Code skills to save, search, read, and version capsules from terminal
+- Custom Capsule Studio: Build capsules directly in a connected graph canvas on the web
+- Multi-Model Support: Move context seamlessly between ChatGPT, Claude, Gemini, Perplexity, DeepSeek, Copilot, and more
+- Zero Context Rot: Prevent hallucinations and context loss when switching between AI tools
+
+## Supported Platforms
+
+| Platform | Support Level | Notes |
+|----------|---------------|-------|
+| ChatGPT | Full | PDF interception and attachment harvesting |
+| Google Gemini / AI Studio | Full | Native UI hooks for capture and injection |
+| Claude | Full | Multi-turn conversation capture |
+| Microsoft Copilot | Full | IDE integration and context management |
+| DeepSeek | Full | Optimized context injection |
+| Perplexity | Full | Research thread capture |
+| Gmail | Partial | Thread-to-capsule conversion |
+| Lovable, Replit, Emergent | Full | Project context capture |
+| Figma, Slack, Outlook | Integration | Workflow connectivity |
+
+Browser support: Chrome only (other browsers coming soon).
+
+## Pricing & Plans
+
+New users receive a 3-day Elite trial to experience full Capsule Hub capabilities.
+
+### Basic (Free)
+- Price: Free (₹0 / $0)
+- Capsule limit: 5 total capsules
+- MCP Access: Yes
+- Teams: No
+- Versioning: No
+- Attachments: No
+- Dynamic Context: No
+
+### Pro
+- Price: ₹100/month ($1/month)
+- Capsule limit: 15 total capsules
+- MCP + Attachments: Yes
+- Core Versioning: Yes
+- Join Existing Teams: Yes
+- Create Teams: No
+- Dynamic Context: No
+- Payment: https://rzp.io/rzp/paypro
+
+### Elite
+- Price: ₹300/month ($3/month)
+- Capsule limit: Unlimited
+- MCP + Attachments: Yes
+- Universal Versioning: Yes (full version tree)
+- Create & Join Teams: Yes
+- Priority Support: Yes
+- White-labeling: No
+- Payment: https://rzp.io/rzp/payelite
+
+### Enterprise (Custom)
+- Price: Custom pricing based on usage
+- Custom capsule limits
+- Dedicated support
+- Custom integrations
+- White-labeling
+- SLA guarantees
+- On-premise deployment option
+- Contact: support@tilantra.com or tech@tilantra.com
+
+Upgrade at: https://capsulehub.tilantra.com/billing
+
+## Important Links
+
+- Web App: https://capsulehub.tilantra.com
+- Documentation: https://capsulehub.tilantra.com/docs
+- Plans & Tiers: https://capsulehub.tilantra.com/docs/plans
+- Features: https://capsulehub.tilantra.com/docs/features
+- Use Cases: https://capsulehub.tilantra.com/docs/use-cases
+- Getting Started: https://capsulehub.tilantra.com/docs/getting-started
+- MCP Setup: https://capsulehub.tilantra.com/docs/mcp
+- Supported Platforms: https://capsulehub.tilantra.com/docs/platforms
+- Personal Chatbot SDK: https://capsulehub.tilantra.com/docs/personal-chatbot
+- Anthropic Skills: https://capsulehub.tilantra.com/docs/anthropic-skills
+- Privacy Policy: https://capsulehub.tilantra.com/docs/privacy
+- Troubleshooting: https://capsulehub.tilantra.com/docs/troubleshooting
+- Billing: https://capsulehub.tilantra.com/billing
+- Create Capsule Studio: https://capsulehub.tilantra.com/create-capsule
+
+## Chrome Extension
+
+- Chrome Web Store: https://chromewebstore.google.com/detail/capsule-hub-by-tilantra/ngeoeefidomejcdhiecidpaalfoekjbh
+
+## API & Integrations
+
+- MCP Server URL: https://backend.tilantra.com/mcp/
+- MCP Documentation: https://tilantra.com/docs/capsule-hub-mcp
+- Personal Chatbot SDK: import CapsuleHub from 'https://esm.sh/@tilantra/capsule-hub'
+
+### MCP Configuration Example
+{
+  "mcpServers": {
+    "capsule-service": {
+      "serverUrl": "https://backend.tilantra.com/mcp/",
+      "headers": {
+        "X-API-Key": "cht-xxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "Content-Type": "application/json"
+      }
+    }
+  }
+}
+
+Generate your API key at: https://capsulehub.tilantra.com/settings
+
+## Company & Parent Products
+
+- Tilantra: https://tilantra.com
+- Guidera: https://guidera.tilantra.com
+
+## Support & Contact
+
+- Technical Support: tech@tilantra.com
+- Sales & Enterprise: tilantra.technologies@gmail.com
+- Account Deletion: tech@tilantra.com (subject: "Account Deletion Request")
+
+## Use Cases
+
+1. Internal marketing brain — shared narrative layer for positioning, claims, and campaign snippets
+2. Email → Requirements → Code — Gmail → GPT → Figma → IDE multi-hop workflow via MCP
+3. Inter-agent communication — capsules as portable contracts between planning, coding, and review agents
+4. Context switching — one agent, multiple capsules for security review, growth experiments, refactoring modes
+5. Role-based access via merge/split — split a capsule to share only relevant messages with different teams; merge capsules from multiple sources into one unified context
+6. Sales engineering handoff, incident response, research synthesis, design-engineering alignment, customer support KB, code review standards, legal compliance, product ideation, API documentation
+
+## Privacy & Data
+
+Capsule Hub is operated by Tilantra. User data includes account information, capsule content, and usage analytics. See full privacy policy at https://capsulehub.tilantra.com/docs/privacy. Service does not address users under age 13.
+
+## Tagline
+
+Never start from Zero again!
