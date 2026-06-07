@@ -1,0 +1,33 @@
+# Capsule Hub by Tilantra — https://capsulehub.tilantra.com
+# Robots directives for search engines and crawlers
+
+User-agent: *
+Allow: /
+Allow: /docs/
+Allow: /docs/features
+Allow: /docs/use-cases
+Allow: /docs/plans
+Allow: /docs/getting-started
+Allow: /docs/mcp
+Allow: /docs/platforms
+Allow: /docs/privacy
+Allow: /docs/troubleshooting
+Allow: /docs/personal-chatbot
+Allow: /docs/anthropic-skills
+Allow: /llm.txt
+
+# Authenticated app routes — allow indexing of login landing but discourage deep app pages
+Allow: /login
+Disallow: /capsules
+Disallow: /teams
+Disallow: /settings
+Disallow: /billing
+Disallow: /create-capsule
+Disallow: /contact
+
+# LLM-specific information file
+# See https://capsulehub.tilantra.com/llm.txt for structured product information
+
+# Contact
+# Technical: tech@tilantra.com
+# Enterprise: tilantra.technologies@gmail.com

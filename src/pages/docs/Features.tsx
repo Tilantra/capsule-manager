@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MousePointerClick, FileStack, GitBranch, Users, Link2, Play, X } from "lucide-react";
+import { MousePointerClick, FileStack, GitBranch, Users, Link2, Play, X, Scissors } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import DocsLayout from "./DocsLayout";
 
@@ -169,6 +169,23 @@ export default function Features() {
                         <CardContent className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
                             Team capabilities vary by plan: from viewing shared contexts to joining teams, and up to creating and
                             administering team spaces for larger orgs.
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-slate-200/80 bg-white/80 dark:border-slate-800 dark:bg-slate-950/50">
+                        <CardHeader>
+                            <div className="flex items-center gap-2">
+                                <Scissors className="h-5 w-5 text-indigo-600" />
+                                <CardTitle className="text-xl">Merge &amp; split capsules</CardTitle>
+                            </div>
+                            <CardDescription className="text-base leading-relaxed">
+                                Combine multiple capsules into one unified context with merge, or split a capsule into focused
+                                sub-capsules by selecting specific messages—ideal for sharing only what each audience needs.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                            Merge deduplicates sources and stitches conversation history across capsules. Split lets you carve out
+                            role-specific views (e.g. engineering vs. leadership) while keeping the original intact or replacing it.
                         </CardContent>
                     </Card>
 

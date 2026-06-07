@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Layers, Users, Network, Sparkles, Boxes, Mail, Code2, FileText, Lightbulb, Zap } from "lucide-react";
+import { Layers, Users, Network, Sparkles, Boxes, Mail, Code2, FileText, Lightbulb, Zap, Scissors } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import DocsLayout from "./DocsLayout";
@@ -194,6 +194,11 @@ export default function UseCases() {
                                 title: "API & integration documentation",
                                 body: "Create capsules with API specifications, integration guides, and authentication flows. Developers inject these into coding assistants for accurate implementation.",
                                 icon: Zap,
+                            },
+                            {
+                                title: "Role-based access via merge & split",
+                                body: "Capture a full planning session from ChatGPT, then split it: share technical implementation details with Engineering, executive summaries with Leadership, and compliance notes with Legal—each as its own capsule. Merge related capsules from different sources when a unified view is needed.",
+                                icon: Scissors,
                             },
                         ].map((u) => (
                             <Card key={u.title} className="border-slate-200/80 bg-white/70 dark:border-slate-800 dark:bg-slate-950/50">
