@@ -171,7 +171,7 @@ export const CapsuleGraph = ({ items, onRemoveItem, isAbsorbing = false, classNa
                                         e.stopPropagation();
                                         onRemoveItem(item.id);
                                     }}
-                                    className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-background border border-border shadow-sm flex items-center justify-center opacity-0 group-hover/node:opacity-100 transition-opacity hover:text-destructive z-30"
+                                    className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-background border border-border shadow-sm flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover/node:opacity-100 transition-opacity hover:text-destructive z-30"
                                     aria-label={`Remove ${item.label}`}
                                 >
                                     <X className="h-3 w-3" />

@@ -160,47 +160,101 @@ export default function AppLayout() {
                 className="md:hidden fixed top-0 left-0 right-0 z-50 h-16 bg-white/80 dark:bg-slate-950/70 backdrop-blur-xl border-b border-gray-200 dark:border-slate-800 flex items-center justify-between px-4 shadow-lg"
             >
                 <TilantraLogo className="h-8 w-auto" />
-                <Button
-                    onClick={() => navigate("/create-capsule")}
-                    className="h-9 px-3 mr-2 gap-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
-                >
-                    <Plus className="h-4 w-4" />
-                    Create
-                </Button>
-                <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-                    <SheetTrigger asChild>
-                        <Button variant="ghost" size="icon" className="hover:bg-primary/10 transition-colors">
-                            <Menu className="h-6 w-6" />
-                        </Button>
-                    </SheetTrigger>
-                    <SheetContent side="left" className="w-64 p-0 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-r border-gray-200 dark:border-slate-800">
-                        <div className="h-16 flex items-center px-6 border-b border-gray-200 dark:border-slate-800">
-                            <TilantraLogo className="h-8 w-auto" />
-                        </div>
-                        <NavItems />
-                        <div className="p-4 border-t border-gray-200 dark:border-slate-800 absolute bottom-0 w-full bg-white dark:bg-slate-950">
-                            <Button
-                                variant="ghost"
-                                className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20 group"
-                                onClick={handleLogout}
-                            >
-                                <LogOut className="mr-2 h-4 w-4 group-hover:rotate-12 transition-transform duration-200" />
-                                Logout
+                <div className="flex items-center gap-2">
+                    <Button
+                        onClick={() => navigate("/create-capsule")}
+                        className="h-9 px-3 gap-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                    >
+                        <Plus className="h-4 w-4" />
+                        Create
+                    </Button>
+                    <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                        <SheetTrigger asChild>
+                            <Button variant="ghost" size="icon" className="hover:bg-primary/10 transition-colors">
+                                <Menu className="h-6 w-6" />
                             </Button>
-                        </div>
-                    </SheetContent>
-                </Sheet>
+                        </SheetTrigger>
+                        <SheetContent side="left" className="w-64 p-0 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-r border-gray-200 dark:border-slate-800">
+                            <div className="h-16 flex items-center px-6 border-b border-gray-200 dark:border-slate-800">
+                                <TilantraLogo className="h-8 w-auto" />
+                            </div>
+                            <NavItems />
+                            <div className="p-4 border-t border-gray-200 dark:border-slate-800 absolute bottom-0 w-full bg-white dark:bg-slate-950">
+                                <Button
+                                    variant="ghost"
+                                    className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20 group"
+                                    onClick={handleLogout}
+                                >
+                                    <LogOut className="mr-2 h-4 w-4 group-hover:rotate-12 transition-transform duration-200" />
+                                    Logout
+                                </Button>
+                            </div>
+                        </SheetContent>
+                    </Sheet>
+                </div>
             </motion.div>
 
+            {/* Mobile Bottom Navigation */}
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 h-16 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border-t border-gray-200 dark:border-slate-800 flex items-center justify-around px-2 pb-safe shadow-lg">
+                <NavLink
+                    to="/capsules"
+                    className={({ isActive }) =>
+                        `flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-semibold transition-colors ${isActive
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-gray-500 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-100"
+                        }`
+                    }
+                >
+                    <LayoutDashboard className="h-5 w-5 mb-0.5" />
+                    Capsules
+                </NavLink>
+                <NavLink
+                    to="/teams"
+                    className={({ isActive }) =>
+                        `flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-semibold transition-colors ${isActive
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-gray-500 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-100"
+                        }`
+                    }
+                >
+                    <Users className="h-5 w-5 mb-0.5" />
+                    Teams
+                </NavLink>
+                <NavLink
+                    to="/billing"
+                    className={({ isActive }) =>
+                        `flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-semibold transition-colors ${isActive
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-gray-500 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-100"
+                        }`
+                    }
+                >
+                    <CreditCard className="h-5 w-5 mb-0.5" />
+                    Billing
+                </NavLink>
+                <NavLink
+                    to="/settings"
+                    className={({ isActive }) =>
+                        `flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-semibold transition-colors ${isActive
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-gray-500 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-100"
+                        }`
+                    }
+                >
+                    <Settings className="h-5 w-5 mb-0.5" />
+                    Settings
+                </NavLink>
+            </nav>
+
             {/* Main Content */}
-            <main className="flex-1 md:pl-64 pt-16 md:pt-0 min-h-screen transition-all duration-300 ease-in-out relative z-10">
+            <main className="flex-1 md:pl-64 pt-16 md:pt-0 pb-16 md:pb-0 min-h-screen transition-all duration-300 ease-in-out relative z-10">
                 <motion.div 
                     key={location.pathname}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="container mx-auto p-6 md:p-8 lg:p-10 max-w-7xl"
+                    className="container mx-auto p-4 sm:p-6 md:p-8 lg:p-10 max-w-7xl"
                 >
                     <Outlet />
                 </motion.div>

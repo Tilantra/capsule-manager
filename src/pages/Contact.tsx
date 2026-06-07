@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Send, Loader2, CheckCircle2, AlertCircle, ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Send, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
 const Contact = () => {

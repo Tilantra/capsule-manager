@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { BrowserGuideraClient } from "@/lib/guidera-browser-client";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +19,7 @@ export default function ResetPassword() {
     const [success, setSuccess] = useState(false);
     
     const [searchParams] = useSearchParams();
-    const navigate = useNavigate();
+
     const token = searchParams.get("token");
 
     const client = new BrowserGuideraClient();
