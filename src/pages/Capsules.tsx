@@ -775,14 +775,16 @@ export default function CapsulesPage() {
                                 whileHover={{ opacity: 1, scale: 1 }}
                                 className="opacity-0 group-hover:opacity-100 transition-all"
                             >
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shadow-lg backdrop-blur-sm"
-                                    onClick={(e) => handleDelete(capsule.capsule_id, e)}
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
+                                {((capsule.created_by || "").trim() === (currentUser?.username || "").trim() || (capsule.created_by || "").trim() === (currentUser?.email || "").trim()) && (
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shadow-lg backdrop-blur-sm"
+                                        onClick={(e) => handleDelete(capsule.capsule_id, e)}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                )}
                             </motion.div>
                         )}
                     </div>
@@ -1018,14 +1020,16 @@ export default function CapsulesPage() {
                                                     )}
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                                        onClick={(e) => { e.stopPropagation(); handleDelete(capsule.capsule_id, e); }}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
+                                                    {((capsule.created_by || "").trim() === (currentUser?.username || "").trim() || (capsule.created_by || "").trim() === (currentUser?.email || "").trim()) && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                                            onClick={(e) => { e.stopPropagation(); handleDelete(capsule.capsule_id, e); }}
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
                                                 </td>
                                             </motion.tr>
                                         );

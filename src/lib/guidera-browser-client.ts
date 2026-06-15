@@ -736,7 +736,7 @@ export class BrowserGuideraClient {
         if (!this.tokenValid()) {
             throw new Error('Not authenticated');
         }
-        const url = `${this.apiBaseUrl}/capsules/user?limit=${limit}&offset=${offset}`;
+        const url = `${this.apiBaseUrl}/capsules/user/all-teams-collection?limit=${limit}&offset=${offset}`;
         const headers = {
             Authorization: `Bearer ${this.authToken}`,
             'Content-Type': 'application/json',
