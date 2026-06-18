@@ -1833,10 +1833,10 @@ export default function CapsulesPage() {
                                                                 <div className="flex-1 min-w-0">
                                                                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                                                                         <Badge
-                                                                            variant={item.msg.role === 'user' ? 'default' : 'secondary'}
-                                                                            className="text-[10px] capitalize px-2 py-0"
+                                                                            variant="secondary"
+                                                                            className="text-[10px] px-2 py-0 font-mono"
                                                                         >
-                                                                            {item.msg.role || 'unknown'}
+                                                                            #{item.flatIdx + 1}
                                                                         </Badge>
                                                                         {!group.isCurrent && (
                                                                             <span className="text-[9px] text-muted-foreground/40 font-medium uppercase tracking-wider">Historical</span>
@@ -1918,8 +1918,8 @@ export default function CapsulesPage() {
                                                 <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg bg-violet-500/5 border border-violet-500/20 group">
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                                                            <Badge variant={enriched.msg.role === 'user' ? 'default' : 'secondary'} className="text-[9px] capitalize px-1.5 py-0">
-                                                                {enriched.msg.role || 'unknown'}
+                                                            <Badge variant="secondary" className="text-[9px] px-1.5 py-0 font-mono">
+                                                                #{enriched.flatIdx + 1}
                                                             </Badge>
                                                             <span className="text-[9px] text-violet-400/70 font-medium">v{enriched.versionNumber}</span>
                                                         </div>
