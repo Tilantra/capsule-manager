@@ -43,6 +43,18 @@ export interface SearchCapsuleRequest {
     tag?: string;
 }
 
+export interface RagMeta {
+    ingest_status?: string;
+    milestone_capsule_id?: string;
+    node_capsule_map?: Record<string, string>;
+    documents_ingested?: number;
+    additional_documents?: Array<{
+        document_id: string;
+        milestone_capsule_id: string;
+        node_capsule_map: Record<string, string>;
+    }>;
+}
+
 export interface CapsuleMetadata {
     capsule_id: string;
     created_at: string;
@@ -56,6 +68,7 @@ export interface CapsuleMetadata {
     version_count?: number;
     is_merged?: boolean;
     merged_from_capsule_ids?: string[];
+    rag_meta?: RagMeta;
 }
 
 export interface SearchResponse {

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Loader2, Users, Plus, UserPlus, UserMinus, Crown, Shield, Layers } from "lucide-react";
+import { motion } from "framer-motion";
 import {
     Dialog,
     DialogContent,
@@ -216,71 +217,105 @@ export default function TeamsPage() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {teams.map((team) => {
+                    {teams.map((team, index) => {
                         const userRole = getUserRole(team);
                         const capsuleCount = teamCapsuleCounts[team.team_id] || 0;
                         const teamColor = team.color_tag || '#3b82f6';
+                        const memberPreview = (team.members || []).slice(0, 4);
+                        const overflow = Math.max(0, (team.members?.length || 0) - 4);
 
                         return (
-                            <Card
+                            <motion.div
                                 key={team.team_id}
-                                className="group relative flex flex-col min-h-[220px] h-auto pb-4 overflow-hidden hover:shadow-xl transition-all duration-300 border bg-gradient-to-br from-card to-card/50 hover:border-primary/40 cursor-default"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.05, duration: 0.3 }}
+                                whileHover={{ y: -6, transition: { duration: 0.2 } }}
                             >
-                                <CardHeader className="pb-3">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1 min-w-0">
-                                            <CardTitle className="text-base truncate group-hover:text-primary transition-colors">{team.name || 'Unnamed Team'}</CardTitle>
-                                            <Badge variant="secondary" className={`text-xs gap-1 mt-1 ${getRoleBadgeColor(userRole)}`}>
-                                                {getRoleIcon(userRole)}
-                                                {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
-                                            </Badge>
-                                        </div>
-                                    </div>
-                                </CardHeader>
+                                <Card className="group relative flex flex-col overflow-hidden hover:shadow-2xl transition-all duration-300 border border-border/50 hover:border-primary/30 bg-gradient-to-br from-card via-card to-card/50 cursor-default">
+                                    {/* Left accent bar using team color */}
+                                    <div
+                                        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl opacity-70 group-hover:opacity-100 transition-opacity duration-300"
+                                        style={{ background: teamColor }}
+                                    />
 
-                                <CardContent className="flex-1 flex flex-col gap-3">
-                                    <div className="min-h-[2.5rem]">
-                                        {team.description ? (
-                                            <p className="text-sm text-muted-foreground line-clamp-2">{team.description}</p>
-                                        ) : (
-                                            <p className="text-sm text-muted-foreground opacity-30 italic">No description provided</p>
+                                    {/* Subtle gradient overlay on hover */}
+                                    <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/3 group-hover:to-purple-500/3 transition-all duration-500" />
+
+                                    <CardHeader className="pb-2 pl-7 relative z-10">
+                                        <div className="flex items-start justify-between gap-2">
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <div
+                                                        className="h-2.5 w-2.5 rounded-full shrink-0"
+                                                        style={{ background: teamColor }}
+                                                    />
+                                                    <CardTitle className="text-base truncate group-hover:text-primary transition-colors">
+                                                        {team.name || 'Unnamed Team'}
+                                                    </CardTitle>
+                                                </div>
+                                                <Badge variant="secondary" className={`text-[11px] gap-1 ${getRoleBadgeColor(userRole)}`}>
+                                                    {getRoleIcon(userRole)}
+                                                    {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                    </CardHeader>
+
+                                    <CardContent className="flex-1 flex flex-col gap-4 pl-7 relative z-10">
+                                        {/* Description */}
+                                        <div className="min-h-[2rem]">
+                                            {team.description ? (
+                                                <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">{team.description}</p>
+                                            ) : (
+                                                <p className="text-xs text-muted-foreground/30 italic">No description</p>
+                                            )}
+                                        </div>
+
+                                        {/* Member avatar row */}
+                                        {memberPreview.length > 0 && (
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex -space-x-2">
+                                                    {memberPreview.map((email, i) => (
+                                                        <div
+                                                            key={i}
+                                                            title={email}
+                                                            className="h-7 w-7 rounded-full border-2 border-card flex items-center justify-center text-[10px] font-bold uppercase"
+                                                            style={{ background: `${teamColor}30`, color: teamColor, zIndex: memberPreview.length - i }}
+                                                        >
+                                                            {email.substring(0, 2)}
+                                                        </div>
+                                                    ))}
+                                                    {overflow > 0 && (
+                                                        <div className="h-7 w-7 rounded-full border-2 border-card bg-muted flex items-center justify-center text-[9px] font-bold text-muted-foreground">
+                                                            +{overflow}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <span className="text-xs text-muted-foreground">
+                                                    {team.members?.length || 0} member{team.members?.length !== 1 ? 's' : ''}
+                                                </span>
+                                            </div>
                                         )}
-                                    </div>
 
-                                    <div className="mt-auto space-y-3">
-                                        <Separator className="opacity-50" />
-                                        <div className="flex items-center justify-between text-sm">
-                                            <div className="flex items-center gap-1.5 text-muted-foreground">
-                                                <Users className="h-4 w-4" />
-                                                <span>{team.members?.length || 0} members</span>
+                                        {/* Stats row */}
+                                        <div className="mt-auto pt-3 border-t border-border/40 flex items-center justify-between">
+                                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                                <Layers className="h-3.5 w-3.5" />
+                                                <span>{capsuleCount} capsule{capsuleCount !== 1 ? 's' : ''}</span>
                                             </div>
-                                            <div className="flex items-center gap-1.5 text-muted-foreground">
-                                                <Layers className="h-4 w-4" />
-                                                <span>{capsuleCount}</span>
-                                            </div>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-7 px-3 text-xs gap-1.5 text-primary hover:text-primary hover:bg-primary/10 font-semibold transition-colors"
+                                                onClick={() => openManageMembers(team)}
+                                            >
+                                                {userRole === 'admin' ? 'Manage' : 'View'} →
+                                            </Button>
                                         </div>
-                                    </div>
-
-                                    <div className="flex justify-end mt-2">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="gap-2 text-primary hover:text-primary hover:bg-primary/10 transition-colors"
-                                            onClick={() => openManageMembers(team)}
-                                        >
-                                            {userRole === 'admin' ? 'Manage' : 'View'}
-                                        </Button>
-                                    </div>
-                                </CardContent>
-
-                                {/* Hover Indicator */}
-                                <div
-                                    className="absolute bottom-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                    style={{
-                                        background: `linear-gradient(to right, transparent, ${teamColor}, transparent)`
-                                    }}
-                                />
-                            </Card>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
                         );
                     })}
                 </div>

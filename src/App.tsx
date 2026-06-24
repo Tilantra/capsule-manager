@@ -23,6 +23,7 @@ import Plans from "./pages/docs/Plans";
 import Platforms from "./pages/docs/Platforms";
 import Troubleshooting from "./pages/docs/Troubleshooting";
 import Privacy from "./pages/docs/Privacy";
+import KnowledgeGraph from "./pages/KnowledgeGraph";
 import AppLayout from "./components/layout/AppLayout";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -81,6 +82,7 @@ function App() {
                     <Route element={<PrivateRoute><AppLayout /></PrivateRoute>}>
                         <Route path="/capsules" element={<CapsulesPage />} />
                         <Route path="/create-capsule" element={<CreateCapsule />} />
+                        <Route path="/knowledge-graph" element={<KnowledgeGraph />} />
                         <Route path="/teams" element={<TeamsPage />} />
                         <Route path="/billing" element={<BillingPage />} />
                         <Route path="/settings" element={<SettingsPage />} />

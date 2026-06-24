@@ -747,12 +747,15 @@ export default function CapsulesPage() {
                 whileHover={{ y: -8, transition: { duration: 0.2 } }}
             >
                 <Card
-                    className={`group relative overflow-hidden cursor-pointer border p-6 h-full transition-all duration-300 hover:shadow-2xl bg-gradient-to-br from-card via-card to-card/50 ${mergeMode && isSelected
+                    className={`group relative overflow-hidden cursor-pointer border h-full transition-all duration-300 hover:shadow-2xl bg-gradient-to-br from-card via-card to-card/50 ${mergeMode && isSelected
                             ? 'border-primary/70 ring-2 ring-primary/30'
                             : 'border-border/50 hover:border-primary/40'
                         }`}
                     onClick={handleCardClick}
                 >
+                    {/* Top accent line — dims at rest, brightens on hover */}
+                    <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500/30 via-purple-500/40 to-blue-500/30 group-hover:from-blue-500 group-hover:via-purple-500 group-hover:to-blue-500 transition-all duration-500" />
+
                     {/* Animated gradient overlay */}
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/0 to-purple-500/0 group-hover:from-primary/5 group-hover:via-purple-500/5 group-hover:to-blue-500/5 transition-all duration-500" />
 
@@ -789,90 +792,83 @@ export default function CapsulesPage() {
                         )}
                     </div>
 
-                    <div className="space-y-3 mb-4 relative z-10">
-                        <div className="flex items-start gap-3">
-                            <div className="flex-1 min-w-0">
-                                <h3 className="font-bold text-lg truncate group-hover:text-primary transition-colors">
-                                    {capsule.tag || "Untitled"}
-                                </h3>
-                                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1.5">
-                                    <Calendar className="h-3.5 w-3.5" />
-                                    <span className="font-medium">{format(new Date(capsule.created_at), "MMM d, yyyy")}</span>
+                    <div className="p-6 flex flex-col h-full">
+                        {/* Header: title, date, summary */}
+                        <div className="mb-4 relative z-10 pr-8">
+                            <h3 className="font-bold text-lg truncate group-hover:text-primary transition-colors leading-tight">
+                                {capsule.tag || "Untitled"}
+                            </h3>
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
+                                <Calendar className="h-3 w-3 shrink-0" />
+                                <span>{format(new Date(capsule.created_at), "MMM d, yyyy")}</span>
+                            </div>
+                            {capsule.summary && (
+                                <p className="text-xs text-muted-foreground/55 line-clamp-1 mt-1.5 italic leading-relaxed">
+                                    {capsule.summary}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent mb-4 relative z-10" />
+
+                        {/* Stat rows — tinted chips */}
+                        <div className="space-y-2 relative z-10">
+                            <div className="flex items-center justify-between rounded-lg bg-muted/30 border border-border/20 px-3 py-2">
+                                <span className="text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-wide">Version</span>
+                                <div className="flex items-center gap-1.5">
+                                    <Badge variant="secondary" className="text-xs font-bold px-2 py-0.5 bg-primary/10 text-primary border border-primary/20">
+                                        v{capsule.current_version_number || capsule.version_count || 1}
+                                    </Badge>
+                                    {(capsule.version_count || 1) > 1 && (
+                                        <History className="h-3.5 w-3.5 text-primary/60" />
+                                    )}
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mb-4 relative z-10" />
-
-                    <div className="space-y-3.5 relative z-10">
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm font-semibold text-muted-foreground">Versions</span>
-                            <div className="flex items-center gap-2">
-                                <Badge variant="secondary" className="text-xs font-bold px-2.5 py-1 bg-primary/10 text-primary border border-primary/20">
-                                    v{capsule.current_version_number || capsule.version_count || 1}
-                                </Badge>
-                                {(capsule.version_count || 1) > 1 && (
-                                    <History className="h-4 w-4 text-primary" />
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm font-semibold text-muted-foreground">Source</span>
-                            <div className="flex items-center gap-2">
-                                {capsule.is_merged && (
-                                    <Badge variant="outline" className="text-[10px] px-2 py-0.5 font-medium text-purple-600 border-purple-500/30 bg-purple-500/10 gap-1">
-                                        <GitMerge className="h-3 w-3" />
-                                        Merged
-                                    </Badge>
-                                )}
-                                {normalizeExtractedSources(capsule.extracted_from).slice(0, 3).map((source, i) => {
+                            <div className="flex items-center justify-between rounded-lg bg-muted/30 border border-border/20 px-3 py-2">
+                                <span className="text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-wide">Source</span>
+                                <div className="flex items-center gap-1.5">
+                                    {capsule.is_merged && (
+                                        <div className="h-5 w-5 rounded-md bg-purple-500/10 border border-purple-500/30 flex items-center justify-center" title="Merged">
+                                            <GitMerge className="h-3 w-3 text-purple-500" />
+                                        </div>
+                                    )}
+                                    {normalizeExtractedSources(capsule.extracted_from).slice(0, 3).map((source, i) => {
                                         const logo = getModelLogo(source);
                                         return logo ? (
-                                            <motion.div
+                                            <motion.img
                                                 key={i}
-                                                className="relative group/logo"
+                                                src={logo}
+                                                alt={source}
+                                                className="h-6 w-6 object-contain rounded-md p-0.5 bg-background shadow-sm border border-border/50"
+                                                title={source}
                                                 whileHover={{ scale: 1.2, rotate: 5 }}
                                                 transition={{ type: "spring", stiffness: 300 }}
-                                            >
-                                                <img
-                                                    src={logo}
-                                                    alt={source}
-                                                    className="h-7 w-7 object-contain rounded-lg p-1 bg-background shadow-sm border border-border/50"
-                                                    title={source}
-                                                />
-                                            </motion.div>
+                                            />
                                         ) : (
-                                            <Badge key={i} variant="outline" className="text-[10px] px-2 py-0.5 capitalize font-medium">
+                                            <Badge key={i} variant="outline" className="text-[10px] px-1.5 py-0 capitalize font-medium">
                                                 {source.substring(0, 3)}
                                             </Badge>
                                         );
-                                })}
+                                    })}
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between rounded-lg bg-muted/30 border border-border/20 px-3 py-2">
+                                <span className="text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-wide">Team</span>
+                                {!capsule.team || capsule.team === "" ? (
+                                    <Badge variant="secondary" className="text-xs gap-1 bg-muted/50 font-medium px-2.5 py-0.5">
+                                        <Lock className="h-3 w-3" />
+                                        Private
+                                    </Badge>
+                                ) : (
+                                    <Badge variant="secondary" className="text-xs bg-blue-500/10 text-blue-600 border-blue-500/30 font-medium px-2.5 py-0.5">
+                                        {teamIdToName[capsule.team] || capsule.team}
+                                    </Badge>
+                                )}
                             </div>
                         </div>
-
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm font-semibold text-muted-foreground">Visibility</span>
-                            {!capsule.team || capsule.team === "" ? (
-                                <Badge variant="secondary" className="text-xs gap-1.5 bg-muted/50 font-medium px-3 py-1">
-                                    <Lock className="h-3.5 w-3.5" />
-                                    Private
-                                </Badge>
-                            ) : (
-                                <Badge variant="secondary" className="text-xs bg-blue-500/10 text-blue-600 border-blue-500/30 font-medium px-3 py-1">
-                                    {teamIdToName[capsule.team] || capsule.team}
-                                </Badge>
-                            )}
-                        </div>
                     </div>
-
-                    <motion.div
-                        className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500"
-                        initial={{ scaleX: 0 }}
-                        whileHover={{ scaleX: 1 }}
-                        transition={{ duration: 0.3 }}
-                    />
                 </Card>
             </motion.div>
         );
