@@ -62,7 +62,7 @@ export default function ResetPassword() {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center p-6 lg:p-12 relative overflow-hidden bg-gradient-to-br from-gray-50 via-blue-50/50 to-purple-50/30 dark:from-[#040816] dark:via-[#060a1a] dark:to-[#040816] text-foreground">
+        <div className="flex min-h-screen items-center justify-center p-6 lg:p-12 relative overflow-hidden bg-gray-50 dark:bg-[#040816] text-foreground">
             <div className="absolute inset-0 opacity-[0.10] dark:opacity-[0.18] [background-image:linear-gradient(rgba(15,23,42,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.10)_1px,transparent_1px)] dark:[background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:44px_44px]" />
             <AuthBackground />
 
@@ -73,7 +73,7 @@ export default function ResetPassword() {
                 transition={{ duration: 0.7, ease: "easeOut" }}
             >
                 <Card className="border border-border/50 shadow-2xl bg-card/95 backdrop-blur-xl relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5 opacity-50" />
+                    <div className="absolute inset-0 bg-primary/5 opacity-50" />
                     
                     <CardHeader className="space-y-1 pt-8 relative z-10">
                         <CardTitle className="text-3xl font-bold text-center text-foreground">
@@ -97,7 +97,7 @@ export default function ResetPassword() {
                                 <div className="h-20 w-20 rounded-full bg-green-500/10 flex items-center justify-center border border-green-500/20">
                                     <CheckCircle2 className="h-10 w-10 text-green-500" />
                                 </div>
-                                <Button asChild className="w-full font-bold py-6 rounded-xl shadow-lg shadow-blue-500/20">
+                                <Button asChild className="w-full font-bold py-6 rounded-xl shadow-lg shadow-primary/20">
                                     <Link to="/login">Go to Login</Link>
                                 </Button>
                             </motion.div>
@@ -159,7 +159,7 @@ export default function ResetPassword() {
 
                                 <Button
                                     type="submit"
-                                    className="w-full font-bold py-7 text-lg rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                                    className="w-full font-bold py-7 text-lg rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl bg-primary hover:bg-primary/90"
                                     disabled={loading || !token}
                                 >
                                     {loading ? (

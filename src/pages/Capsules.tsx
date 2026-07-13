@@ -29,6 +29,7 @@ import ReplitLogo from "@/components/assets/ReplitLogo.png";
 import EmergentLogo from "@/components/assets/EmergentLogo.png";
 import LovableLogo from "@/components/assets/LovableLogo.png";
 import CopilotLogo from "@/components/assets/CopilotLogo.png";
+import NotebookLMLogo from "@/components/assets/notebooklm.png";
 import {
     Select,
     SelectContent,
@@ -89,6 +90,8 @@ const modelLogos: Record<string, string> = {
     emergent: EmergentLogo,
     lovable: LovableLogo,
     copilot: CopilotLogo,
+    notebooklm: NotebookLMLogo,
+    "notebook lm": NotebookLMLogo,
 };
 
 const getModelLogo = (modelName: string): string | null => {
@@ -747,14 +750,13 @@ export default function CapsulesPage() {
                 whileHover={{ y: -8, transition: { duration: 0.2 } }}
             >
                 <Card
-                    className={`group relative overflow-hidden cursor-pointer border p-6 h-full transition-all duration-300 hover:shadow-2xl bg-gradient-to-br from-card via-card to-card/50 ${mergeMode && isSelected
+                    className={`group relative overflow-hidden cursor-pointer border p-6 h-full transition-all duration-300 hover:shadow-2xl bg-card ${mergeMode && isSelected
                             ? 'border-primary/70 ring-2 ring-primary/30'
                             : 'border-border/50 hover:border-primary/40'
                         }`}
                     onClick={handleCardClick}
                 >
-                    {/* Animated gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/0 to-purple-500/0 group-hover:from-primary/5 group-hover:via-purple-500/5 group-hover:to-blue-500/5 transition-all duration-500" />
+                    <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/[0.03] transition-all duration-500" />
 
                     {/* Delete Button or Merge Checkbox */}
                     <div className="absolute top-3 right-3 z-10">
@@ -770,22 +772,18 @@ export default function CapsulesPage() {
                                 {isSelected && <Check className="h-3.5 w-3.5" />}
                             </motion.div>
                         ) : (
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                whileHover={{ opacity: 1, scale: 1 }}
-                                className="opacity-0 group-hover:opacity-100 transition-all"
-                            >
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                                 {((capsule.created_by || "").trim() === (currentUser?.username || "").trim() || (capsule.created_by || "").trim() === (currentUser?.email || "").trim()) && (
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shadow-lg backdrop-blur-sm"
+                                        className="h-7 w-7 text-neutral-900 dark:text-neutral-300 hover:text-destructive hover:bg-destructive/10"
                                         onClick={(e) => handleDelete(capsule.capsule_id, e)}
                                     >
-                                        <Trash2 className="h-4 w-4" />
+                                        <Trash2 className="h-3.5 w-3.5" />
                                     </Button>
                                 )}
-                            </motion.div>
+                            </div>
                         )}
                     </div>
 
@@ -803,7 +801,7 @@ export default function CapsulesPage() {
                         </div>
                     </div>
 
-                    <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mb-4 relative z-10" />
+                    <div className="h-px bg-border mb-4 relative z-10" />
 
                     <div className="space-y-3.5 relative z-10">
                         <div className="flex items-center justify-between">
@@ -822,7 +820,7 @@ export default function CapsulesPage() {
                             <span className="text-sm font-semibold text-muted-foreground">Source</span>
                             <div className="flex items-center gap-2">
                                 {capsule.is_merged && (
-                                    <Badge variant="outline" className="text-[10px] px-2 py-0.5 font-medium text-purple-600 border-purple-500/30 bg-purple-500/10 gap-1">
+                                    <Badge variant="outline" className="text-[10px] px-2 py-0.5 font-medium text-primary border-primary/30 bg-primary/10 gap-1">
                                         <GitMerge className="h-3 w-3" />
                                         Merged
                                     </Badge>
@@ -860,7 +858,7 @@ export default function CapsulesPage() {
                                     Private
                                 </Badge>
                             ) : (
-                                <Badge variant="secondary" className="text-xs bg-blue-500/10 text-blue-600 border-blue-500/30 font-medium px-3 py-1">
+                                <Badge variant="secondary" className="text-xs bg-orange-500/10 text-orange-600 border-orange-500/30 font-medium px-3 py-1">
                                     {teamIdToName[capsule.team] || capsule.team}
                                 </Badge>
                             )}
@@ -868,7 +866,7 @@ export default function CapsulesPage() {
                     </div>
 
                     <motion.div
-                        className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500"
+                        className="absolute bottom-0 left-0 right-0 h-1 bg-primary"
                         initial={{ scaleX: 0 }}
                         whileHover={{ scaleX: 1 }}
                         transition={{ duration: 0.3 }}
@@ -979,7 +977,7 @@ export default function CapsulesPage() {
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-1.5">
                                                         {capsule.is_merged && (
-                                                            <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 font-medium text-purple-600 border-purple-500/30 bg-purple-500/10 gap-1">
+                                                            <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 font-medium text-primary border-primary/30 bg-primary/10 gap-1">
                                                                 <GitMerge className="h-3 w-3" />
                                                             </Badge>
                                                         )}
@@ -990,7 +988,7 @@ export default function CapsulesPage() {
                                                                         key={i}
                                                                         src={logo}
                                                                         alt={source}
-                                                                        className="h-6 w-6 object-contain rounded p-0.5 bg-background shadow-sm border border-border/50"
+                                                                        className="h-6 w-6 object-contain rounded p-0.5 bg-background shadow-sm"
                                                                         title={source}
                                                                     />
                                                                 ) : (
@@ -1061,7 +1059,7 @@ export default function CapsulesPage() {
                     <div>
                         <div className="flex items-center gap-3">
                             <h1 className="text-4xl font-bold tracking-tight">
-                                <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+                                <span className="text-primary">
                                     Capsule Hub
                                 </span>
                             </h1>
@@ -1092,7 +1090,7 @@ export default function CapsulesPage() {
                             />
                         </motion.div>
                         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                            <Button type="submit" size="default" className="h-11 px-6 shadow-md hover:shadow-lg transition-all">
+                            <Button type="submit" size="default" className="h-11 px-6 shadow-sm hover:shadow-md transition-all bg-primary/15 hover:bg-primary/25 text-primary border border-primary/20">
                                 Search
                             </Button>
                         </motion.div>
@@ -1140,7 +1138,7 @@ export default function CapsulesPage() {
                             <motion.button
                                 onClick={() => setViewMode('grid')}
                                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${viewMode === 'grid'
-                                        ? 'bg-primary text-primary-foreground shadow-md'
+                                        ? 'bg-orange-500 text-white shadow-md'
                                         : 'text-muted-foreground hover:text-foreground hover:bg-background/60'
                                     }`}
                                 whileHover={{ scale: 1.04 }}
@@ -1153,7 +1151,7 @@ export default function CapsulesPage() {
                             <motion.button
                                 onClick={() => setViewMode('table')}
                                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${viewMode === 'table'
-                                        ? 'bg-primary text-primary-foreground shadow-md'
+                                        ? 'bg-orange-500 text-white shadow-md'
                                         : 'text-muted-foreground hover:text-foreground hover:bg-background/60'
                                     }`}
                                 whileHover={{ scale: 1.04 }}
@@ -1195,7 +1193,7 @@ export default function CapsulesPage() {
                                     <div className="relative inline-block">
                                         <Button
                                             size="sm"
-                                            className="h-9 px-4 gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-semibold shadow-lg shadow-purple-500/30 border-0"
+                                            className="h-9 px-4 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg shadow-primary/30 border-0"
                                             onClick={() => setMergeMode(true)}
                                         >
                                             <GitMerge className="h-4 w-4" />
@@ -1235,11 +1233,11 @@ export default function CapsulesPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
-                        className="flex flex-col items-center justify-center h-64 bg-gradient-to-br from-primary/5 via-purple-500/5 to-blue-500/5 rounded-2xl border border-dashed border-primary/30 relative overflow-hidden"
+                        className="flex flex-col items-center justify-center h-64 bg-primary/5 rounded-2xl border border-dashed border-primary/30 relative overflow-hidden"
                     >
                         <div className="absolute inset-0 bg-grid-pattern opacity-5" />
                         <motion.div
-                            className="bg-gradient-to-br from-primary/20 to-purple-500/20 p-5 rounded-2xl mb-4 relative z-10"
+                            className="bg-primary/15 p-5 rounded-2xl mb-4 relative z-10"
                             animate={{ y: [0, -10, 0] }}
                             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                         >
@@ -1302,7 +1300,7 @@ export default function CapsulesPage() {
             <Dialog open={mergeModalOpen} onOpenChange={setMergeModalOpen}>
                 <DialogContent className="sm:max-w-lg w-[calc(100vw-2rem)] p-0 gap-0 overflow-hidden">
                     {/* Gradient header */}
-                    <div className="bg-gradient-to-br from-primary/20 via-purple-500/10 to-blue-500/5 px-6 pt-6 pb-5 border-b border-border/50">
+                    <div className="bg-primary/10 px-6 pt-6 pb-5 border-b border-border/50">
                         <div className="flex items-center gap-3">
                             <div className="p-2.5 rounded-xl bg-primary/20 border border-primary/30 shadow-inner shrink-0">
                                 <GitMerge className="h-5 w-5 text-primary" />
@@ -1334,7 +1332,7 @@ export default function CapsulesPage() {
                             </div>
                         </div>
 
-                        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+                        <div className="h-px bg-border" />
 
                         {/* Strategy */}
                         <div className="space-y-2.5">
@@ -1344,7 +1342,7 @@ export default function CapsulesPage() {
                                     type="button"
                                     onClick={() => setMergeStrategy('new_capsule')}
                                     className={`relative p-4 rounded-xl border-2 text-left transition-all duration-200 ${mergeStrategy === 'new_capsule'
-                                            ? 'border-primary bg-gradient-to-br from-primary/10 to-purple-500/5 shadow-sm'
+                                            ? 'border-primary bg-primary/10 shadow-sm'
                                             : 'border-border/60 hover:border-primary/40 hover:bg-muted/30'
                                         }`}
                                 >
@@ -1361,7 +1359,7 @@ export default function CapsulesPage() {
                                     type="button"
                                     onClick={() => setMergeStrategy('append_version')}
                                     className={`relative p-4 rounded-xl border-2 text-left transition-all duration-200 ${mergeStrategy === 'append_version'
-                                            ? 'border-primary bg-gradient-to-br from-primary/10 to-purple-500/5 shadow-sm'
+                                            ? 'border-primary bg-primary/10 shadow-sm'
                                             : 'border-border/60 hover:border-primary/40 hover:bg-muted/30'
                                         }`}
                                 >
@@ -1391,7 +1389,7 @@ export default function CapsulesPage() {
                             </div>
                         )}
 
-                        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+                        <div className="h-px bg-border" />
 
                         {/* Visibility */}
                         <div className="space-y-2">
@@ -1402,9 +1400,9 @@ export default function CapsulesPage() {
                                     <span>Merged capsule will be <span className="font-semibold text-foreground">private</span></span>
                                 </div>
                             ) : mergeVisibility.allSameTeam ? (
-                                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-sm">
-                                    <div className="h-2 w-2 rounded-full bg-blue-500 shrink-0" />
-                                    <span className="text-muted-foreground">Shared with <span className="font-semibold text-blue-400">{teamIdToName[mergeVisibility.uniqueTeams[0]] || mergeVisibility.uniqueTeams[0]}</span></span>
+                                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-orange-500/10 border border-orange-500/20 text-sm">
+                                    <div className="h-2 w-2 rounded-full bg-orange-500 shrink-0" />
+                                    <span className="text-muted-foreground">Shared with <span className="font-semibold text-orange-500">{teamIdToName[mergeVisibility.uniqueTeams[0]] || mergeVisibility.uniqueTeams[0]}</span></span>
                                 </div>
                             ) : (
                                 <Select value={mergeTeam ?? '__private__'} onValueChange={v => setMergeTeam(v === '__private__' ? undefined : v)}>
@@ -1430,7 +1428,7 @@ export default function CapsulesPage() {
 
                         {hasAttachments && (
                             <>
-                                <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+                                <div className="h-px bg-border" />
                                 <div className="space-y-2">
                                     <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60">Attachments</p>
                                     <label className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-muted/30 transition-colors">
@@ -1452,7 +1450,7 @@ export default function CapsulesPage() {
                         )}
 
                         {/* Preview */}
-                        <div className="rounded-xl bg-gradient-to-br from-primary/10 to-purple-500/5 border border-primary/20 p-4">
+                        <div className="rounded-xl bg-primary/10 border border-primary/20 p-4">
                             <div className="flex items-center gap-2 mb-2">
                                 <Sparkles className="h-3.5 w-3.5 text-primary" />
                                 <span className="text-[11px] font-bold uppercase tracking-widest text-primary/80">What will happen</span>
@@ -1491,7 +1489,7 @@ export default function CapsulesPage() {
                         <Button
                             onClick={handleMerge}
                             disabled={merging}
-                            className="gap-2 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 shadow-md shadow-primary/25 px-6 font-semibold"
+                            className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/25 px-6 font-semibold"
                         >
                             {merging ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -1511,7 +1509,7 @@ export default function CapsulesPage() {
                         <div className="flex flex-col md:flex-row items-start justify-between gap-4">
                             <div className="space-y-2 w-full pr-6 md:pr-0">
                                 <DialogTitle className="flex flex-wrap items-center gap-3 text-xl md:text-2xl">
-                                    <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent break-all">
+                                    <span className="text-primary break-all">
                                         {selectedCapsule?.tag || "Capsule Details"}
                                     </span>
                                     {selectedCapsule?.team ? (
@@ -1543,7 +1541,7 @@ export default function CapsulesPage() {
                                 <Button
                                     variant={showBranchView ? "outline" : "default"}
                                     size="sm"
-                                    className={`gap-2 transition-all ${!showBranchView ? 'shadow-md hover:shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground' : ''}`}
+                                    className={`gap-2 transition-all ${!showBranchView ? 'shadow-sm hover:shadow-md bg-orange-500/10 hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/30' : ''}`}
                                     onClick={() => setShowBranchView(!showBranchView)}
                                 >
                                     {showBranchView ? <History className="h-4 w-4" /> : <GitBranch className="h-4 w-4" />}
@@ -1675,7 +1673,7 @@ export default function CapsulesPage() {
             >
                 <DialogContent className="max-w-6xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
                     <DialogHeader className="px-6 py-4 border-b bg-muted/30 shrink-0">
-                        <DialogTitle className="text-xl bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                        <DialogTitle className="text-xl text-primary">
                             {selectedCapsule?.tag}
                         </DialogTitle>
                         <DialogDescription className="mt-0.5">
@@ -1692,7 +1690,7 @@ export default function CapsulesPage() {
                                             onClick={() => { setSplitModeActive(v => !v); setSplitDropMessages([]); }}
                                             className={splitModeActive
                                                 ? 'h-9 px-4 gap-2 font-semibold border border-border/60 bg-muted/40 text-muted-foreground hover:text-foreground shadow-none'
-                                                : 'h-9 px-4 gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-semibold shadow-lg shadow-purple-500/30 border-0'
+                                                : 'h-9 px-4 gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold shadow-lg shadow-orange-500/30 border-0'
                                             }
                                         >
                                             <Scissors className="h-4 w-4" />
@@ -1706,7 +1704,7 @@ export default function CapsulesPage() {
                                 {splitDropMessages.length > 0 && contentTab === 'messages' && splitModeActive && (
                                     <Button
                                         size="sm"
-                                        className="h-9 px-4 gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-semibold shadow-lg shadow-purple-500/30 border-0"
+                                        className="h-9 px-4 gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold shadow-lg shadow-orange-500/30 border-0"
                                         onClick={() => {
                                             setSplitTag(`${selectedCapsule?.tag || 'Capsule'} (Split)`);
                                             setSplitModalOpen(true);
@@ -1795,7 +1793,7 @@ export default function CapsulesPage() {
                                                                 }}
                                                                 className={`flex items-start gap-2 p-4 rounded-xl border transition-all ${
                                                                     alreadyDropped
-                                                                        ? 'opacity-60 border-dashed border-violet-500/40 bg-violet-500/5 cursor-pointer hover:border-violet-500/60'
+                                                                        ? 'opacity-60 border-dashed border-orange-500/40 bg-orange-500/5 cursor-pointer hover:border-orange-500/60'
                                                                         : item.msg.role === 'user'
                                                                             ? `bg-primary/5 border-primary/15 mr-8 ${splitModeActive ? 'cursor-pointer hover:border-primary/30 hover:shadow-sm' : ''}`
                                                                             : `bg-muted/30 border-border/40 ml-8 ${splitModeActive ? 'cursor-pointer hover:border-border/60 hover:shadow-sm' : ''}`
@@ -1817,8 +1815,8 @@ export default function CapsulesPage() {
                                                                     <div className="mr-2 mt-0.5 shrink-0">
                                                                         <div className={`h-5 w-5 rounded border flex items-center justify-center transition-all ${
                                                                             alreadyDropped
-                                                                                ? 'bg-violet-600 border-violet-600 text-white shadow-sm'
-                                                                                : 'border-muted-foreground/30 bg-background hover:border-violet-500'
+                                                                                ? 'bg-orange-600 border-orange-600 text-white shadow-sm'
+                                                                                : 'border-muted-foreground/30 bg-background hover:border-orange-500'
                                                                         }`}>
                                                                             {alreadyDropped ? (
                                                                                 <Check className="h-3.5 w-3.5" />
@@ -1842,7 +1840,7 @@ export default function CapsulesPage() {
                                                                             <span className="text-[9px] text-muted-foreground/40 font-medium uppercase tracking-wider">Historical</span>
                                                                         )}
                                                                         {alreadyDropped && (
-                                                                            <span className="text-[9px] text-violet-500 font-medium">→ In split zone</span>
+                                                                            <span className="text-[9px] text-orange-500 font-medium">→ In split zone</span>
                                                                         )}
                                                                     </div>
                                                                     <p className="text-sm text-foreground/80 whitespace-pre-wrap break-words leading-relaxed">
@@ -1864,7 +1862,7 @@ export default function CapsulesPage() {
                         {contentTab === 'messages' && splitModeActive && (
                             <div
                                 className={`w-full md:w-72 h-64 md:h-auto shrink-0 border-t md:border-t-0 md:border-l flex flex-col transition-colors duration-200 ${
-                                    dragOverDrop ? 'bg-violet-500/10' : 'bg-muted/10'
+                                    dragOverDrop ? 'bg-orange-500/10' : 'bg-muted/10'
                                 }`}
                                 onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; setDragOverDrop(true); }}
                                 onDragLeave={(e) => {
@@ -1880,10 +1878,10 @@ export default function CapsulesPage() {
                                     }
                                 }}
                             >
-                                <div className={`p-4 border-b shrink-0 transition-colors ${dragOverDrop ? 'border-violet-500/30' : ''}`}>
+                                <div className={`p-4 border-b shrink-0 transition-colors ${dragOverDrop ? 'border-orange-500/30' : ''}`}>
                                     <div className="flex items-center gap-2">
-                                        <div className={`p-1.5 rounded-lg transition-colors ${dragOverDrop ? 'bg-violet-500/20' : 'bg-muted/50'}`}>
-                                            <Scissors className={`h-4 w-4 transition-colors ${dragOverDrop ? 'text-violet-500' : 'text-muted-foreground'}`} />
+                                        <div className={`p-1.5 rounded-lg transition-colors ${dragOverDrop ? 'bg-orange-500/20' : 'bg-muted/50'}`}>
+                                            <Scissors className={`h-4 w-4 transition-colors ${dragOverDrop ? 'text-orange-500' : 'text-muted-foreground'}`} />
                                         </div>
                                         <div>
                                             <p className="text-sm font-semibold">New Capsule Zone</p>
@@ -1899,10 +1897,10 @@ export default function CapsulesPage() {
                                 <div className="flex-1 overflow-y-auto p-3 space-y-2 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full">
                                     {splitDropMessages.length === 0 ? (
                                         <div className={`min-h-[120px] md:min-h-[180px] h-full flex flex-col items-center justify-center text-center rounded-xl border-2 border-dashed transition-all ${
-                                            dragOverDrop ? 'border-violet-500/60 bg-violet-500/5 scale-[1.02]' : 'border-border/30'
+                                            dragOverDrop ? 'border-orange-500/60 bg-orange-500/5 scale-[1.02]' : 'border-border/30'
                                         }`}>
-                                            <Scissors className={`h-8 w-8 mb-2 transition-colors ${dragOverDrop ? 'text-violet-500' : 'text-muted-foreground/30'}`} />
-                                            <p className={`text-xs font-medium transition-colors ${dragOverDrop ? 'text-violet-500' : 'text-muted-foreground/50'}`}>
+                                            <Scissors className={`h-8 w-8 mb-2 transition-colors ${dragOverDrop ? 'text-orange-500' : 'text-muted-foreground/30'}`} />
+                                            <p className={`text-xs font-medium transition-colors ${dragOverDrop ? 'text-orange-500' : 'text-muted-foreground/50'}`}>
                                                 {dragOverDrop ? 'Release to add' : 'Select or drag messages here'}
                                             </p>
                                         </div>
@@ -1915,13 +1913,13 @@ export default function CapsulesPage() {
                                                     : JSON.stringify(enriched.msg.content);
                                             const msgText = cleanAndFormatText(rawText);
                                             return (
-                                                <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg bg-violet-500/5 border border-violet-500/20 group">
+                                                <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg bg-orange-500/5 border border-orange-500/20 group">
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                                                             <Badge variant="secondary" className="text-[9px] px-1.5 py-0 font-mono">
                                                                 #{enriched.flatIdx + 1}
                                                             </Badge>
-                                                            <span className="text-[9px] text-violet-400/70 font-medium">v{enriched.versionNumber}</span>
+                                                            <span className="text-[9px] text-orange-400/70 font-medium">v{enriched.versionNumber}</span>
                                                         </div>
                                                         <p className="text-xs text-muted-foreground line-clamp-2 break-words">{msgText}</p>
                                                     </div>
@@ -1940,7 +1938,7 @@ export default function CapsulesPage() {
                                 {splitDropMessages.length > 0 && (
                                     <div className="p-3 border-t shrink-0">
                                         <Button
-                                            className="w-full gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white border-0 shadow-lg shadow-purple-500/30 font-semibold"
+                                            className="w-full gap-2 bg-orange-500 hover:bg-orange-600 text-white border-0 shadow-lg shadow-orange-500/30 font-semibold"
                                             size="sm"
                                             onClick={() => {
                                                 setSplitTag(`${selectedCapsule?.tag || 'Capsule'} (Split)`);
@@ -1960,7 +1958,7 @@ export default function CapsulesPage() {
 
             <Dialog open={splitModalOpen} onOpenChange={(open) => { setSplitModalOpen(open); if (!open) { setSplitIncludeAttachments(false); setSplitRemainingTag(''); setSplitDeleteOriginal(false); } }}>
                 <DialogContent className="max-w-md p-0 gap-0 overflow-hidden">
-                    <div className="bg-gradient-to-br from-primary/20 via-purple-500/10 to-blue-500/5 px-6 pt-6 pb-5 border-b border-border/50">
+                    <div className="bg-primary/10 px-6 pt-6 pb-5 border-b border-border/50">
                         <div className="flex items-center gap-3">
                             <div className="p-2.5 rounded-xl bg-primary/20 border border-primary/30 shadow-inner shrink-0">
                                 <Scissors className="h-5 w-5 text-primary" />
@@ -2003,7 +2001,7 @@ export default function CapsulesPage() {
 
                         {splitHasAttachments && (
                             <>
-                                <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+                                <div className="h-px bg-border" />
                                 <div className="space-y-2">
                                     <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60">Attachments</p>
                                     <label className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-muted/30 transition-colors">
@@ -2024,7 +2022,7 @@ export default function CapsulesPage() {
                             </>
                         )}
 
-                        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+                        <div className="h-px bg-border" />
 
                         <label className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-muted/30 transition-colors">
                             <div className="relative flex items-center">
@@ -2041,7 +2039,7 @@ export default function CapsulesPage() {
                             <span className="text-sm text-foreground">Delete original capsule after splitting</span>
                         </label>
 
-                        <div className="rounded-xl bg-gradient-to-br from-primary/10 to-purple-500/5 border border-primary/20 p-4 space-y-2.5">
+                        <div className="rounded-xl bg-primary/10 border border-primary/20 p-4 space-y-2.5">
                             <div className="flex items-center gap-2">
                                 <Sparkles className="h-3.5 w-3.5 text-primary" />
                                 <span className="text-[11px] font-bold uppercase tracking-widest text-primary/80">What will happen</span>
@@ -2087,7 +2085,7 @@ export default function CapsulesPage() {
                         <Button
                             onClick={handleSplit}
                             disabled={splitting || !splitTag.trim() || !splitRemainingTag.trim() || capsuleContent.length - splitDropMessages.length === 0}
-                            className="gap-2 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white border-0 shadow-md shadow-primary/25 px-6 font-semibold"
+                            className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground border-0 shadow-md shadow-primary/25 px-6 font-semibold"
                         >
                             {splitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Scissors className="h-4 w-4" />}
                             {splitting ? 'Splitting...' : 'Confirm Split'}

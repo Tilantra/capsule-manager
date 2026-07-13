@@ -320,7 +320,7 @@ export default function CreateCapsule() {
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                        <h1 className="text-3xl font-bold tracking-tight text-primary">
                             Create Custom Capsule
                         </h1>
                         <p className="text-muted-foreground mt-1 text-sm">Build your capsule directly in a connected graph canvas.</p>
@@ -329,7 +329,7 @@ export default function CreateCapsule() {
             </div>
 
             {/* Top Section: Metadata Settings */}
-            <Card className="p-4 border bg-gradient-to-br from-card to-card/50 shadow-sm border-b-2 border-b-primary/20">
+            <Card className="p-4 border bg-card shadow-sm border-b-2 border-b-primary/20">
                 <div className="flex items-center gap-2 mb-3">
                     <Settings className="h-4 w-4 text-primary" />
                     <h2 className="text-base font-semibold">Configuration</h2>
@@ -369,14 +369,14 @@ export default function CreateCapsule() {
             </Card>
 
             <Card
-                className={`p-6 border bg-gradient-to-br from-card via-card/95 to-card/90 shadow-lg overflow-hidden relative transition-colors ${isDragging ? "border-primary/60" : "border-border"
+                className={`p-6 border bg-card shadow-lg overflow-hidden relative transition-colors ${isDragging ? "border-primary/60" : "border-border"
                     }`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
             >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/10 to-purple-500/10 rounded-full blur-3xl" />
-                <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-blue-500/10 to-primary/10 rounded-full blur-3xl" />
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
+                <div className="absolute bottom-0 left-0 w-40 h-40 bg-orange-500/10 rounded-full blur-3xl" />
 
                 <div className="flex items-center justify-between gap-3 mb-4 relative z-10 flex-wrap">
                     <div>
@@ -388,12 +388,15 @@ export default function CreateCapsule() {
                             <Paperclip className="h-4 w-4" />
                             <span className="hidden sm:inline">Add Attachment</span>
                         </Button>
-                        <Button className="gap-2 flex-1 sm:flex-none justify-center" onClick={() => setTextDialogOpen(true)}>
+                        <Button
+                            className="gap-2 flex-1 sm:flex-none justify-center bg-orange-500/15 hover:bg-orange-500/25 text-orange-600 dark:text-orange-400 border border-orange-500/20 shadow-none"
+                            onClick={() => setTextDialogOpen(true)}
+                        >
                             <MessageSquarePlus className="h-4 w-4" />
                             <span className="hidden sm:inline">Add Text</span>
                         </Button>
                         <Button
-                            className="gap-2 w-full sm:w-auto justify-center bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-[0_10px_30px_rgba(79,70,229,0.35)]"
+                            className="gap-2 w-full sm:w-auto justify-center bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_10px_30px_rgba(124,58,237,0.35)]"
                             onClick={handleCreateCapsule}
                             disabled={isSubmitting || (chunks.length === 0 && globalFiles.length === 0)}
                         >
@@ -436,7 +439,7 @@ export default function CreateCapsule() {
                         <span>{globalFiles.length} Files</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg border border-purple-500/30 bg-card flex items-center justify-center">📝</div>
+                        <div className="w-8 h-8 rounded-lg border border-primary/30 bg-card flex items-center justify-center">📝</div>
                         <span>{chunks.length} Text Chunks</span>
                     </div>
                 </div>
@@ -449,7 +452,7 @@ export default function CreateCapsule() {
                     <span>{globalFiles.length} Files</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg border border-purple-500/30 bg-card flex items-center justify-center">📝</div>
+                    <div className="w-8 h-8 rounded-lg border border-primary/30 bg-card flex items-center justify-center">📝</div>
                     <span>{chunks.length} Text Chunks</span>
                 </div>
             </div>

@@ -41,11 +41,9 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
     }, []);
 
     return (
-        <div className="relative min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/50 to-purple-50/40 text-foreground dark:from-[#040816] dark:via-[#060a1a] dark:to-[#040816]">
-            <div className="pointer-events-none absolute inset-0 opacity-[0.10] dark:opacity-[0.16] [background-image:linear-gradient(rgba(15,23,42,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.10)_1px,transparent_1px)] dark:[background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:44px_44px]" />
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(800px_420px_at_0%_0%,rgba(99,102,241,0.12),transparent_55%),radial-gradient(700px_400px_at_100%_0%,rgba(139,92,246,0.10),transparent_55%)] dark:bg-[radial-gradient(900px_480px_at_0%_0%,rgba(99,102,241,0.22),transparent_55%),radial-gradient(800px_420px_at_100%_0%,rgba(139,92,246,0.18),transparent_55%)]" />
+        <div className="editorial relative min-h-screen">
 
-            <header className="sticky top-0 z-50 border-b border-white/10 bg-white/70 backdrop-blur-xl dark:bg-slate-950/70">
+            <header className="sticky top-0 z-50 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0c0c0e]">
                 <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-3 sm:px-8">
                     <div className="flex min-w-0 items-center gap-1.5 sm:gap-6">
                         {/* Mobile menu trigger */}
@@ -55,7 +53,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                                     <Menu className="h-5 w-5" />
                                 </Button>
                             </SheetTrigger>
-                            <SheetContent side="left" className="w-64 p-0 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-r border-gray-200 dark:border-slate-800">
+                            <SheetContent side="left" className="w-64 p-0 bg-white dark:bg-[#0c0c0e] border-r border-neutral-200 dark:border-neutral-800">
                                 <div className="h-16 flex items-center px-6 border-b border-gray-200 dark:border-slate-800">
                                     <TilantraLogo className="h-8 w-auto" />
                                 </div>
@@ -71,14 +69,14 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                                                     className={cn(
                                                         "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
                                                         isActive
-                                                            ? "bg-indigo-500/10 text-indigo-700 shadow-sm dark:bg-indigo-500/20 dark:text-indigo-300"
-                                                            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                                                            ? "bg-violet-700/10 text-violet-700 dark:bg-violet-400/10 dark:text-violet-400"
+                                                            : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-950 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-white"
                                                     )}
                                                     onClick={() => setIsDocsMenuOpen(false)}
                                                 >
-                                                    <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 dark:text-slate-500")} />
+                                                    <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-violet-700 dark:text-violet-400" : "text-slate-400 dark:text-slate-500")} />
                                                     <span className="flex-1">{item.label}</span>
-                                                    {isActive && <ChevronRight className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />}
+                                                    {isActive && <ChevronRight className="h-3.5 w-3.5 text-violet-700 dark:text-violet-400" />}
                                                 </Link>
                                             );
                                         })}
@@ -91,10 +89,10 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                         </Link>
                         <Separator orientation="vertical" className="hidden h-7 sm:block" />
                         <div className="hidden min-w-0 sm:block">
-                            <p className="truncate text-xs font-semibold uppercase tracking-wider text-indigo-600/90 dark:text-indigo-400/90">
+                            <p className="truncate editorial-label text-orange-600 dark:text-orange-400">
                                 Documentation
                             </p>
-                            <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100">Capsule Hub</p>
+                            <p className="truncate text-sm font-semibold text-neutral-950 dark:text-white">Capsule Hub</p>
                         </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
@@ -110,7 +108,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                                 <Link to="/capsules">Open app</Link>
                             </Button>
                         ) : (
-                            <Button asChild className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500">
+                            <Button asChild className="bg-violet-700 hover:bg-violet-800 dark:bg-violet-500 dark:hover:bg-violet-400 dark:text-neutral-950">
                                 <Link to="/login">Sign in</Link>
                             </Button>
                         )}
@@ -120,7 +118,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
 
             <div className="mx-auto flex max-w-7xl">
                 {/* Sticky Left Sidebar */}
-                <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-64 shrink-0 border-r border-slate-200/80 bg-white/40 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-950/30 lg:block">
+                <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-64 shrink-0 border-r border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0c0c0e] lg:block">
                     <ScrollArea className="h-full py-8">
                         <nav className="space-y-1 px-4" aria-label="Documentation navigation">
                             {NAV_ITEMS.map((item) => {
@@ -133,13 +131,13 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                                         className={cn(
                                             "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
                                             isActive
-                                                ? "bg-indigo-500/10 text-indigo-700 shadow-sm dark:bg-indigo-500/20 dark:text-indigo-300"
-                                                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                                                ? "bg-violet-700/10 text-violet-700 dark:bg-violet-400/10 dark:text-violet-400"
+                                                : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-950 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-white"
                                         )}
                                     >
-                                        <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 dark:text-slate-500")} />
+                                        <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-violet-700 dark:text-violet-400" : "text-slate-400 dark:text-slate-500")} />
                                         <span className="flex-1">{item.label}</span>
-                                        {isActive && <ChevronRight className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />}
+                                        {isActive && <ChevronRight className="h-3.5 w-3.5 text-violet-700 dark:text-violet-400" />}
                                     </Link>
                                 );
                             })}

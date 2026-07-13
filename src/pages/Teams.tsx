@@ -165,7 +165,7 @@ export default function TeamsPage() {
             case "owner":
                 return "bg-yellow-500/10 text-yellow-600 border-yellow-500/30";
             case "admin":
-                return "bg-blue-500/10 text-blue-600 border-blue-500/30";
+                return "bg-primary/10 text-primary border-primary/30";
             default:
                 return "bg-gray-500/10 text-gray-600 border-gray-500/30";
         }
@@ -187,7 +187,7 @@ export default function TeamsPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                    <h1 className="text-3xl font-bold tracking-tight text-primary">
                         Teams
                     </h1>
                     <p className="text-muted-foreground mt-1">Collaborate with your team members.</p>
@@ -207,7 +207,7 @@ export default function TeamsPage() {
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
             ) : teams.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-64 bg-gradient-to-br from-muted/30 to-muted/10 rounded-xl border border-dashed border-muted-foreground/30">
+                <div className="flex flex-col items-center justify-center h-64 bg-muted/20 rounded-xl border border-dashed border-muted-foreground/30">
                     <div className="bg-primary/10 p-4 rounded-full mb-4">
                         <Users className="h-10 w-10 text-primary opacity-50" />
                     </div>
@@ -224,7 +224,7 @@ export default function TeamsPage() {
                         return (
                             <Card
                                 key={team.team_id}
-                                className="group relative flex flex-col min-h-[220px] h-auto pb-4 overflow-hidden hover:shadow-xl transition-all duration-300 border bg-gradient-to-br from-card to-card/50 hover:border-primary/40 cursor-default"
+                                className="group relative flex flex-col min-h-[220px] h-auto pb-4 overflow-hidden hover:shadow-xl transition-all duration-300 border bg-card hover:border-primary/40 cursor-default"
                             >
                                 <CardHeader className="pb-3">
                                     <div className="flex items-start justify-between">
@@ -265,7 +265,7 @@ export default function TeamsPage() {
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            className="gap-2 text-primary hover:text-primary hover:bg-primary/10 transition-colors"
+                                            className="gap-2 text-orange-600 dark:text-orange-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-500/10 transition-colors"
                                             onClick={() => openManageMembers(team)}
                                         >
                                             {userRole === 'admin' ? 'Manage' : 'View'}

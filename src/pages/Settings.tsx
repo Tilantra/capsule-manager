@@ -94,7 +94,7 @@ export default function SettingsPage() {
     return (
         <div className="max-w-4xl mx-auto space-y-8">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                <h1 className="text-3xl font-bold tracking-tight text-primary">
                     Settings
                 </h1>
                 <p className="text-muted-foreground mt-1">Manage your account and integrations.</p>
@@ -102,7 +102,7 @@ export default function SettingsPage() {
 
             <div className="grid gap-6">
                 {/* Profile Section */}
-                <Card className="overflow-hidden border-none bg-gradient-to-br from-card to-card/50 shadow-md">
+                <Card className="overflow-hidden border-none bg-card shadow-md">
                     <CardHeader className="pb-4 border-b border-border/40 bg-muted/20">
                         <div className="flex items-center gap-3">
                             <User className="h-5 w-5 text-primary" />
@@ -142,8 +142,8 @@ export default function SettingsPage() {
                                         Active Account
                                     </div>
                                     <div className={`flex items-center gap-2 px-3 py-1.5 w-fit rounded-full border text-xs font-bold uppercase tracking-wider ${
-                                        currentTier.toLowerCase() === 'elite' ? 'bg-purple-500/10 text-purple-600 border-purple-500/20' :
-                                        currentTier.toLowerCase() === 'pro' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
+                                        currentTier.toLowerCase() === 'elite' ? 'bg-primary/10 text-primary border-primary/20' :
+                                        currentTier.toLowerCase() === 'pro' ? 'bg-orange-500/10 text-orange-600 border-orange-500/20' :
                                         'bg-slate-500/10 text-slate-600 border-slate-500/20'
                                     }`}>
                                         <Sparkles className="h-3.5 w-3.5" />
@@ -156,7 +156,7 @@ export default function SettingsPage() {
                 </Card>
 
                 {/* API Integrations */}
-                <Card className="overflow-hidden border-none bg-gradient-to-br from-card to-card/50 shadow-md">
+                <Card className="overflow-hidden border-none bg-card shadow-md">
                     <CardHeader className="pb-4 border-b border-border/40 bg-muted/20">
                         <div className="flex items-center gap-3">
                             <Key className="h-5 w-5 text-primary" />
@@ -250,7 +250,7 @@ export default function SettingsPage() {
                                 </div>
 
                                 <div className="relative group">
-                                    <div className="absolute -inset-2 bg-gradient-to-r from-primary/10 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <div className="absolute -inset-2 bg-primary/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" />
                                     <pre className="relative mt-2 p-4 rounded-lg bg-background/80 border border-border shadow-sm overflow-x-auto text-xs font-mono leading-relaxed">
                                         <code>{mcpConfig}</code>
                                     </pre>

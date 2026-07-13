@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ArrowDown, ArrowRight, Bot, BrainCircuit, Chrome, Globe, MessageSquarePlus, Paperclip, Sparkles, Upload, Zap, Shield, Layers, RefreshCw, ServerCog, XCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { MessageSquarePlus, Paperclip, Upload, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -17,11 +17,21 @@ import SlackLogo from "@/components/assets/SlackLogo.png";
 import PerplexityLogo from "@/components/assets/PerplexityLogo.png";
 import FigmaLogo from "@/components/assets/figmaLogo.png";
 import OutlookLogo from "@/components/assets/outlookLogo.png";
+import CopilotLogo from "@/components/assets/CopilotLogo.png";
+import LovableLogo from "@/components/assets/LovableLogo.png";
+import ReplitLogo from "@/components/assets/ReplitLogo.png";
+import EmergentLogo from "@/components/assets/EmergentLogo.png";
+import AntigravityLogo from "@/components/assets/antigravity-color.png";
+import VSCodeLogo from "@/components/assets/visualStudio.png";
+import CapsuleHubLogo from "@/components/assets/CapsuleHubLogo.png";
+import CapsuleImg from "@/components/assets/capsule.png";
+
 import { saveCapsuleDraft } from "@/lib/capsule-draft";
 import { toast } from "sonner";
-import TrueFocusText from "@/components/TrueFocusText";
 import SplashCursor from "@/components/SplashCursor";
-import Header from "@/components/layout/Header";
+import EditorialHeader, { CHROME_STORE_URL } from "@/components/layout/EditorialHeader";
+import EditorialFooter from "@/components/layout/EditorialFooter";
+import RotatingText from "@/components/RotatingText";
 import { CelebrationBanner } from "@/components/CelebrationBanner";
 
 const CELEBRATION_BANNER_HEIGHT = 40;
@@ -39,57 +49,6 @@ interface LandingChunk {
     text: string;
     createdAt: Date;
 }
-
-const FEATURES = [
-    { text: "Easy drag and drop", icon: Upload },
-    { text: "Context versioning", icon: Layers },
-    { text: "Multi-model support", icon: Zap },
-    { text: "Zero context rot", icon: Shield },
-    { text: "Prevents hallucinations", icon: RefreshCw },
-] as const;
-
-const USE_CASES = [
-    {
-        title: "Chrome Extension",
-        description: "Capture from ChatGPT, Claude, Gemini, Perplexity, DeepSeek and Gmail in one click.",
-        href: "https://chromewebstore.google.com/detail/capsule-hub-by-tilantra/ngeoeefidomejcdhiecidpaalfoekjbh?hl=en-US&utm_source=ext_sidebar",
-        external: true,
-        icon: Chrome,
-        highlight: true,
-    },
-    {
-        title: "MCP for Developers",
-        description: "Connect Capsule Hub in Cursor and other MCP-compatible clients.",
-        href: "/docs/mcp",
-        external: false,
-        icon: ServerCog,
-        highlight: false,
-    },
-    {
-        title: "Personal Chatbot Integration",
-        description: "Embed Capsule Hub SDK on your own website chatbot and sync context.",
-        href: "/docs/personal-chatbot",
-        external: false,
-        icon: Bot,
-        highlight: false,
-    },
-    {
-        title: "Capsules as Anthropic Skills",
-        description: "Use Claude Code skills to save, search, read, and version capsules from terminal.",
-        href: "/docs/anthropic-skills",
-        external: false,
-        icon: BrainCircuit,
-        highlight: false,
-    },
-    {
-        title: "Custom Capsules Through Websites",
-        description: "Create and manage capsules directly through the Capsule Hub web experience.",
-        href: "#studio",
-        external: false,
-        icon: Globe,
-        highlight: false,
-    },
-] as const;
 
 const ORBITING_LOGOS = [
     { src: ChatgptLogo, alt: "ChatGPT", side: "left", x: -115, y: -105, delay: 0.05, fx1: 8, fx2: -4, fy1: -7, fy2: 5, r1: -4, r2: 2, drift: 4.3 },
@@ -114,16 +73,183 @@ const EXTENSION_DOWN_BANNER = {
     title: "MAINTENANCE",
     message: "The extension service is temporarily down while deployment is in progress. Thank you for your patience.",
     icon: XCircle,
-    containerClass:
-        "border-orange-400/65 bg-gradient-to-r from-orange-700 via-amber-700 to-orange-700 text-white dark:border-orange-400/55 dark:from-orange-700 dark:via-amber-700 dark:to-orange-700",
+    containerClass: "border-orange-400/65 bg-orange-500 text-white",
 } as const;
 const EXTENSION_DOWN_BANNER_HEIGHT = 36;
+
+/* ── Editorial content data ─────────────────────────────────────────── */
+
+const PROOF = [
+    { value: "90,000+", label: "Users" },
+    { value: "72", label: "Countries" },
+    { value: "New & Notable", label: "Chrome Web Store" },
+    { value: "Top 3", label: "Chrome extensions" },
+];
+
+const HOW_IT_WORKS = [
+    { n: "01", title: "Generate", body: "Click once to capture your AI session as a Capsule." },
+    { n: "02", title: "Drop", body: "Inject it into any other tool instantly." },
+    { n: "03", title: "Share", body: "Send it to a teammate or your whole team." },
+];
+
+const USE_CASES = [
+    { n: "01", title: "Chrome Extension", body: "Capture from ChatGPT, Claude, Gemini, Perplexity, DeepSeek and Gmail in one click.", href: CHROME_STORE_URL, external: true },
+    { n: "02", title: "MCP for developers", body: "Connect Capsule Hub in Cursor and other MCP-compatible clients.", href: "/docs/mcp", external: false },
+    { n: "03", title: "Personal chatbot", body: "Embed the Capsule Hub SDK on your own website chatbot and sync context.", href: "/docs/personal-chatbot", external: false },
+    { n: "04", title: "Anthropic skills", body: "Save, search, read and version capsules straight from the terminal.", href: "/docs/anthropic-skills", external: false },
+];
+
+const MARQUEE_TOOLS = [
+    { name: "ChatGPT", logo: ChatgptLogo },
+    { name: "Claude", logo: ClaudeLogo },
+    { name: "Gemini", logo: GeminiLogo },
+    { name: "Gmail", logo: GmailLogo },
+    { name: "Outlook", logo: OutlookLogo },
+    { name: "Copilot", logo: CopilotLogo },
+    { name: "Perplexity", logo: PerplexityLogo },
+    { name: "Lovable", logo: LovableLogo },
+    { name: "Replit", logo: ReplitLogo },
+    { name: "DeepSeek", logo: DeepseekLogo },
+    { name: "Slack", logo: SlackLogo },
+    { name: "Figma", logo: FigmaLogo },
+    { name: "Windsurf", logo: WindsurfLogo },
+    { name: "Emergent", logo: EmergentLogo },
+    { name: "Antigravity", logo: AntigravityLogo },
+    { name: "VS Code", logo: VSCodeLogo },
+];
+
+const TEAM_ROWS = [
+    { capsule: "Auth Spec v3", owner: "alex", role: "Engineering", updated: "2h ago" },
+    { capsule: "Q2 Launch Brief", owner: "priya", role: "Marketing", updated: "yesterday" },
+    { capsule: "Onboarding Flow Research", owner: "sam", role: "Design", updated: "3d ago" },
+];
+
+/* ── Hero capsule-flow visual ───────────────────────────────────────── */
+
+/* A loose mesh of well-known tools; the capsule random-walks the edges.
+   Coordinates are percentages of the square container. */
+/* Ring of tools around VS Code at the centre. `s` optically normalises marks
+   whose PNGs carry different amounts of built-in padding. */
+const MESH_NODES = [
+    { logo: ChatgptLogo, alt: "ChatGPT", x: 16, y: 14, s: 0.95 },
+    { logo: GmailLogo, alt: "Gmail", x: 50, y: 6, s: 1.05 },
+    { logo: ClaudeLogo, alt: "Claude", x: 85, y: 15, s: 1 },
+    { logo: VSCodeLogo, alt: "VS Code", x: 7, y: 48, s: 1 },
+    { logo: CapsuleHubLogo, alt: "Capsule Hub", x: 48, y: 48, s: 1.15 },
+    { logo: SlackLogo, alt: "Slack", x: 92, y: 50, s: 1.1 },
+    { logo: GeminiLogo, alt: "Gemini", x: 15, y: 82, s: 1 },
+    { logo: LovableLogo, alt: "Lovable", x: 49, y: 92, s: 0.85 },
+    { logo: ReplitLogo, alt: "Replit", x: 84, y: 84, s: 0.9 },
+];
+
+/* Outer ring plus four diagonal spokes into the centre — no edge crossings */
+const MESH_EDGES: [number, number][] = [
+    [0, 1],
+    [1, 2],
+    [2, 5],
+    [5, 8],
+    [8, 7],
+    [7, 6],
+    [6, 3],
+    [3, 0],
+    [4, 0],
+    [4, 2],
+    [4, 6],
+    [4, 8],
+];
+
+const MESH_NEIGHBORS = MESH_NODES.map((_, i) =>
+    MESH_EDGES.filter((e) => e.includes(i)).map(([a, b]) => (a === i ? b : a))
+);
+
+/* Matches RotatingText's default 2600ms cadence so the capsule and the
+   headline change in the same rhythm instead of competing for attention. */
+const FLOW_HOP_MS = 2600;
+
+const FlowVisual = () => {
+    const [walk, setWalk] = useState({ node: 4, prev: -1 });
+
+    useEffect(() => {
+        const t = setInterval(() => {
+            setWalk(({ node, prev }) => {
+                const ahead = MESH_NEIGHBORS[node].filter((n) => n !== prev);
+                const pool = ahead.length ? ahead : MESH_NEIGHBORS[node];
+                return { node: pool[Math.floor(Math.random() * pool.length)], prev: node };
+            });
+        }, FLOW_HOP_MS);
+        return () => clearInterval(t);
+    }, []);
+
+    const pos = MESH_NODES[walk.node];
+
+    return (
+        <div className="relative aspect-square max-w-[320px] mx-auto">
+            {/* Dotted edges of the mesh */}
+            <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                {MESH_EDGES.map(([a, b]) => (
+                    <line
+                        key={`${a}-${b}`}
+                        x1={MESH_NODES[a].x}
+                        y1={MESH_NODES[a].y}
+                        x2={MESH_NODES[b].x}
+                        y2={MESH_NODES[b].y}
+                        stroke="currentColor"
+                        strokeWidth="1"
+                        strokeDasharray="3 4"
+                        strokeLinecap="round"
+                        vectorEffect="non-scaling-stroke"
+                        className="text-neutral-300 dark:text-neutral-700"
+                    />
+                ))}
+            </svg>
+
+            {/* Tool nodes — bg patch masks the lines passing underneath */}
+            {MESH_NODES.map((node) => (
+                <div
+                    key={node.alt}
+                    className="absolute flex items-center justify-center w-14 h-14 bg-white dark:bg-[#0c0c0e] z-10"
+                    style={{ left: `${node.x}%`, top: `${node.y}%`, transform: "translate(-50%, -50%)" }}
+                >
+                    <img
+                        src={node.logo}
+                        alt={node.alt}
+                        className="w-9 h-9 object-contain"
+                        style={{ transform: `scale(${node.s})` }}
+                    />
+                </div>
+            ))}
+
+            {/* Capsule random-walking the mesh, edge by edge */}
+            <motion.img
+                src={CapsuleImg}
+                alt="Capsule"
+                className="absolute h-6 w-6 object-contain z-20 drop-shadow-md"
+                style={{ transform: "translate(-50%, -50%)" }}
+                initial={false}
+                animate={{ left: `${pos.x}%`, top: `${pos.y}%` }}
+                transition={{ duration: 1.8, ease: "easeInOut" }}
+            />
+        </div>
+    );
+};
+
+/* ── Reusable CTA button ────────────────────────────────────────────── */
+
+const AddToChrome = ({ big = false }: { big?: boolean }) => (
+    <a
+        href={CHROME_STORE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`inline-flex items-center gap-3 font-semibold bg-orange-500 text-white hover:bg-neutral-950 dark:hover:bg-white dark:hover:text-neutral-950 transition-colors ${big ? "px-9 py-5 text-base" : "px-7 py-4 text-sm"}`}
+    >
+        Add to Chrome. It's Free! <span>→</span>
+    </a>
+);
 
 export default function LandingPage() {
     const navigate = useNavigate();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const studioSectionRef = useRef<HTMLElement>(null);
-    const useCasesSectionRef = useRef<HTMLElement>(null);
     const [files, setFiles] = useState<LandingFile[]>([]);
     const [chunks, setChunks] = useState<LandingChunk[]>([]);
     const [textDialogOpen, setTextDialogOpen] = useState(false);
@@ -135,43 +261,21 @@ export default function LandingPage() {
     const showExtensionDownBanner = EXTENSION_SERVICE_STATUS === "down";
     const ExtensionServiceIcon = EXTENSION_DOWN_BANNER.icon;
 
+    const [showCelebration, setShowCelebration] = useState(true);
     const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 640 : false);
-    const [paddingOffset, setPaddingOffset] = useState(() => typeof window !== 'undefined' ? (window.innerWidth < 640 ? 32 : 80) : 80);
     useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth < 640);
-            setPaddingOffset(window.innerWidth < 640 ? 32 : 80);
-        };
+        const handleResize = () => setIsMobile(window.innerWidth < 640);
         handleResize();
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    const smoothScrollToSection = (section: HTMLElement | null) => {
+    const smoothScrollToStudio = () => {
+        const section = studioSectionRef.current;
         if (!section) return;
-        const targetY = section.getBoundingClientRect().top + window.scrollY - 72;
-        const startY = window.scrollY;
-        const distance = targetY - startY;
-        const duration = 1200;
-        let start: number | null = null;
-
-        const easeInOutCubic = (t: number) => {
-            return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-        };
-
-        const step = (timestamp: number) => {
-            if (!start) start = timestamp;
-            const progress = Math.min((timestamp - start) / duration, 1);
-            const eased = easeInOutCubic(progress);
-            window.scrollTo(0, startY + distance * eased);
-            if (progress < 1) window.requestAnimationFrame(step);
-        };
-
-        window.requestAnimationFrame(step);
+        const targetY = section.getBoundingClientRect().top + window.scrollY - 96;
+        window.scrollTo({ top: targetY, behavior: "smooth" });
     };
-
-    const smoothScrollToStudio = () => smoothScrollToSection(studioSectionRef.current);
-    const smoothScrollToUseCases = () => smoothScrollToSection(useCasesSectionRef.current);
 
     const graphItems = useMemo(
         () => [
@@ -274,56 +378,27 @@ export default function LandingPage() {
         }, 900);
     };
 
-    return (
-        <div className="relative min-h-screen max-w-[100vw] overflow-x-clip bg-gradient-to-br from-gray-50 via-blue-50/55 to-purple-50/45 text-foreground dark:from-[#040816] dark:via-[#060a1a] dark:to-[#040816]">
-            {/* Restored soft background (no harsh navy / white spotlight) */}
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(900px_500px_at_0%_0%,rgba(124,58,237,0.14),transparent_60%),radial-gradient(900px_500px_at_100%_10%,rgba(37,99,235,0.14),transparent_60%)] dark:bg-[radial-gradient(1100px_600px_at_0%_0%,rgba(124,58,237,0.26),transparent_60%),radial-gradient(1100px_600px_at_100%_10%,rgba(37,99,235,0.24),transparent_60%)]" />
-            <div className="pointer-events-none absolute inset-0 opacity-[0.10] dark:opacity-[0.18] [background-image:linear-gradient(rgba(15,23,42,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.10)_1px,transparent_1px)] dark:[background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:44px_44px]" />
-            <motion.div
-                className="pointer-events-none absolute -top-24 left-[-80px] h-[340px] w-[340px] rounded-full bg-gradient-to-br from-purple-400/25 to-blue-400/25 blur-3xl dark:from-purple-500/30 dark:to-blue-500/30"
-                animate={{
-                    x: [0, 30, 0],
-                    y: [0, -20, 0],
-                    scale: [1, 1.1, 1]
-                }}
-                transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-                aria-hidden
-            />
-            <motion.div
-                className="pointer-events-none absolute top-8 right-[-100px] h-[320px] w-[320px] rounded-full bg-gradient-to-br from-blue-400/20 to-indigo-400/20 blur-3xl dark:from-blue-500/25 dark:to-indigo-500/25"
-                animate={{
-                    x: [0, -20, 0],
-                    y: [0, 25, 0],
-                    scale: [1, 1.15, 1]
-                }}
-                transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-                aria-hidden
-            />
-            <motion.div
-                className="pointer-events-none absolute bottom-0 left-1/2 h-[300px] w-[300px] -translate-x-1/2 rounded-full bg-gradient-to-br from-violet-400/15 to-pink-400/15 blur-3xl dark:from-violet-500/20 dark:to-pink-500/20"
-                animate={{
-                    x: [-150, -100, -150],
-                    y: [0, -15, 0],
-                    scale: [1, 1.2, 1]
-                }}
-                transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-                aria-hidden
-            />
+    const celebrationOffset = showCelebration ? CELEBRATION_BANNER_HEIGHT : 0;
+    const bannerOffset = celebrationOffset + (showExtensionDownBanner ? EXTENSION_DOWN_BANNER_HEIGHT : 0);
 
+    return (
+        <div className="editorial relative min-h-screen max-w-[100vw] overflow-x-clip">
             <SplashCursor
-                className="opacity-[0.52] dark:opacity-[0.48]"
+                className="splash-cursor opacity-[0.45] dark:opacity-[0.4]"
                 DENSITY_DISSIPATION={2.4}
                 COLOR_UPDATE_SPEED={14}
             />
 
-            <CelebrationBanner />
+            <AnimatePresence>
+                {showCelebration && <CelebrationBanner onClose={() => setShowCelebration(false)} />}
+            </AnimatePresence>
             {showExtensionDownBanner && (
                 <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.35 }}
-                    className={`fixed inset-x-0 top-0 z-[60] flex h-[36px] items-center justify-center border-b px-4 text-center shadow-md ${EXTENSION_DOWN_BANNER.containerClass}`}
-                    style={{ top: `${CELEBRATION_BANNER_HEIGHT}px` }}
+                    className={`fixed inset-x-0 top-0 z-[60] flex h-[36px] items-center justify-center border-b px-4 text-center ${EXTENSION_DOWN_BANNER.containerClass}`}
+                    style={{ top: `${celebrationOffset}px` }}
                     role="status"
                     aria-live="polite"
                 >
@@ -335,515 +410,449 @@ export default function LandingPage() {
                 </motion.div>
             )}
 
-            <Header topOffset={CELEBRATION_BANNER_HEIGHT + (showExtensionDownBanner ? EXTENSION_DOWN_BANNER_HEIGHT : 0)} />
+            <div style={{ paddingTop: bannerOffset }}>
+                <EditorialHeader topOffset={bannerOffset} />
 
-            <div
-                className="relative z-10 mx-auto max-w-7xl px-5 pb-14 sm:px-8"
-                style={{
-                    paddingTop: `${CELEBRATION_BANNER_HEIGHT + (showExtensionDownBanner ? EXTENSION_DOWN_BANNER_HEIGHT : 0) + paddingOffset}px`,
-                }}
-            >
-                {/* Centered Hero Section */}
-                <section className="mx-auto flex min-h-[88vh] max-w-6xl items-center justify-center text-center">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                        className="space-y-4 sm:space-y-6 mt-6 sm:-mt-10 lg:-mt-16"
-                    >
-                        {/* Main Heading - Single Line */}
-                        <h1 className="text-4xl sm:text-6xl lg:text-[5.5rem] font-extrabold tracking-tight leading-tight text-center">
-                            <span className="inline-block bg-gradient-to-r from-slate-900 via-indigo-600 to-violet-600 bg-clip-text text-transparent dark:from-white dark:via-indigo-400 dark:to-violet-400">
-                                Capture your Context
-                            </span>
-                        </h1>
-
-                        {/* Animated Tagline */}
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.3, duration: 0.5 }}
-                            className="inline-block -mt-2 sm:-mt-4"
-                        >
-                            <div className="relative py-1 px-1">
-                                <TrueFocusText
-                                    texts={["Using Capsules", "within 10 seconds"]}
-                                    className="text-xl sm:text-3xl font-extrabold text-slate-800 dark:text-slate-100"
-                                    duration={2.6}
-                                />
-                            </div>
-                        </motion.div>
-
-                        {/* Description */}
-                        <motion.p
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.5 }}
-                            className="mx-auto max-w-3xl pt-2 text-base sm:text-lg leading-relaxed text-slate-600 dark:text-slate-300"
-                        >
-                            Sync context, Version artifacts, and Align agents — Never start from Zero again.
-                        </motion.p>
-
-                        <motion.div
-                            initial={{ opacity: 0, y: 16 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.6, duration: 0.45 }}
-                            className="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-3 sm:gap-4 max-w-5xl mx-auto px-2.5 sm:px-0 w-full"
-                        >
-                            {FEATURES.map((feature, index) => {
-                                const Icon = feature.icon;
-                                return (
-                                    <motion.div
-                                        key={feature.text}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.65 + index * 0.08 }}
-                                        whileHover={{ y: -3, scale: 1.02 }}
-                                        className={`group relative px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-full bg-white/45 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200/60 dark:border-white/10 hover:border-indigo-500/40 hover:bg-white/80 dark:hover:bg-slate-900/60 hover:shadow-[0_0_25px_rgba(99,102,241,0.12)] transition-all cursor-pointer flex items-center gap-2.5 sm:gap-3 ${index === 4 ? "col-span-2 mx-auto max-w-[240px] w-full" : "w-full sm:w-auto"}`}
-                                    >
-                                        <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-indigo-500/10 group-hover:bg-indigo-500/20 transition-colors">
-                                            <Icon className="h-3.5 w-3.5 sm:h-4 w-4 text-indigo-600 dark:text-indigo-400" strokeWidth={2.5} />
-                                        </div>
-                                        <span className="text-xs sm:text-[13px] font-semibold text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors whitespace-normal sm:whitespace-nowrap text-left leading-tight">
-                                            {feature.text}
-                                        </span>
-                                        {/* Subtle accent glow */}
-                                        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-500/0 via-indigo-500/5 to-indigo-500/0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    </motion.div>
-                                );
-                            })}
-                        </motion.div>
-
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.85, duration: 0.4 }}
-                            className="pt-8 sm:pt-10 flex flex-col sm:flex-row items-center justify-center gap-4 px-4 sm:px-0 w-full"
-                        >
-                            <Button
-                                onClick={smoothScrollToStudio}
-                                className="group relative inline-flex h-14 items-center gap-2.5 overflow-hidden bg-violet-600 px-8 text-lg font-bold text-white transition-all hover:bg-violet-700 hover:shadow-[0_10px_30px_rgba(124,58,237,0.4)] active:scale-95 w-full sm:w-auto justify-center"
-                            >
-                                <span className="relative z-10 flex items-center gap-2.5">
-                                    Try it now
-                                    <Sparkles className="h-5 w-5 transition-transform group-hover:rotate-12 group-hover:scale-110" />
-                                </span>
-                                <div className="absolute inset-0 z-0 bg-gradient-to-r from-violet-400/0 via-white/20 to-violet-400/0 -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                            </Button>
-
-                            <Button
-                                onClick={smoothScrollToUseCases}
-                                variant="outline"
-                                className="inline-flex h-14 items-center gap-2.5 border-indigo-200/60 bg-white/60 px-8 text-lg font-semibold text-indigo-700 backdrop-blur-sm transition-all hover:bg-indigo-50 hover:border-indigo-300 dark:border-indigo-500/30 dark:bg-slate-900/40 dark:text-indigo-200 dark:hover:bg-slate-900 w-full sm:w-auto justify-center"
-                            >
-                                Explore Features
-                                <ArrowDown className="h-5 w-5" />
-                            </Button>
-                        </motion.div>
-                    </motion.div>
-                </section>
-
-                <section id="use-cases" ref={useCasesSectionRef} className="mx-auto mt-2 max-w-6xl scroll-mt-20">
-                    <motion.div
-                        initial={{ opacity: 0, y: 18 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2, duration: 0.45 }}
-                        className="w-full mt-8"
-                    >
-                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
-                            {USE_CASES.map((useCase, idx) => {
-                                const Icon = useCase.icon;
-                                const placementClass =
-                                    idx === 3
-                                        ? "lg:col-span-2 lg:col-start-2"
-                                        : idx === 4
-                                            ? "lg:col-span-2 lg:col-start-4"
-                                            : "lg:col-span-2";
-                                const cardClass = useCase.highlight
-                                    ? "border-indigo-400/70 bg-gradient-to-br from-indigo-500/20 via-violet-500/10 to-white/90 dark:from-indigo-500/30 dark:via-violet-500/20 dark:to-slate-950/60 shadow-lg shadow-indigo-500/20"
-                                    : "border-slate-200/70 bg-white/70 dark:border-white/10 dark:bg-slate-900/40 hover:border-indigo-300 dark:hover:border-indigo-500/50";
-
-                                const ctaText =
-                                    useCase.title === "Custom Capsules Through Websites"
-                                        ? "Try it out below"
-                                        : useCase.title === "Chrome Extension"
-                                            ? "Download now"
-                                            : "Open guide";
-
-                                const content = (
-                                    <motion.div
-                                        whileHover={{ y: -3, scale: 1.01 }}
-                                        transition={{ duration: 0.18 }}
-                                        className={`group flex h-full flex-col rounded-xl border p-4 text-left backdrop-blur-sm transition-all ${cardClass}`}
-                                    >
-                                        <div className="mb-2 flex items-center justify-between">
-                                            <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500/20 to-violet-500/20">
-                                                <Icon className="h-4 w-4 text-indigo-600 dark:text-indigo-300" strokeWidth={2.4} />
-                                            </span>
-                                        </div>
-                                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{useCase.title}</p>
-                                        <p className="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-300">{useCase.description}</p>
-                                        <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 transition-colors group-hover:text-indigo-600 dark:text-indigo-300 dark:group-hover:text-indigo-200">
-                                            {ctaText}
-                                            <ArrowRight className="h-3.5 w-3.5" />
-                                        </span>
-                                    </motion.div>
-                                );
-
-                                return useCase.external ? (
-                                    <a
-                                        key={useCase.title}
-                                        href={useCase.href}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className={placementClass}
-                                    >
-                                        {content}
-                                    </a>
-                                ) : useCase.href.startsWith("#") ? (
-                                    <a
-                                        key={useCase.title}
-                                        href={useCase.href}
-                                        className={placementClass}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            smoothScrollToStudio();
-                                        }}
-                                    >
-                                        {content}
-                                    </a>
-                                ) : (
-                                    <Link key={useCase.title} to={useCase.href} className={placementClass}>
-                                        {content}
-                                    </Link>
-                                );
-                            })}
-                        </div>
-                    </motion.div>
-
-                </section>
-
-                {/* Interactive Capsule Studio */}
-                <section id="studio" ref={studioSectionRef} className="mx-auto mt-14 max-w-5xl scroll-mt-20">
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 1 }}
-                        className="mb-4 text-center"
-                    >
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-indigo-500/10 to-violet-500/10 border border-indigo-300/30 dark:border-indigo-600/30 backdrop-blur-sm">
-                            <motion.div
-                                animate={{ rotate: 360 }}
-                                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                            >
-                                <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                            </motion.div>
-                            <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">Interactive Capsule Studio</span>
-                        </div>
-                    </motion.div>
-                    <div className="relative space-y-6">
-                        {/* Item count badge */}
-                        {(files.length > 0 || chunks.length > 0) && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="flex items-center justify-center gap-2"
-                            >
-                                <motion.div
-                                    key={files.length + chunks.length}
-                                    initial={{ scale: 0.5, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 dark:border-green-500/30"
-                                >
-                                    <motion.div
-                                        animate={{ scale: [1, 1.2, 1] }}
-                                        transition={{ duration: 0.5 }}
-                                        className="h-2 w-2 rounded-full bg-green-500"
-                                    />
-                                    <span className="text-sm font-semibold text-green-700 dark:text-green-400">
-                                        {files.length + chunks.length} item{files.length + chunks.length !== 1 ? 's' : ''} added
-                                    </span>
-                                </motion.div>
-                            </motion.div>
-                        )}
-                        <motion.div
-                            className="relative"
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.3, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                            onViewportEnter={() => setLogosActivated(true)}
-                            onDragOver={handleDragOver}
-                            onDragLeave={handleDragLeave}
-                            onDrop={handleDrop}
-                        >
-                            <div className="pointer-events-none absolute inset-0" aria-hidden>
-                                {ORBITING_LOGOS.map((logo) => (
-                                    <motion.div
-                                        key={logo.alt}
-                                        initial={{
-                                            opacity: 0,
-                                            x: 0,
-                                            y: 0,
-                                            scale: 0.3,
-                                            filter: "blur(10px)",
-                                        }}
-                                        animate={
-                                            logosActivated
-                                                ? {
-                                                      opacity: 1,
-                                                      x: isMobile ? (logo.side === "left" ? -20 : 20) : logo.x,
-                                                      y: isMobile ? logo.y * 0.85 : logo.y,
-                                                      scale: 1,
-                                                      filter: "blur(0px)"
-                                                  }
-                                                : { opacity: 0, x: 0, y: 0, scale: 0.3, filter: "blur(10px)" }
-                                        }
-                                        transition={{
-                                            duration: 2.3,
-                                            delay: logo.delay,
-                                            ease: [0.22, 1, 0.36, 1],
-                                        }}
-                                        className={`absolute top-1/2 z-[20] pointer-events-auto ${logo.side === "left" ? "left-0" : "right-0"}`}
-                                    >
-                                        <motion.div
-                                            drag
-                                            dragSnapToOrigin
-                                            dragElastic={0.1}
-                                            onDragStart={() => setIsDragging(true)}
-                                            onDragEnd={(_, info) => {
-                                                setIsDragging(false);
-                                                const canvas = document.getElementById("studio-canvas");
-                                                if (canvas) {
-                                                    const rect = canvas.getBoundingClientRect();
-                                                    const clientX = info.point.x - window.scrollX;
-                                                    const clientY = info.point.y - window.scrollY;
-                                                    
-                                                    // Bounding rect check
-                                                    const isInsideRect = (
-                                                        clientX >= rect.left &&
-                                                        clientX <= rect.right &&
-                                                        clientY >= rect.top &&
-                                                        clientY <= rect.bottom
-                                                    );
-                                                    
-                                                    // DOM hit check as a fallback (robust for mobile scrolling/zoom)
-                                                    const elementAtPoint = document.elementFromPoint(clientX, clientY);
-                                                    const isInsideDOM = elementAtPoint && (
-                                                        elementAtPoint.id === "studio-canvas" ||
-                                                        elementAtPoint.closest("#studio-canvas") !== null
-                                                    );
-
-                                                    if (isInsideRect || isInsideDOM) {
-                                                        const logoNames: Record<string, string> = {
-                                                            ChatGPT: "chatgpt_context.json",
-                                                            Claude: "claude_artifact.md",
-                                                            Gmail: "gmail_thread.eml",
-                                                            Figma: "figma_design.png",
-                                                            Perplexity: "perplexity_search.json",
-                                                            Gemini: "gemini_prompt.txt",
-                                                            DeepSeek: "deepseek_chat.json",
-                                                            Windsurf: "windsurf_workspace.zip",
-                                                            Slack: "slack_history.txt",
-                                                            Outlook: "outlook_email.msg"
-                                                        };
-                                                        const fileName = logoNames[logo.alt] || "context_source.txt";
-                                                        const nextId = Math.random().toString(36).slice(2);
-                                                        setFiles((prev) => [
-                                                            ...prev,
-                                                            {
-                                                                id: nextId,
-                                                                file: new File([""], fileName),
-                                                                name: fileName,
-                                                                type: fileName.endsWith(".json")
-                                                                    ? "application/json"
-                                                                    : fileName.endsWith(".md")
-                                                                    ? "text/markdown"
-                                                                    : "text/plain",
-                                                                size: Math.floor(Math.random() * 12000) + 4000
-                                                            }
-                                                        ]);
-                                                        toast.success(`Absorbed ${logo.alt} context!`);
-                                                    }
-                                                }
-                                            }}
-                                            className="cursor-grab active:cursor-grabbing touch-none"
+                <main>
+                    {/* ── Hero ── */}
+                    <section className="bg-white dark:bg-[#0c0c0e]">
+                        <div className="mx-auto max-w-[1320px] px-5 md:px-10 pt-16 md:pt-24 pb-16 md:pb-20">
+                            <div className="grid grid-cols-12 gap-8 items-center">
+                                <div className="col-span-12 lg:col-span-7">
+                                    <h1 className="editorial-serif italic text-[clamp(2.6rem,5.5vw,4.8rem)] leading-[1.06] tracking-[-0.01em] text-neutral-950 dark:text-white">
+                                        You should never have to explain your work{" "}
+                                        <RotatingText
+                                            phrases={[
+                                                { text: "twice.", className: "text-violet-700 dark:text-violet-400" },
+                                                { text: "to every new chat.", className: "text-violet-700 dark:text-violet-400" },
+                                                { text: "tool after tool.", className: "text-violet-700 dark:text-violet-400" },
+                                            ]}
+                                        />
+                                    </h1>
+                                    <p className="mt-7 text-lg leading-relaxed text-neutral-500 dark:text-neutral-400 max-w-xl">
+                                        A Capsule is your context, captured once: the goals, decisions
+                                        and files behind your work, ready to drop into any AI tool.
+                                    </p>
+                                    <div className="mt-9 flex items-center gap-4 flex-wrap">
+                                        <AddToChrome />
+                                        <button
+                                            onClick={smoothScrollToStudio}
+                                            className="inline-flex items-center gap-3 px-7 py-4 text-sm font-semibold border border-neutral-300 dark:border-neutral-700 text-neutral-950 dark:text-white hover:border-neutral-950 dark:hover:border-white transition-colors"
                                         >
-                                            <motion.img
-                                                src={logo.src}
-                                                alt={logo.alt}
-                                                className="h-8 w-8 sm:h-14 sm:w-14 rounded-lg sm:rounded-xl border border-white/40 bg-white/85 p-1 sm:p-1.5 shadow-md sm:shadow-lg backdrop-blur-sm select-none"
-                                                animate={{
-                                                    x: [0, logo.fx1, logo.fx2, 0],
-                                                    y: [0, logo.fy1, logo.fy2, 0],
-                                                    rotate: [0, logo.r1, logo.r2, 0],
-                                                    scale: [1, 1.1, 1],
-                                                }}
-                                                transition={{ duration: logo.drift, repeat: Infinity, ease: "easeInOut" }}
-                                                whileHover={{ scale: 1.2 }}
-                                            />
-                                        </motion.div>
-                                    </motion.div>
+                                            Try it now ↓
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="col-span-12 lg:col-span-5">
+                                    <FlowVisual />
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* ── Social proof strip ── */}
+                    <section className="bg-white dark:bg-[#0c0c0e] border-y border-neutral-200 dark:border-neutral-800">
+                        <div className="mx-auto max-w-[1320px] px-5 md:px-10">
+                            <div className="grid grid-cols-2 md:grid-cols-4">
+                                {PROOF.map((f, i) => (
+                                    <div
+                                        key={f.label}
+                                        className={`py-8 md:py-10 px-2 md:px-8 ${i > 0 ? "md:border-l md:border-neutral-200 dark:md:border-neutral-800" : ""}`}
+                                    >
+                                        <div className="text-xl md:text-2xl font-semibold tracking-[-0.02em] text-neutral-950 dark:text-white whitespace-nowrap">
+                                            {f.value}
+                                        </div>
+                                        <div className="editorial-label text-neutral-400 dark:text-neutral-500 mt-1.5">{f.label}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* ── How it works ── */}
+                    <section id="how" className="bg-white dark:bg-[#0c0c0e]">
+                        <div className="mx-auto max-w-[1320px] px-5 md:px-10 py-20 md:py-28">
+                            <p className="editorial-label text-orange-600 dark:text-orange-400 mb-6">01 | How it works</p>
+                            <h2 className="text-4xl md:text-5xl font-semibold leading-[1.02] tracking-[-0.03em] text-neutral-950 dark:text-white mb-14">
+                                Three moves. That's the whole product.
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-3">
+                                {HOW_IT_WORKS.map((s, i) => (
+                                    <div
+                                        key={s.n}
+                                        className={`py-8 md:py-2 md:px-8 ${i > 0 ? "border-t md:border-t-0 md:border-l border-neutral-200 dark:border-neutral-800" : ""} ${i === 0 ? "md:pl-0" : ""}`}
+                                    >
+                                        <span className="text-sm font-medium tabular-nums text-orange-600 dark:text-orange-400">{s.n}</span>
+                                        <h3 className="mt-3 text-2xl font-semibold tracking-[-0.02em] text-neutral-950 dark:text-white">{s.title}</h3>
+                                        <p className="mt-3 text-[0.95rem] leading-relaxed text-neutral-500 dark:text-neutral-400 max-w-xs">{s.body}</p>
+                                    </div>
                                 ))}
                             </div>
 
-                            <Card className="relative z-10 p-5 sm:p-6 bg-transparent sm:bg-white/90 sm:dark:bg-slate-950/40 backdrop-blur-none sm:backdrop-blur-sm border-0 sm:border border-slate-200/90 dark:border-white/12 shadow-none sm:shadow-lg shadow-slate-900/5 dark:shadow-black/40 hover:shadow-xl hover:shadow-slate-900/10 dark:hover:shadow-black/60 transition-all duration-300">
-                                {/* Drag overlay */}
-                                {isDragging && (
-                                    <motion.div
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-blue-500/20 to-violet-500/20 backdrop-blur-sm rounded-xl border-2 border-dashed border-blue-500 dark:border-violet-400"
-                                    >
-                                        <div className="text-center">
-                                            <motion.div
-                                                animate={{ scale: [1, 1.1, 1] }}
-                                                transition={{ duration: 1, repeat: Infinity }}
-                                            >
-                                                <Upload className="h-12 w-12 mx-auto text-blue-600 dark:text-violet-400 mb-2" />
-                                            </motion.div>
-                                            <p className="text-lg font-semibold text-slate-900 dark:text-white">Drop files here</p>
+                            {/* Ways to use it */}
+                            <div className="mt-20">
+                                <p className="editorial-label text-neutral-400 dark:text-neutral-500 mb-2">And wherever you work</p>
+                                {USE_CASES.map((u) => {
+                                    const inner = (
+                                        <div className="group grid grid-cols-12 gap-4 py-6 border-t border-neutral-200 dark:border-neutral-800 last:border-b-0">
+                                            <span className="col-span-2 sm:col-span-1 text-sm font-medium tabular-nums text-violet-700 dark:text-violet-400">{u.n}</span>
+                                            <span className="col-span-10 sm:col-span-3 text-lg font-semibold tracking-[-0.01em] text-neutral-950 dark:text-white group-hover:text-violet-700 dark:group-hover:text-violet-400 transition-colors">
+                                                {u.title}
+                                            </span>
+                                            <p className="col-span-12 sm:col-span-7 text-[0.95rem] leading-relaxed text-neutral-500 dark:text-neutral-400">{u.body}</p>
+                                            <span className="hidden sm:block sm:col-span-1 text-right text-neutral-300 dark:text-neutral-600 group-hover:text-violet-700 dark:group-hover:text-violet-400 group-hover:translate-x-1 transition-all">→</span>
                                         </div>
+                                    );
+                                    return u.external ? (
+                                        <a key={u.n} href={u.href} target="_blank" rel="noopener noreferrer" className="block">{inner}</a>
+                                    ) : (
+                                        <Link key={u.n} to={u.href} className="block">{inner}</Link>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* ── Supported tools marquee ── */}
+                    <section className="bg-white dark:bg-[#0c0c0e] border-y border-neutral-200 dark:border-neutral-800 py-10 overflow-hidden">
+                        <p className="editorial-label text-neutral-400 dark:text-neutral-500 text-center mb-8">
+                            Works across every tool you already use
+                        </p>
+                        <div className="relative">
+                            <div className="editorial-marquee flex w-max items-center gap-12 px-6">
+                                {[...MARQUEE_TOOLS, ...MARQUEE_TOOLS].map((t, i) => (
+                                    <span key={`${t.name}-${i}`} className="flex items-center gap-2.5 shrink-0">
+                                        <img src={t.logo} alt={t.name} className="h-6 w-6 object-contain grayscale opacity-80 dark:invert" />
+                                        <span className="text-sm text-neutral-500 dark:text-neutral-400 whitespace-nowrap">{t.name}</span>
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* ── Teams ── */}
+                    <section id="teams" className="bg-white dark:bg-[#0c0c0e]">
+                        <div className="mx-auto max-w-[1320px] px-5 md:px-10 py-20 md:py-28">
+                            <div className="grid grid-cols-12 gap-8 md:gap-10 items-center">
+                                <div className="col-span-12 md:col-span-5">
+                                    <p className="editorial-label text-violet-700 dark:text-violet-400 mb-6">02 | Teams</p>
+                                    <h2 className="text-4xl md:text-5xl font-semibold leading-[1.02] tracking-[-0.03em] text-neutral-950 dark:text-white">
+                                        Context is a team sport.
+                                    </h2>
+                                    <p className="mt-6 text-base leading-relaxed text-neutral-500 dark:text-neutral-400 max-w-sm">
+                                        Shared capsules live in team workspaces with role-based access.
+                                        When someone hands you work, they hand you the context with it:
+                                        every decision, file and prompt that got it there.
+                                    </p>
+                                </div>
+                                <div className="col-span-12 md:col-span-6 md:col-start-7">
+                                    {/* Team workspace mock */}
+                                    <div className="border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#111114]">
+                                        <div className="flex items-center justify-between px-4 py-2.5 border-b border-neutral-200 dark:border-neutral-800">
+                                            <span className="editorial-label text-neutral-950 dark:text-white">Workspace | Product</span>
+                                            <span className="editorial-label text-neutral-400 dark:text-neutral-500">6 members</span>
+                                        </div>
+                                        {TEAM_ROWS.map((r) => (
+                                            <div key={r.capsule} className="grid grid-cols-12 gap-2 px-4 py-3.5 border-b border-neutral-100 dark:border-neutral-800 last:border-b-0 items-baseline">
+                                                <span className="col-span-6 sm:col-span-5 text-sm font-medium text-neutral-950 dark:text-white truncate">{r.capsule}</span>
+                                                <span className="col-span-3 text-xs font-mono text-neutral-500 dark:text-neutral-400">@{r.owner}</span>
+                                                <span className="hidden sm:block sm:col-span-2 editorial-label text-violet-700 dark:text-violet-400">{r.role}</span>
+                                                <span className="col-span-3 sm:col-span-2 text-xs text-neutral-400 dark:text-neutral-500 text-right">{r.updated}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* CapsuleIndex callout */}
+                            <div className="mt-16 bg-[#EDF0F3] dark:bg-neutral-950 border border-transparent dark:border-neutral-800 p-8 md:p-10 grid grid-cols-12 gap-6 items-center">
+                                <div className="col-span-12 md:col-span-8">
+                                    <p className="editorial-label text-orange-600 dark:text-orange-400 mb-4">Under the hood | CapsuleIndex</p>
+                                    <p className="text-xl md:text-2xl font-semibold tracking-[-0.02em] text-neutral-950 dark:text-white max-w-2xl">
+                                        Graph-based retrieval that stays cheap as your context scales.
+                                    </p>
+                                </div>
+                                <div className="col-span-12 md:col-span-4 md:text-right">
+                                    <span className="editorial-label text-neutral-500 dark:text-neutral-500">Same speed at 10 capsules or 10,000</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* ── Capsule Studio (functionality preserved) ── */}
+                    <section id="studio" ref={studioSectionRef} className="bg-white dark:bg-[#0c0c0e] border-t border-neutral-200 dark:border-neutral-800 scroll-mt-24">
+                        <div className="mx-auto max-w-[1320px] px-5 md:px-10 py-20 md:py-28">
+                            <p className="editorial-label text-orange-600 dark:text-orange-400 mb-6">03 | Try it now</p>
+                            <h2 className="text-4xl md:text-5xl font-semibold leading-[1.02] tracking-[-0.03em] text-neutral-950 dark:text-white mb-4">
+                                Build a capsule right here.
+                            </h2>
+                            <p className="text-base leading-relaxed text-neutral-500 dark:text-neutral-400 max-w-xl mb-12">
+                                Drag the logos in, drop your own files, paste text. This is the real thing.
+                            </p>
+
+                            <div className="relative space-y-6 max-w-5xl mx-auto">
+                                {/* Item count badge */}
+                                {(files.length > 0 || chunks.length > 0) && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="flex items-center justify-center gap-2"
+                                    >
+                                        <motion.div
+                                            key={files.length + chunks.length}
+                                            initial={{ scale: 0.5, opacity: 0 }}
+                                            animate={{ scale: 1, opacity: 1 }}
+                                            className="inline-flex items-center gap-2 px-4 py-2 border border-neutral-300 dark:border-neutral-700"
+                                        >
+                                            <span className="h-2 w-2 bg-orange-500" />
+                                            <span className="text-sm font-semibold text-neutral-950 dark:text-white">
+                                                {files.length + chunks.length} item{files.length + chunks.length !== 1 ? 's' : ''} added
+                                            </span>
+                                        </motion.div>
                                     </motion.div>
                                 )}
-                                {/* Canvas: grid only — no colored radial overlay so the graph reads clearly */}
                                 <motion.div
-                                    id="studio-canvas"
-                                    className="relative rounded-xl overflow-hidden border border-slate-200/80 bg-slate-50 dark:bg-slate-900/50"
-                                    whileHover={{ borderColor: "rgba(99, 102, 241, 0.3)" }}
-                                    transition={{ duration: 0.3 }}
+                                    className="relative"
+                                    initial={{ opacity: 0, scale: 0.98 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: 0.2, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                                    onViewportEnter={() => setLogosActivated(true)}
+                                    onDragOver={handleDragOver}
+                                    onDragLeave={handleDragLeave}
+                                    onDrop={handleDrop}
                                 >
-                                    <div
-                                        className="pointer-events-none absolute inset-0 opacity-[0.45] dark:opacity-[0.35] [background-image:linear-gradient(rgba(15,23,42,0.07)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.07)_1px,transparent_1px)] dark:[background-image:linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:32px_32px]"
-                                        aria-hidden
-                                    />
-                                    {graphItems.length === 0 ? (
-                                        <div className="relative z-[1] h-[24rem] flex items-center justify-center text-center px-6">
-                                            <div>
+                                    <div className="pointer-events-none absolute inset-0" aria-hidden>
+                                        {ORBITING_LOGOS.map((logo) => (
+                                            <motion.div
+                                                key={logo.alt}
+                                                initial={{
+                                                    opacity: 0,
+                                                    x: 0,
+                                                    y: 0,
+                                                    scale: 0.3,
+                                                    filter: "blur(10px)",
+                                                }}
+                                                animate={
+                                                    logosActivated
+                                                        ? {
+                                                            opacity: 1,
+                                                            x: isMobile ? (logo.side === "left" ? -20 : 20) : logo.x,
+                                                            y: isMobile ? logo.y * 0.85 : logo.y,
+                                                            scale: 1,
+                                                            filter: "blur(0px)"
+                                                        }
+                                                        : { opacity: 0, x: 0, y: 0, scale: 0.3, filter: "blur(10px)" }
+                                                }
+                                                transition={{
+                                                    duration: 2.3,
+                                                    delay: logo.delay,
+                                                    ease: [0.22, 1, 0.36, 1],
+                                                }}
+                                                className={`absolute top-1/2 z-[20] pointer-events-auto ${logo.side === "left" ? "left-0" : "right-0"}`}
+                                            >
                                                 <motion.div
-                                                    animate={{
-                                                        y: [0, -10, 0],
-                                                        opacity: [0.6, 1, 0.6]
-                                                    }}
-                                                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                                                >
-                                                    <Upload className="h-12 w-12 mx-auto mb-3 text-slate-400 dark:text-slate-500" />
-                                                </motion.div>
-                                                <motion.p
-                                                    animate={{ opacity: [0.6, 1, 0.6] }}
-                                                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                                                    className="text-sm text-slate-600 dark:text-slate-300/90 max-w-sm font-medium"
-                                                >
-                                                    Drag & drop files or click below to start building your capsule
-                                                </motion.p>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="relative z-[1] flex min-h-[24rem] items-center justify-center">
-                                            <CapsuleGraph
-                                                items={graphItems}
-                                                onRemoveItem={removeItem}
-                                                isAbsorbing={isAbsorbing}
-                                                className="h-[24rem]"
-                                            />
-                                        </div>
-                                    )}
-                                </motion.div>
-                            </Card>
-                        </motion.div>
+                                                    drag
+                                                    dragSnapToOrigin
+                                                    dragElastic={0.1}
+                                                    onDragStart={() => setIsDragging(true)}
+                                                    onDragEnd={(_, info) => {
+                                                        setIsDragging(false);
+                                                        const canvas = document.getElementById("studio-canvas");
+                                                        if (canvas) {
+                                                            const rect = canvas.getBoundingClientRect();
+                                                            const clientX = info.point.x - window.scrollX;
+                                                            const clientY = info.point.y - window.scrollY;
 
-                        <div className="w-full flex justify-center">
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.5, duration: 0.6 }}
-                                className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto"
-                            >
-                                <div className="flex flex-row items-center justify-center gap-3 w-full sm:w-auto">
-                                    <motion.div
-                                        whileHover={{ scale: 1.08, y: -2 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                                        className="flex-1 sm:flex-none"
-                                    >
-                                        <Button
-                                            size="lg"
-                                            variant="outline"
-                                            className="group gap-2 w-full sm:w-auto border-slate-300 dark:border-white/20 bg-white/90 dark:bg-white/5 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10 hover:border-indigo-400 dark:hover:border-indigo-500 transition-all shadow-sm hover:shadow-md"
-                                            onClick={() => fileInputRef.current?.click()}
-                                        >
-                                            <motion.div
-                                                animate={{ rotate: [0, -10, 10, 0] }}
-                                                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-                                            >
-                                                <Paperclip className="h-4 w-4 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
+                                                            // Bounding rect check
+                                                            const isInsideRect = (
+                                                                clientX >= rect.left &&
+                                                                clientX <= rect.right &&
+                                                                clientY >= rect.top &&
+                                                                clientY <= rect.bottom
+                                                            );
+
+                                                            // DOM hit check as a fallback (robust for mobile scrolling/zoom)
+                                                            const elementAtPoint = document.elementFromPoint(clientX, clientY);
+                                                            const isInsideDOM = elementAtPoint && (
+                                                                elementAtPoint.id === "studio-canvas" ||
+                                                                elementAtPoint.closest("#studio-canvas") !== null
+                                                            );
+
+                                                            if (isInsideRect || isInsideDOM) {
+                                                                const logoNames: Record<string, string> = {
+                                                                    ChatGPT: "chatgpt_context.json",
+                                                                    Claude: "claude_artifact.md",
+                                                                    Gmail: "gmail_thread.eml",
+                                                                    Figma: "figma_design.png",
+                                                                    Perplexity: "perplexity_search.json",
+                                                                    Gemini: "gemini_prompt.txt",
+                                                                    DeepSeek: "deepseek_chat.json",
+                                                                    Windsurf: "windsurf_workspace.zip",
+                                                                    Slack: "slack_history.txt",
+                                                                    Outlook: "outlook_email.msg"
+                                                                };
+                                                                const fileName = logoNames[logo.alt] || "context_source.txt";
+                                                                const nextId = Math.random().toString(36).slice(2);
+                                                                setFiles((prev) => [
+                                                                    ...prev,
+                                                                    {
+                                                                        id: nextId,
+                                                                        file: new File([""], fileName),
+                                                                        name: fileName,
+                                                                        type: fileName.endsWith(".json")
+                                                                            ? "application/json"
+                                                                            : fileName.endsWith(".md")
+                                                                                ? "text/markdown"
+                                                                                : "text/plain",
+                                                                        size: Math.floor(Math.random() * 12000) + 4000
+                                                                    }
+                                                                ]);
+                                                                toast.success(`Absorbed ${logo.alt} context!`);
+                                                            }
+                                                        }
+                                                    }}
+                                                    className="cursor-grab active:cursor-grabbing touch-none"
+                                                >
+                                                    <motion.img
+                                                        src={logo.src}
+                                                        alt={logo.alt}
+                                                        className="h-8 w-8 sm:h-14 sm:w-14 rounded-full border border-neutral-200 dark:border-neutral-700 bg-white p-1 sm:p-1.5 shadow-md select-none"
+                                                        animate={{
+                                                            x: [0, logo.fx1, logo.fx2, 0],
+                                                            y: [0, logo.fy1, logo.fy2, 0],
+                                                            rotate: [0, logo.r1, logo.r2, 0],
+                                                            scale: [1, 1.1, 1],
+                                                        }}
+                                                        transition={{ duration: logo.drift, repeat: Infinity, ease: "easeInOut" }}
+                                                        whileHover={{ scale: 1.2 }}
+                                                    />
+                                                </motion.div>
                                             </motion.div>
-                                            Add Attachment
-                                        </Button>
-                                    </motion.div>
-                                    <motion.div
-                                        whileHover={{ scale: 1.08, y: -2 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                                        className="flex-1 sm:flex-none"
-                                    >
-                                        <Button
-                                            size="lg"
-                                            className="group gap-2 w-full sm:w-auto bg-slate-900/10 hover:bg-slate-900/20 dark:bg-white/10 dark:hover:bg-white/20 text-slate-900 dark:text-white border border-slate-300 dark:border-white/20 hover:border-violet-400 dark:hover:border-violet-500 transition-all shadow-sm hover:shadow-md"
-                                            onClick={() => setTextDialogOpen(true)}
-                                        >
+                                        ))}
+                                    </div>
+
+                                    <Card className="relative z-10 p-5 sm:p-6 bg-transparent sm:bg-white dark:sm:bg-[#111114] border-0 sm:border border-neutral-200 dark:border-neutral-800 shadow-none">
+                                        {/* Drag overlay */}
+                                        {isDragging && (
                                             <motion.div
-                                                whileHover={{ scale: 1.2, rotate: 90 }}
-                                                transition={{ type: "spring", stiffness: 300 }}
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0 }}
+                                                className="absolute inset-0 z-50 flex items-center justify-center bg-violet-700/10 border-2 border-dashed border-violet-700 dark:border-violet-400"
                                             >
-                                                <MessageSquarePlus className="h-4 w-4 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors" />
+                                                <div className="text-center">
+                                                    <motion.div
+                                                        animate={{ scale: [1, 1.1, 1] }}
+                                                        transition={{ duration: 1, repeat: Infinity }}
+                                                    >
+                                                        <Upload className="h-12 w-12 mx-auto text-violet-700 dark:text-violet-400 mb-2" />
+                                                    </motion.div>
+                                                    <p className="text-lg font-semibold text-neutral-950 dark:text-white">Drop files here</p>
+                                                </div>
                                             </motion.div>
-                                            Add Text
-                                        </Button>
-                                    </motion.div>
-                                </div>
-                                <motion.div
-                                    whileHover={{ scale: 1.08, y: -2 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                                    className="w-full sm:w-auto"
-                                >
-                                    <Button
-                                        size="lg"
-                                        onClick={handleStartCreate}
-                                        disabled={isAbsorbing}
-                                        className="relative overflow-hidden gap-2 w-full sm:w-auto bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-500 hover:via-indigo-500 hover:to-violet-500 text-white shadow-[0_10px_30px_rgba(59,130,246,0.4)] hover:shadow-[0_15px_40px_rgba(59,130,246,0.6)] transition-all"
-                                    >
-                                        <motion.div
-                                            className="absolute inset-0 bg-white/20"
-                                            initial={{ x: "-100%", skewX: -20 }}
-                                            whileHover={{ x: "100%" }}
-                                            transition={{ duration: 0.6 }}
-                                        />
-                                        <span className="relative z-10">{isAbsorbing ? "Creating..." : "Create Capsule"}</span>
-                                        <motion.div
-                                            className="relative z-10"
-                                            animate={isAbsorbing ? {
-                                                x: [0, 5, 0],
-                                                rotate: [0, 10, 0]
-                                            } : {}}
-                                            transition={{ duration: 0.8, repeat: Infinity }}
+                                        )}
+                                        {/* Canvas */}
+                                        <div
+                                            id="studio-canvas"
+                                            className="relative overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50"
                                         >
-                                            <ArrowRight className="h-4 w-4" />
-                                        </motion.div>
-                                    </Button>
+                                            <div
+                                                className="pointer-events-none absolute inset-0 opacity-[0.45] dark:opacity-[0.35] [background-image:linear-gradient(rgba(15,23,42,0.07)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.07)_1px,transparent_1px)] dark:[background-image:linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:32px_32px]"
+                                                aria-hidden
+                                            />
+                                            {graphItems.length === 0 ? (
+                                                <div className="relative z-[1] h-[24rem] flex items-center justify-center text-center px-6">
+                                                    <div>
+                                                        <motion.div
+                                                            animate={{
+                                                                y: [0, -10, 0],
+                                                                opacity: [0.6, 1, 0.6]
+                                                            }}
+                                                            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                                                        >
+                                                            <Upload className="h-12 w-12 mx-auto mb-3 text-neutral-400 dark:text-neutral-500" />
+                                                        </motion.div>
+                                                        <motion.p
+                                                            animate={{ opacity: [0.6, 1, 0.6] }}
+                                                            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                                                            className="text-sm text-neutral-600 dark:text-neutral-300 max-w-sm font-medium"
+                                                        >
+                                                            Drag & drop files or click below to start building your capsule
+                                                        </motion.p>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="relative z-[1] flex min-h-[24rem] items-center justify-center">
+                                                    <CapsuleGraph
+                                                        items={graphItems}
+                                                        onRemoveItem={removeItem}
+                                                        isAbsorbing={isAbsorbing}
+                                                        className="h-[24rem]"
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </Card>
                                 </motion.div>
-                                <input
-                                    type="file"
-                                    multiple
-                                    className="hidden"
-                                    ref={fileInputRef}
-                                    onChange={(e) => e.target.files && handleFiles(e.target.files)}
-                                />
-                            </motion.div>
+
+                                <div className="w-full flex justify-center">
+                                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto">
+                                        <div className="flex flex-row items-center justify-center gap-3 w-full sm:w-auto">
+                                            <Button
+                                                size="lg"
+                                                variant="outline"
+                                                className="gap-2 flex-1 sm:flex-none border-neutral-300 dark:border-neutral-700 bg-white dark:bg-transparent text-neutral-950 dark:text-white hover:border-neutral-950 dark:hover:border-white hover:bg-transparent transition-colors"
+                                                onClick={() => fileInputRef.current?.click()}
+                                            >
+                                                <Paperclip className="h-4 w-4" />
+                                                Add Attachment
+                                            </Button>
+                                            <Button
+                                                size="lg"
+                                                variant="outline"
+                                                className="gap-2 flex-1 sm:flex-none border-neutral-300 dark:border-neutral-700 bg-white dark:bg-transparent text-neutral-950 dark:text-white hover:border-neutral-950 dark:hover:border-white hover:bg-transparent transition-colors"
+                                                onClick={() => setTextDialogOpen(true)}
+                                            >
+                                                <MessageSquarePlus className="h-4 w-4" />
+                                                Add Text
+                                            </Button>
+                                        </div>
+                                        <Button
+                                            size="lg"
+                                            onClick={handleStartCreate}
+                                            disabled={isAbsorbing}
+                                            className="gap-2 w-full sm:w-auto bg-violet-700 hover:bg-violet-800 dark:bg-violet-500 dark:hover:bg-violet-400 text-white dark:text-neutral-950 font-semibold transition-colors"
+                                        >
+                                            {isAbsorbing ? "Creating..." : "Create Capsule"} →
+                                        </Button>
+                                        <input
+                                            type="file"
+                                            multiple
+                                            className="hidden"
+                                            ref={fileInputRef}
+                                            onChange={(e) => e.target.files && handleFiles(e.target.files)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
+
+                    {/* ── Final CTA ── */}
+                    <section className="bg-[#EDF0F3] dark:bg-neutral-950 border-t border-neutral-200 dark:border-neutral-800">
+                        <div className="mx-auto max-w-[1320px] px-5 md:px-10 py-24 md:py-32 text-center">
+                            <p className="editorial-label text-neutral-500 dark:text-neutral-500 mb-8">90,000+ people already did</p>
+                            <h2 className="editorial-serif italic text-[clamp(2.6rem,6vw,5.5rem)] leading-[1.04] text-neutral-950 dark:text-white">
+                            Never start from <span className="text-violet-700 dark:text-violet-400">zero</span> again.
+                            </h2>
+                            <div className="mt-12">
+                                <AddToChrome big />
+                            </div>
+                        </div>
+                    </section>
+                </main>
+
+                <EditorialFooter />
 
                 <Dialog open={textDialogOpen} onOpenChange={setTextDialogOpen}>
                     <DialogContent className="sm:max-w-xl">
@@ -852,7 +861,7 @@ export default function LandingPage() {
                             <DialogDescription className="text-xs">Paste or type content to include in your draft capsule.</DialogDescription>
                         </DialogHeader>
                         <textarea
-                            className="w-full min-h-[180px] rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                            className="w-full min-h-[180px] border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20"
                             placeholder="Type or paste your text..."
                             value={textDraft}
                             onChange={(e) => setTextDraft(e.target.value)}
@@ -868,10 +877,10 @@ export default function LandingPage() {
                     <motion.div
                         initial={{ opacity: 0, y: 18, scale: 0.96 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        className="fixed bottom-6 right-6 z-50 w-[320px] rounded-xl border border-slate-200 dark:border-white/20 bg-white/95 dark:bg-slate-950/92 shadow-2xl backdrop-blur-md p-4"
+                        className="fixed bottom-6 right-6 z-50 w-[320px] border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-[#111114] shadow-2xl p-4"
                     >
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">Sign in to create your capsule</p>
-                        <p className="text-xs text-slate-700 dark:text-slate-300 mt-1">
+                        <p className="text-sm font-semibold text-neutral-950 dark:text-white">Sign in to create your capsule</p>
+                        <p className="text-xs text-neutral-600 dark:text-neutral-300 mt-1">
                             Your attachments are ready and draft is saved. Continue after sign in.
                         </p>
                         <div className="mt-3 flex items-center justify-end gap-2">
@@ -879,7 +888,7 @@ export default function LandingPage() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setShowSignInPrompt(false)}
-                                className="text-slate-700 dark:text-slate-300"
+                                className="text-neutral-600 dark:text-neutral-300"
                             >
                                 Not now
                             </Button>

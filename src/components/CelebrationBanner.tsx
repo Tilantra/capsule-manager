@@ -1,30 +1,31 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Trophy } from 'lucide-react';
+import { X } from 'lucide-react';
 
-export const CelebrationBanner: React.FC = () => {
+export const CelebrationBanner: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   return (
     <motion.div
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
+      exit={{ y: -100, opacity: 0 }}
       transition={{ type: "spring", damping: 20, stiffness: 100 }}
-      className="fixed top-0 left-0 right-0 z-[70] w-full overflow-hidden bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 py-2.5 px-4 shadow-lg"
+      className="fixed top-0 left-0 right-0 z-[70] w-full bg-violet-700 py-2.5 px-4"
     >
-      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
-
-      <div className="relative mx-auto max-w-7xl flex items-center justify-center gap-3 sm:gap-6 text-white">
-        <div className="hidden sm:flex items-center gap-2">
-          <Trophy className="w-4 h-4 text-yellow-300" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-100">Milestone</span>
-        </div>
-
-        <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm font-semibold">
-          <Sparkles className="w-4 h-4 text-yellow-300 animate-pulse" />
-          <p className="flex items-center gap-1.5 flex-wrap justify-center">
-            <span>Celebrating 90,000 Users in 45 Days!</span>
-          </p>
-          <Sparkles className="w-4 h-4 text-yellow-300 animate-pulse" />
-        </div>
+      <div className="relative mx-auto max-w-7xl flex items-center justify-center gap-3 sm:gap-5 text-white">
+        <span className="editorial-label hidden sm:block text-violet-200">Milestone</span>
+        <span className="hidden sm:block w-1.5 h-1.5 bg-orange-400" />
+        <p className="text-xs sm:text-sm font-semibold tracking-tight">
+          Celebrating 90,000 users in 45 days
+        </p>
+        <span className="hidden sm:block w-1.5 h-1.5 bg-orange-400" />
+        <span className="editorial-label hidden sm:block text-violet-200">Thank you</span>
+        <button
+          onClick={onClose}
+          aria-label="Dismiss"
+          className="absolute right-0 top-1/2 -translate-y-1/2 text-violet-200 hover:text-white transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
       </div>
     </motion.div>
   );

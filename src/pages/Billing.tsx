@@ -71,7 +71,7 @@ export default function BillingPage() {
                 { name: "Attachments", included: false },
                 { name: "Dynamic Context", included: false },
             ],
-            color: "from-slate-500/20 to-slate-500/5",
+            color: "bg-slate-500/10",
             borderColor: "border-slate-200 dark:border-slate-700",
             badgeColor: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
         },
@@ -92,9 +92,9 @@ export default function BillingPage() {
                 { name: "Create Teams", included: false },
                 { name: "Dynamic Context", included: false },
             ],
-            color: "from-blue-500/20 to-blue-500/5",
-            borderColor: "border-blue-200 dark:border-blue-700",
-            badgeColor: "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300",
+            color: "bg-orange-500/10",
+            borderColor: "border-orange-200 dark:border-orange-700",
+            badgeColor: "bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300",
         },
         {
             id: "elite",
@@ -112,9 +112,9 @@ export default function BillingPage() {
                 { name: "Priority Support", included: true },
                 { name: "White-labeling", included: false },
             ],
-            color: "from-purple-500/20 to-purple-500/5",
-            borderColor: "border-purple-300 dark:border-purple-600",
-            badgeColor: "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300",
+            color: "bg-primary/10",
+            borderColor: "border-primary/30 dark:border-primary/60",
+            badgeColor: "bg-primary/10 text-primary",
         },
         {
             id: "enterprise",
@@ -131,7 +131,7 @@ export default function BillingPage() {
                 { name: "SLA Guarantees", included: true },
                 { name: "On-premise Option", included: true },
             ],
-            color: "from-amber-500/20 to-amber-500/5",
+            color: "bg-amber-500/10",
             borderColor: "border-amber-200 dark:border-amber-700",
             badgeColor: "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300",
         },
@@ -219,7 +219,7 @@ export default function BillingPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                    <h1 className="text-3xl font-bold tracking-tight text-primary">
                         Billing & Plans
                     </h1>
                     <p className="text-muted-foreground mt-1">
@@ -246,19 +246,9 @@ export default function BillingPage() {
                 }}
                 className="relative group"
             >
-                {/* Magical Background Glow */}
-                <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-blue-500/20 blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
-
-                <div className="relative flex items-center justify-between p-4 rounded-2xl border border-blue-500/30 bg-white/80 dark:bg-blue-950/40 backdrop-blur-xl shadow-lg shadow-blue-500/10 overflow-hidden">
-                    {/* Shimmer Effect Overlay */}
-                    <motion.div
-                        animate={{ x: ['-100%', '200%'] }}
-                        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 pointer-events-none"
-                    />
-
+                <div className="relative flex items-center justify-between p-4 rounded-2xl border border-primary/30 bg-white/80 dark:bg-primary/10 backdrop-blur-xl shadow-lg shadow-primary/10 overflow-hidden">
                     <div className="flex items-center gap-4 relative z-10">
-                        <div className="flex-shrink-0 p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 text-white shadow-md shadow-blue-500/20">
+                        <div className="flex-shrink-0 p-2.5 rounded-xl bg-primary text-primary-foreground shadow-md shadow-primary/20">
                             <Sparkles className="h-5 w-5 animate-pulse" />
                         </div>
                         <div>
@@ -266,7 +256,7 @@ export default function BillingPage() {
                                 Special Welcome Offer !!!
                             </h3>
                             <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
-                                Enjoy <span className="text-blue-600 dark:text-blue-400 font-bold">3 days of Elite features</span> on us to experience the full potential of Capsule Hub.
+                                Enjoy <span className="text-primary font-bold">3 days of Elite features</span> on us to experience the full potential of Capsule Hub.
                             </p>
                         </div>
                     </div>
@@ -289,12 +279,12 @@ export default function BillingPage() {
                             transition={{ duration: 0.5, delay: 0.1 * pricingTiers.indexOf(tier) }}
                             whileHover={{ y: -8, transition: { duration: 0.2 } }}
                             className={`relative flex flex-col rounded-2xl border ${tier.borderColor} ${tier.isPopular
-                                ? "border-blue-500/50 shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)] md:scale-[1.05] z-10 mt-4 md:mt-0"
+                                ? "border-orange-500/50 shadow-[0_0_40px_-10px_rgba(249,115,22,0.3)] md:scale-[1.05] z-10 mt-4 md:mt-0"
                                 : "shadow-sm"
-                                } bg-gradient-to-b ${tier.color} backdrop-blur-sm overflow-visible transition-all`}
+                                } ${tier.color} backdrop-blur-sm overflow-visible transition-all`}
                         >
                             {tier.isPopular && (
-                                <div className="absolute -top-px left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-purple-400 to-transparent" />
+                                <div className="absolute -top-px left-0 right-0 h-0.5 bg-orange-400" />
                             )}
 
                             {isCurrentTier && (
@@ -310,7 +300,7 @@ export default function BillingPage() {
                                     <motion.span
                                         initial={{ y: 5, opacity: 0 }}
                                         animate={{ y: 0, opacity: 1 }}
-                                        className="text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full bg-blue-600 text-white shadow-xl shadow-blue-500/20 flex items-center gap-1.5 border-2 border-white dark:border-slate-900"
+                                        className="text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full bg-orange-500 text-white shadow-xl shadow-orange-500/20 flex items-center gap-1.5 border-2 border-white dark:border-slate-900"
                                     >
                                         <Star className="h-3 w-3 fill-current" />
                                         Most Popular
@@ -364,7 +354,7 @@ export default function BillingPage() {
                                             className={`flex items-start gap-2.5 text-[13px] ${feature.included ? "text-foreground" : "text-muted-foreground opacity-40"}`}
                                         >
                                             {feature.included ? (
-                                                <CheckCircle2 className="h-3.5 w-3.5 mt-0.5 text-blue-500 shrink-0" />
+                                                <CheckCircle2 className="h-3.5 w-3.5 mt-0.5 text-primary shrink-0" />
                                             ) : (
                                                 <MinusCircle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
                                             )}
@@ -391,7 +381,7 @@ export default function BillingPage() {
                                                 {/* Subscription Button (Primary) */}
                                                 <Button
                                                     variant="default"
-                                                    className={`w-full h-11 rounded-xl font-semibold transition-all ${tier.isPopular && !isCurrentTier ? "bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20" : ""}`}
+                                                    className={`w-full h-11 rounded-xl font-semibold transition-all ${tier.isPopular && !isCurrentTier ? "bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/20" : ""}`}
                                                     onClick={() => handleUpgrade(tier.id, tier.name, 'subscription')}
                                                     disabled={isUpgrading !== null}
                                                 >
