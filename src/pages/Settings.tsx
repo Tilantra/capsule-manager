@@ -68,6 +68,13 @@ export default function SettingsPage() {
         toast.success(isConfig ? "Configuration copied" : "API Key copied to clipboard");
     };
 
+    const handleDeleteAccount = () => {
+        const confirmed = window.confirm("Are you sure you want to delete your account?");
+        if (confirmed) {
+            window.location.href = "mailto:tech@tilantra.com?subject=Request%3A%20Account%20Deletion&body=Hi%2C%0A%0AI%20have%20used%20Capsule%20Hub%20by%20Tilantra%20and%20request%20to%20delete%20the%20account%20because%20%5Badd%20reason%20here%5D";
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex justify-center items-center h-64">
@@ -272,6 +279,16 @@ export default function SettingsPage() {
                         </div>
                     </CardContent>
                 </Card>
+            </div>
+
+            <div className="flex justify-end pt-2 pb-4">
+                <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleDeleteAccount}
+                >
+                    Delete account
+                </Button>
             </div>
         </div>
     );
