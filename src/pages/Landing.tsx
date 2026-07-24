@@ -21,6 +21,8 @@ import CopilotLogo from "@/components/assets/CopilotLogo.png";
 import LovableLogo from "@/components/assets/LovableLogo.png";
 import ReplitLogo from "@/components/assets/ReplitLogo.png";
 import EmergentLogo from "@/components/assets/EmergentLogo.png";
+import GrokLogo from "@/components/assets/GrokLogo.png";
+import NotebookLMLogo from "@/components/assets/notebooklm.png";
 import AntigravityLogo from "@/components/assets/antigravity-color.png";
 import VSCodeLogo from "@/components/assets/visualStudio.png";
 import CapsuleHubLogo from "@/components/assets/CapsuleHubLogo.png";
@@ -114,6 +116,8 @@ const MARQUEE_TOOLS = [
     { name: "Figma", logo: FigmaLogo },
     { name: "Windsurf", logo: WindsurfLogo },
     { name: "Emergent", logo: EmergentLogo },
+    { name: "Grok", logo: GrokLogo },
+    { name: "NotebookLM", logo: NotebookLMLogo },
     { name: "Antigravity", logo: AntigravityLogo },
     { name: "VS Code", logo: VSCodeLogo },
 ];

@@ -12,7 +12,7 @@ A Capsule is a structured context packet containing conversation messages, metad
 
 ## Core Features
 
-- Chrome Extension Capture: One-click capture from ChatGPT, Claude, Google Gemini, Perplexity, DeepSeek, Gmail, and more
+- Chrome Extension Capture: One-click capture from ChatGPT, Claude, Google Gemini, Perplexity, DeepSeek, Grok, Google NotebookLM, Gmail, and more
 - Drag-and-Drop Injection: Drag capsules from your library into any supported AI chat input for instant context injection
 - Context Versioning: Preserve history, roll back, compare versions, and tag stable checkpoints
 - Merge & Split Capsules: Combine multiple capsules into one unified context, or split a capsule into focused sub-capsules for role-based sharing
@@ -35,6 +35,8 @@ A Capsule is a structured context packet containing conversation messages, metad
 | Claude | Full | Multi-turn conversation capture |
 | Microsoft Copilot | Full | IDE integration and context management |
 | DeepSeek | Full | Optimized context injection |
+| Grok | Full | Conversation capture and injection with file attachment support |
+| Google NotebookLM | Full | Add capsules as sources or inject into chat |
 | Perplexity | Full | Research thread capture |
 | Gmail | Partial | Thread-to-capsule conversion |
 | Lovable, Replit, Emergent | Full | Project context capture |

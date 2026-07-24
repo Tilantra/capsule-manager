@@ -95,6 +95,16 @@ export default function Platforms() {
                                 <TableCell className="text-slate-600 dark:text-slate-300">Design context and code generation integration.</TableCell>
                             </TableRow>
                             <TableRow>
+                                <TableCell className="font-medium">Grok</TableCell>
+                                <TableCell>Full</TableCell>
+                                <TableCell className="text-slate-600 dark:text-slate-300">Conversation capture and injection with file attachment support.</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-medium">Google NotebookLM</TableCell>
+                                <TableCell>Full</TableCell>
+                                <TableCell className="text-slate-600 dark:text-slate-300">Add capsules as sources or inject into chat conversations.</TableCell>
+                            </TableRow>
+                            <TableRow>
                                 <TableCell className="font-medium">Gmail</TableCell>
                                 <TableCell>Context</TableCell>
                                 <TableCell className="text-slate-600 dark:text-slate-300">Email thread → capsule for downstream AI work.</TableCell>
