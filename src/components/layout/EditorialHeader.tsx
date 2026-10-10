@@ -67,10 +67,10 @@ const EditorialHeader = ({ topOffset = 0 }: { topOffset?: number }) => {
             className="sticky z-50 bg-white dark:bg-[#0c0c0e] border-b border-neutral-200 dark:border-neutral-800"
             style={{ top: topOffset }}
         >
-            <div className="mx-auto max-w-[1320px] px-5 md:px-10 h-16 flex items-center justify-between gap-4">
+            <div className="mx-auto max-w-[1320px] px-4 md:px-10 h-16 flex items-center justify-between gap-2 md:gap-4">
                 <Link to="/" className="flex items-center gap-2.5 shrink-0">
                     <img src={CapsuleHubLogo} alt="CapsuleHub" className="h-8 w-8 object-contain" />
-                    <span className="text-lg font-bold tracking-[-0.02em] text-neutral-950 dark:text-white">
+                    <span className="hidden sm:block text-lg font-bold tracking-[-0.02em] text-neutral-950 dark:text-white">
                         Capsule Hub
                     </span>
                     <span className="editorial-label text-neutral-400 dark:text-neutral-500 hidden sm:block self-end pb-0.5">
@@ -78,7 +78,7 @@ const EditorialHeader = ({ topOffset = 0 }: { topOffset?: number }) => {
                     </span>
                 </Link>
 
-                <nav className="flex items-center gap-5 md:gap-8">
+                <nav className="flex items-center gap-3 md:gap-8">
                     <a href="/#how" onClick={sectionLink("how")} className={`${navLinkClass} hidden md:block`}>
                         <NavLabel>How it works</NavLabel>
                     </a>
@@ -88,7 +88,7 @@ const EditorialHeader = ({ topOffset = 0 }: { topOffset?: number }) => {
                     <Link to="/docs/plans" className={`${navLinkClass} hidden md:block`}>
                         <NavLabel>Pricing</NavLabel>
                     </Link>
-                    <Link to="/login" className={`${navLinkClass} hidden sm:block`}>
+                    <Link to="/login" className={`${navLinkClass} whitespace-nowrap`}>
                         <NavLabel>Sign in</NavLabel>
                     </Link>
                     <ThemeToggle />
@@ -96,7 +96,7 @@ const EditorialHeader = ({ topOffset = 0 }: { topOffset?: number }) => {
                         href={CHROME_STORE_URL}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="editorial-label px-4 py-2 bg-orange-500 text-white hover:bg-neutral-950 dark:hover:bg-white dark:hover:text-neutral-950 transition-colors whitespace-nowrap"
+                        className="editorial-label px-3 md:px-4 py-2 bg-orange-500 text-white hover:bg-neutral-950 dark:hover:bg-white dark:hover:text-neutral-950 transition-colors whitespace-nowrap"
                     >
                         Add to Chrome
                     </a>

@@ -79,10 +79,10 @@ export const CelebrationPopup: React.FC<CelebrationPopupProps> = ({ onClose }) =
                 transition={{ delay: 0.3 }}
               >
                 <h2 className="text-3xl font-extrabold tracking-tight mb-2">
-                  15,000 Users!
+                  100,000 Users!
                 </h2>
                 <p className="text-indigo-100 font-medium mb-6">
-                  In just 10 days since launch. We are blown away!
+                  In just 4 months since launch. We are blown away!
                 </p>
               </motion.div>
 

@@ -15,7 +15,7 @@ export const CelebrationBanner: React.FC<{ onClose: () => void }> = ({ onClose }
         <span className="editorial-label hidden sm:block text-violet-200">Milestone</span>
         <span className="hidden sm:block w-1.5 h-1.5 bg-orange-400" />
         <p className="text-xs sm:text-sm font-semibold tracking-tight">
-          Celebrating 90,000 users in 45 days
+          Celebrating 100,000+ users in 4 months
         </p>
         <span className="hidden sm:block w-1.5 h-1.5 bg-orange-400" />
         <span className="editorial-label hidden sm:block text-violet-200">Thank you</span>
