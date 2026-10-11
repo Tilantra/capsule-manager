@@ -82,7 +82,7 @@ const EXTENSION_DOWN_BANNER_HEIGHT = 36;
 /* ── Editorial content data ─────────────────────────────────────────── */
 
 const PROOF = [
-    { value: "90,000+", label: "Users" },
+    { value: "100,000+", label: "Users" },
     { value: "72", label: "Countries" },
     { value: "New & Notable", label: "Chrome Web Store" },
     { value: "Top 3", label: "Chrome extensions" },
@@ -845,7 +845,7 @@ export default function LandingPage() {
                     {/* ── Final CTA ── */}
                     <section className="bg-[#EDF0F3] dark:bg-neutral-950 border-t border-neutral-200 dark:border-neutral-800">
                         <div className="mx-auto max-w-[1320px] px-5 md:px-10 py-24 md:py-32 text-center">
-                            <p className="editorial-label text-neutral-500 dark:text-neutral-500 mb-8">90,000+ people already did</p>
+                            <p className="editorial-label text-neutral-500 dark:text-neutral-500 mb-8">100,000+ people already did</p>
                             <h2 className="editorial-serif italic text-[clamp(2.6rem,6vw,5.5rem)] leading-[1.04] text-neutral-950 dark:text-white">
                             Never start from <span className="text-violet-700 dark:text-violet-400">zero</span> again.
                             </h2>

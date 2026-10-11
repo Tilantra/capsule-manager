@@ -168,9 +168,12 @@ export class BrowserGuideraClient {
         models: string[];
         teams: string[];
         tier?: string;
-    }): Promise<any> {
+    }, captchaToken?: string): Promise<any> {
         const registerUrl = `${this.apiBaseUrl}/users/register`;
-        const response = await axios.post(registerUrl, data);
+        const response = await axios.post(registerUrl, {
+            ...data,
+            ...(captchaToken ? { captcha_token: captchaToken } : {}),
+        });
         if (response.status === 200 || response.status === 201) {
             return response.data;
         } else {

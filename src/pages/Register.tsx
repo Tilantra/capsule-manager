@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { BrowserGuideraClient } from "../lib/guidera-browser-client";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Zap, CheckCircle } from "lucide-react";
+import Turnstile, { TurnstileHandle, captchaEnabled } from "@/components/Turnstile";
 
 export default function Register() {
     const [formData, setFormData] = useState({
@@ -21,6 +22,8 @@ export default function Register() {
     const [loading, setLoading] = useState(false);
     const [isRegistered, setIsRegistered] = useState(false);
     const [error, setError] = useState("");
+    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+    const captchaRef = useRef<TurnstileHandle>(null);
     const navigate = useNavigate();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,6 +32,10 @@ export default function Register() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (captchaEnabled && !captchaToken) {
+            setError("Please complete the verification check below.");
+            return;
+        }
         setLoading(true);
         setError("");
         try {
@@ -38,11 +45,13 @@ export default function Register() {
                 models: ["gpt4", "llama3", "gemini2.5-flash"],
                 teams: [],
                 tier: "basic",
-            });
+            }, captchaToken ?? undefined);
 
             if (result && result.error) {
                 setError(result.error);
                 setLoading(false);
+                /* Turnstile tokens are single-use: get a fresh one for the retry. */
+                captchaRef.current?.reset();
                 return;
             }
 
@@ -60,6 +69,7 @@ export default function Register() {
                 "Registration failed. Please try again.";
             setError(errorMessage);
             setLoading(false);
+            captchaRef.current?.reset();
         }
     };
 
@@ -264,6 +274,13 @@ export default function Register() {
                                                 className="bg-gray-50/50 dark:bg-slate-950/50 border-gray-200 dark:border-slate-800 py-6 dark:text-white dark:placeholder:text-slate-500"
                                             />
                                         </motion.div>
+
+                                        <Turnstile
+                                            ref={captchaRef}
+                                            action="register"
+                                            onVerify={setCaptchaToken}
+                                            className="flex justify-center"
+                                        />
 
                                         {error && (
                                             <motion.div
