@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Verification</title>
+    <!--
+      Turnstile host page for the CapsuleHub mobile app's register form.
+
+      The app used to inject this markup straight into a WebView as an HTML
+      string with a baseUrl on this domain. That works on Android, but iOS
+      turns it into WKWebView's loadHTMLString:baseURL:, which resolves
+      relative URLs against the baseURL without granting the document that
+      origin -- so the page is not a secure context, window.crypto.subtle is
+      unavailable, and Turnstile sits on "Verifying..." forever without ever
+      invoking its error-callback.
+
+      Served as a real file over HTTPS it is a genuine first-party secure
+      context, which is the condition Turnstile needs. Keep it a plain static
+      file: it must not depend on the SPA bundle or on a build step.
+    -->
+    <style>
+      html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; }
+      #cf { display: flex; justify-content: center; }
+    </style>
+  </head>
+  <body>
+    <div id="cf"></div>
+    <script>
+      (function () {
+        var params = new URLSearchParams(location.search);
+        /*
+         * Site keys are public (this one already ships in the app bundle), so
+         * taking it from the caller keeps the app's own env the single source
+         * of truth and lets a staging key work without redeploying this page.
+         * It is passed to Turnstile as a value and never interpolated into
+         * markup or source.
+         */
+        var siteKey = params.get('sitekey') || '';
+        var themeParam = params.get('theme');
+        var theme = themeParam === 'dark' ? 'dark' : themeParam === 'light' ? 'light' : 'auto';
+        var action = params.get('action') || 'register';
+
+        function send(type, token, detail) {
+          var msg = JSON.stringify({ type: type, token: token || null, detail: detail || null });
+          if (window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage(msg);
+          } else {
+            /* Opened in a plain browser: makes the page debuggable on its own. */
+            console.log('[turnstile]', msg);
+          }
+        }
+
+        window.onerror = function (message) {
+          send('page-error', null, String(message));
+        };
+
+        /*
+         * Reported alongside 'loaded' because a silent secure-context failure
+         * is the exact bug this page exists to fix. If the widget ever hangs
+         * again, this line says immediately whether the context is the cause.
+         */
+        function context() {
+          return (
+            'origin=' + location.origin +
+            ' secure=' + (window.isSecureContext === true) +
+            ' subtle=' + !!(window.crypto && window.crypto.subtle)
+          );
+        }
+
+        /*
+         * Named callback via api.js?onload=, rather than window.onload: an
+         * async script can run after load, so checking for `turnstile` there
+         * is a race the widget loses at random.
+         */
+        window.onTurnstileLoad = function () {
+          if (!/^[A-Za-z0-9_-]{8,}$/.test(siteKey)) {
+            send('error', null, 'missing or malformed sitekey');
+            return;
+          }
+          send('loaded', null, context());
+          try {
+            turnstile.render('#cf', {
+              sitekey: siteKey,
+              action: action,
+              theme: theme,
+              callback: function (token) { send('token', token); },
+              'expired-callback': function () { send('expired'); },
+              'error-callback': function (code) { send('error', null, 'turnstile error ' + code); }
+            });
+          } catch (e) {
+            send('error', null, String(e));
+          }
+        };
+      })();
+    </script>
+    <script
+      src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad"
+      async
+      defer
+    ></script>
+  </body>
+</html>
